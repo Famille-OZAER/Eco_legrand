@@ -214,7 +214,6 @@ class Eco_legrand extends eqLogic {
 
 
       while ( ($data = fgetcsv($devResult,1000,";") ) !== FALSE ) {
-
         $date = $data[2] . '-' . $data[1] . '-' .$data[0] .' ' . $data[3] .':00:00';
         $valeur=round($data[5],2);
         if($valeur < $valeur_precedente_conso_totale){
