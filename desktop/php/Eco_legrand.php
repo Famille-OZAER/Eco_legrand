@@ -67,6 +67,7 @@ $eqLogics = eqLogic::byType('Eco_legrand');
   <li role="presentation"><a href="#insttab" aria-controls="profile" role="tab" data-toggle="tab"><i class="fas fa-list-alt"></i> {{Données Instantanées}}</a></li>
   <li role="presentation"><a href="#teleinfotab" aria-controls="profile" role="tab" data-toggle="tab"><i class="fas fa-list-alt"></i> {{Données Téléinfo}}</a></li>
   <li role="presentation"><a href="#csvtab" aria-controls="profile" role="tab" data-toggle="tab"><i class="fas fa-list-alt"></i> {{Données Consommation}}</a></li>
+  <li role="presentation"><a href="#calcultab" aria-controls="profile" role="tab" data-toggle="tab"><i class="fas fa-list-alt"></i> {{Calculs Consommation}}</a></li>
   </ul>
   <div class="tab-content" style="height:calc(100% - 50px);overflow:auto;overflow-x: hidden;">
   <div role="tabpanel" class="tab-pane active" id="eqlogictab">
@@ -128,10 +129,10 @@ $eqLogics = eqLogic::byType('Eco_legrand');
   <table id="inst_cmd" class="table table-bordered table-condensed">
   <thead>
   <tr>
-  <th style="width: 50px;">{{ID}}</th>
-  <th style="width: 300px;">{{Nom}}</th>
-  <th style="width: 200px;">{{Paramètres}}</th>
-  <th style="width: 200px;">{{Valeur}}</th>
+  <th style="">{{ID}}</th>
+  <th style="">{{Nom}}</th>
+  <th style="">{{Paramètres}}</th>
+  <th style="">{{Valeur}}</th>
   <th></th>
   </tr>
   </thead>
@@ -147,10 +148,10 @@ $eqLogics = eqLogic::byType('Eco_legrand');
   <table id="teleinfo_cmd" class="table table-bordered table-condensed">
   <thead>
   <tr>
-  <th style="width: 50px;">{{ID}}</th>
-  <th style="width: 300px;">{{Nom}}</th>
-  <th style="width: 200px;">{{Paramètres}}</th>
-  <th style="width: 200px;">{{Valeur}}</th>
+  <th style="">{{ID}}</th>
+  <th style="">{{Nom}}</th>
+  <th style="">{{Paramètres}}</th>
+  <th style="">{{Valeur}}</th>
   <th </th>
   </tr>
   </thead>
@@ -166,10 +167,29 @@ $eqLogics = eqLogic::byType('Eco_legrand');
   <table id="csv_cmd" class="table table-bordered table-condensed">
   <thead>
   <tr>
-  <th style="width: 50px;">{{ID}}</th>
-  <th style="width: 300px;">{{Nom}}</th>
-  <th style="width: 200px;">{{Paramètres}}</th>
-  <th style="width: 200px;">{{Valeur}}</th>
+  <th style="">{{ID}}</th>
+  <th style="">{{Nom}}</th>
+  <th style="">{{Paramètres}}</th>
+  <th style="">{{Valeur}}</th>
+  <th</th>
+  <th></th>
+  </tr>
+  </thead>
+  <tbody>
+
+  </tbody>
+  </table>
+
+  </div>
+  <div role="tabpanel" class="tab-pane" id="calcultab">
+
+  <table id="calcul_cmd" class="table table-bordered table-condensed">
+  <thead>
+  <tr>
+  <th style="">{{ID}}</th>
+  <th style="">{{Nom}}</th>
+  <th style="">{{Paramètres}}</th>
+  <th style="">{{Valeur}}</th>
   <th</th>
   <th></th>
   </tr>

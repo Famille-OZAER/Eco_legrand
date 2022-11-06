@@ -21,6 +21,19 @@
 class Eco_legrand extends eqLogic {
 
  
+  public function add_log($level = 'debug',$Log){
+    if (is_array($Log)) $Log = json_encode($Log);
+      $ligne = debug_backtrace(false, 2)[0]['line'];
+    if (isset(debug_backtrace(false, 2)[1]['function'])) {
+      $function_name = debug_backtrace(false, 2)[1]['function'];
+      $msg =  $function_name .' (' . $ligne . '): '.$Log;
+  
+    }else{
+      $msg =  '(' . $ligne . '): '.$Log;
+    }
+    log::add('Eco_legrand' , $level,$msg);
+  
+  }
 
   public function preUpdate() {
     if ($this->getConfiguration('addr') == '') {
@@ -28,18 +41,10 @@ class Eco_legrand extends eqLogic {
     }
   }
 
-  public function postUpdate() {
-
-    $this->getInformations();
-    $this->getData();
-    $this->getConsoElec_jour();
-    $this->getConsoElec_heure();
-  }
-
-  public function checkCmdOk($_type_data, $_subtype, $_name,$_logical_id, $_template,$_unite) {
+   public function checkCmdOk($_type_data, $_subtype, $_name,$_logical_id, $_template,$_unite) {
     $Eco_legrandCmd = Eco_legrandCmd::byEqLogicIdAndLogicalId($this->getId(),$_logical_id);
     if (!is_object($Eco_legrandCmd)) {
-      //log::add('stock', 'debug', 'Création de la commande ' . $_name);
+      //self::add_log('debug', 'Création de la commande ' . $_name);
       $Eco_legrandCmd = new Eco_legrandCmd();
       $Eco_legrandCmd->setName(__($_type_data . ' - ' . $_name, __FILE__));
       $Eco_legrandCmd->setEqLogic_id($this->getId());
@@ -64,443 +69,358 @@ class Eco_legrand extends eqLogic {
       // $Eco_legrandCmd->event(0);
     }
     $nom=$Eco_legrandCmd->getName();
-    if($nom !=$_type_data . ' - ' . $_name){
-      log::add('Eco_legrand', 'info', 'nom ' . $nom . "|||" .$_type_data . ' - ' . $_name);
-
-      $Eco_legrandCmd->setName($_type_data . ' - ' . $_name);
+    if($Eco_legrandCmd->getName() != $_name){
+      //self::add_log( 'info', 'nom ' . $nom . "|" .$_type_data . ' - ' . $_name);
+      $Eco_legrandCmd->setConfiguration('type', $_type_data);
+      $Eco_legrandCmd->setName($_name);
       $Eco_legrandCmd->save();
     }
   }
 
-  public function getInformations() {
-    if(strpos($this->getConfiguration('addr', ''), "https://")===0 || strpos($this->getConfiguration('addr', ''), "http://")===0){
-      $URL = $this->getConfiguration('addr', '');
+  public function postSave() {
+    $pid_file = jeedom::getTmpFolder('Eco_legrand') . '/Eco_legrand_'.$this->getId().'.pid';
+		if (file_exists($pid_file)) {
+			$pid = intval(trim(file_get_contents($pid_file)));
+			system::kill($pid);
+		}
+	}
+
+  public function preRemove(){
+    $pid_file = jeedom::getTmpFolder('Eco_legrand') . '/Eco_legrand_'.$this->getId().'.pid';
+		if (file_exists($pid_file)) {
+			$pid = intval(trim(file_get_contents($pid_file)));
+			system::kill($pid);
+		}
+  } 
+
+  function getInformations($eqLogic) {
+   
+    if(strpos( $eqLogic->getConfiguration('addr', ''), "https://")===0 || strpos( $eqLogic->getConfiguration('addr', ''), "http://")===0){
+      $URL =  $eqLogic->getConfiguration('addr', '');
     }else {
-      $URL = "http://" .$this->getConfiguration('addr', '');
+      $URL = "http://" . $eqLogic->getConfiguration('addr', '');
     }
     $devAddr = $URL . '/instant.json';
-
+    
     $request_http = new com_http($devAddr);
     $devResult = $request_http->exec(30);
-    log::add('Eco_legrand', 'info', 'getInformations ' . $devAddr);
-    //log::add('Eco_legrand', 'debug', print_r($devResult, true));
+     //self::add_log( 'info', $devAddr);
+     //self::add_log( 'debug', print_r($devResult, true));
     if ($devResult === false) {
-      log::add('Eco_legrand', 'error', 'problème de connexion ' . $devAddr);
+      self::add_log( 'error', 'problème de connexion ' . $devAddr);
     } else {
       $devResbis = utf8_encode($devResult);
       $devList = json_decode($devResbis, true);
-      //log::add('Eco_legrand', 'debug', print_r($devList, true));
+       //self::add_log( 'debug', print_r($devList, true));
       $i=1;
       foreach($devList as $name => $value) {
         if ($name === 'classe' || $name === 'minute') {
           // pas de traitement sur l'heure
         } else {
-          $this->checkCmdOk('inst','numeric', trim($name), 'inst_circuit' . $i , '<i class="fas fa-bolt"></i>',"W");
-          $this->checkCmdOk('csv','numeric', "Consommation " .trim($name) . ' par heure','conso_circuit'.$i ."_heure",'<i class="fas fa-bolt"></i>',"kW");
-          $this->checkCmdOk('csv','numeric', "Consommation totale par heure ",'conso_totale_heure','<i class="fas fa-bolt"></i>',"kW");
-          $this->checkCmdOk('csv','numeric', "Consommation Autre par heure " ,'conso_autre_heure','<i class="fas fa-bolt"></i>',"kW");
-          $this->checkCmdOk('csv','numeric', 'Consommation ' .trim($name) . ' journalière','conso_circuit'.$i ."_jour",'<i class="fas fa-bolt"></i>',"kW");
-          $this->checkCmdOk('csv','numeric', 'Consommation totale journalière ','conso_totale_jour','<i class="fas fa-bolt"></i>',"kW");
-          $this->checkCmdOk('csv','numeric', 'Consommation Autre journalière ' ,'conso_autre_jour','<i class="fas fa-bolt"></i>',"kW");
-          $this->checkAndUpdateCmd('inst_circuit' . $i, $value);
+         
+          $eqLogic->checkCmdOk('inst','numeric', trim($name), 'inst_circuit' . $i , '<i class="fas fa-bolt"></i>',"W");
+         
+  
+          $eqLogic->checkCmdOk('csv_heure','numeric', "Consommation " .trim($name) . " par heure","conso_circuit".$i ."_heure",'<i class="fas fa-bolt"></i>',"kW");
+          $eqLogic->checkCmdOk('calcul_pourcent','numeric', "Pourcentage " .trim($name) . " par heure","pourcent_circuit".$i ."_heure",'<i class="fas fa-bolt"></i>',"%");
+  
+          $eqLogic->checkCmdOk('csv_heure','numeric', "Consommation totale par heure","conso_totale_heure",'<i class="fas fa-bolt"></i>',"kW");
+          $eqLogic->checkCmdOk('calcul_pourcent','numeric', "Pourcentage totale par heure","pourcent_totale_heure",'<i class="fas fa-bolt"></i>',"%");
+          
+          $eqLogic->checkCmdOk('csv_heure','numeric', "Consommation Autre par heure" ,"conso_autre_heure",'<i class="fas fa-bolt"></i>',"kW");
+          $eqLogic->checkCmdOk('calcul_pourcent','numeric', "Pourcentage Autre par heure","pourcent_autre_heure",'<i class="fas fa-bolt"></i>',"%");
+          
+          $eqLogic->checkCmdOk('csv_jour','numeric', "Consommation " .trim($name) . " journalière","conso_circuit".$i ."_jour",'<i class="fas fa-bolt"></i>',"kW");
+          $eqLogic->checkCmdOk('calcul_pourcent','numeric', "Pourcentage " .trim($name) . " journalière","pourcent_circuit".$i ."_jour",'<i class="fas fa-bolt"></i>',"%");
+  
+         
+          $eqLogic->checkCmdOk('csv_jour','numeric', "Consommation totale journalière",'conso_totale_jour','<i class="fas fa-bolt"></i>',"kW");
+          $eqLogic->checkCmdOk('calcul_pourcent','numeric', "Pourcentage totale journalière",'pourcent_totale_jour','<i class="fas fa-bolt"></i>',"%");
+  
+          $eqLogic->checkCmdOk('csv_jour','numeric', "Consommation Autre journalière" ,'conso_autre_jour','<i class="fas fa-bolt"></i>',"kW");
+          $eqLogic->checkCmdOk('calcul_pourcent','numeric', "Pourcentage Autre journalière",'pourcent_autre_jour','<i class="fas fa-bolt"></i>',"%");
+  
+          $eqLogic->checkAndUpdateCmd('inst_circuit' . $i, $value);
           $i=$i+1;
         }
       }
     }
-    $this->refreshWidget();
+    $eqLogic->refreshWidget();
   }
-
-  public function getData() {
-    if(strpos($this->getConfiguration('addr', ''), "https://")===0 || strpos($this->getConfiguration('addr', ''), "http://")===0){
-      $URL = $this->getConfiguration('addr', '');
+  
+  function getData($eqLogic) {
+    
+    if(strpos($eqLogic->getConfiguration('addr', ''), "https://")===0 || strpos($eqLogic->getConfiguration('addr', ''), "http://")===0){
+      $URL = $eqLogic->getConfiguration('addr', '');
     }else {
-      $URL = "http://" .$this->getConfiguration('addr', '');
+      $URL = "http://" .$eqLogic->getConfiguration('addr', '');
     }
     $devAddr = $URL . '/ti.json';
-
+  
     $request_http = new com_http($devAddr);
     $devResult = $request_http->exec(30);
-    log::add('Eco_legrand', 'info', 'getInformations ' . $devAddr);
-
+    //self::add_log( 'info',  $devAddr);
     if ($devResult === false) {
-      log::add('Eco_legrand', 'error', 'problème de connexion ' . $devAddr);
+      self::add_log( 'error', 'problème de connexion ' . $devAddr);
     } else {
       $devResbis = utf8_encode($devResult);
       $corrected = preg_replace('/\s+/', '', $devResbis);
       $corrected = preg_replace('/\:0,/', ': 0,', $corrected);
       $corrected = preg_replace('/\:[0]+/', ":", $corrected);
       $devList = json_decode($corrected, true);
-      //log::add('Eco_legrand', 'debug', print_r($devList, true));
+      //self::add_log( 'debug', print_r($devList, true));
       if (json_last_error() == JSON_ERROR_NONE) {
         foreach($devList as $name => $value) {
           if ($name === 'classe') {
             // pas de traitement sur ces données
           }else if ($name === 'OPTARIF'){
-            $this->checkCmdOk('teleinfo','string', 'Option tarifaire',trim($name), '<i class="fas fa-info-circle"></i>',"");
-            $this->checkAndUpdateCmd($name, str_replace('..','',$value) );
+            $eqLogic->checkCmdOk('teleinfo','string', 'Option tarifaire',trim($name), '<i class="fas fa-info-circle"></i>',"");
+            $eqLogic->checkAndUpdateCmd($name, str_replace('..','',$value) );
           }else if ($name === 'PTEC'){
-            $this->checkCmdOk('teleinfo','string', 'Période Tarifaire en cours',trim($name), '<i class="fas fa-random"></i>',"");
-            $this->checkAndUpdateCmd($name, str_replace('..','',$value) );
+            $eqLogic->checkCmdOk('teleinfo','string', 'Période Tarifaire en cours',trim($name), '<i class="fas fa-random"></i>',"");
+            $eqLogic->checkAndUpdateCmd($name, str_replace('..','',$value) );
           } else {
             if ($value != 0){
-              $this->checkCmdOk('teleinfo','numeric', str_replace('conso','index',$name),trim($name), '<i class="fas fa-bolt"></i>',"kWh");
+              $eqLogic->checkCmdOk('teleinfo','numeric', str_replace('conso','index',$name),trim($name), '<i class="fas fa-bolt"></i>',"kWh");
               if ($value > 100){
-                $this->checkAndUpdateCmd($name, round($value/1000,0));
+                $eqLogic->checkAndUpdateCmd($name, round($value/1000,0));
               }else{
-                $this->checkAndUpdateCmd($name,$value );
+                $eqLogic->checkAndUpdateCmd($name,$value );
               }
-
-
+  
+  
             }
           }
         }
       }
     }
-    $this->refreshWidget();
+    $eqLogic->refreshWidget();
   }
 
-  public function getConsoAll_heure() {
-    foreach (eqLogic::byType('Eco_legrand',true) as $Eco_legrand) {
-      $Eco_legrand->getConsoElec_heure();
-    }
-  }
-  public function getInfos() {
-    foreach (eqLogic::byType('Eco_legrand',true) as $Eco_legrand) {
-      $Eco_legrand->getInformations();
-      $Eco_legrand->getData();
-    }
-  }
-
-  public function getConsoAll_jour() {
-    foreach (eqLogic::byType('Eco_legrand',true) as $Eco_legrand) {
-      $Eco_legrand->getConsoElec_jour();
-    }
-  }
-
-  public function getConsoElec_heure() {
-    if(strpos($this->getConfiguration('addr', ''), "https://")===0 || strpos($this->getConfiguration('addr', ''), "http://")===0){
-      $URL = $this->getConfiguration('addr', '');
+  function getConsoElec($eqLogic) {
+    if(strpos($eqLogic->getConfiguration('addr', ''), "https://")===0 || strpos($eqLogic->getConfiguration('addr', ''), "http://")===0){
+      $URL = $eqLogic->getConfiguration('addr', '');
     }else {
-      $URL = "http://" .$this->getConfiguration('addr', '');
+      $URL = "http://" .$eqLogic->getConfiguration('addr', '');
     }
-    $devAddr = $URL . '/LOG2.csv';
-
+    //$devAddr = $URL . '/LOG2.csv';
+    $jour_heure = "jour";
+    $num_fichier = 1;
+    $ext = "old";
+    
+    redo:
+    $nom_log = "log" . $num_fichier . "." . $ext;
+    $devAddr = $URL .'/'. $nom_log;
     $devResult = fopen($devAddr, "r");
-    log::add('Eco_legrand', 'info', 'getConsoElec_heure ' . $devAddr);
+    //self::add_log( 'info', $eqLogic->getName() . " " . $devAddr);
+    //self::add_log( 'info', $eqLogic->getId() . " " .$eqLogic->getName());
     /*
       jour	mois	annee	heure	minute	energie_tele_info	prix_tele_info	energie_circuit1	prix_circuit1	energie_cirucit2	prix_circuit2	energie_circuit3	prix_circuit3	energie_circuit4	prix_circuit4	energie_circuit5	prix_circuit5	volume_entree1	volume_entree2	tarif	energie_entree1	energie_entree2	prix_entree1	prix_entree2
-      17	8	15	20	2	0.000	0.000	0.000	0.000	0.000	0.000	0.000	0.000	0.000	0.000	0.000	0.000	0.000	0.000	0	0.000	0.000	0.000	0.000
+      17	   8	  15	   20	   2	     0.000	         0.000	          0.000	             0.000	      0.000	            0.000	         0.000	           0.000	       0.000	          0.000	        0.000	              0.000	          0.000	            0.000	     0	   0.000	          0.000	         0.000	        0.000
       17	8	15	21	2	0.000	0.000	0.000	0.000	0.000	0.000	0.000	0.000	0.000	0.000	0.000	0.000	0.000	0.000	11	0.000	0.000	0.000	0.000
       */
     if ($devResult === false) {
-      log::add('Eco_legrand', 'error', 'problème de connexion ' . $devAddr);
-    } else  {
+      if(substr($devAddr, -3) == 'csv'){
+        self::add_log( 'error', 'problème de connexion ' . $devAddr);
+      }
+    } else {
 
 
-      $Eco_legrandCmd = Eco_legrandCmd::byEqLogicIdAndLogicalId($this->getId(),'conso_totale_heure');
-      $valeur_precedente_conso_totale=$Eco_legrandCmd->getConfiguration('lastvalue');
-      $Eco_legrandCmd = Eco_legrandCmd::byEqLogicIdAndLogicalId($this->getId(),'conso_circuit1_heure');
-      $valeur_precedente_conso_circuit1=$Eco_legrandCmd->getConfiguration('lastvalue');
-      $Eco_legrandCmd = Eco_legrandCmd::byEqLogicIdAndLogicalId($this->getId(),'conso_circuit2_heure');
-      $valeur_precedente_conso_circuit2=$Eco_legrandCmd->getConfiguration('lastvalue');
-      $Eco_legrandCmd = Eco_legrandCmd::byEqLogicIdAndLogicalId($this->getId(),'conso_circuit3_heure');
-      $valeur_precedente_conso_circuit3=$Eco_legrandCmd->getConfiguration('lastvalue');
-      $Eco_legrandCmd = Eco_legrandCmd::byEqLogicIdAndLogicalId($this->getId(),'conso_circuit4_heure');
-      $valeur_precedente_conso_circuit4=$Eco_legrandCmd->getConfiguration('lastvalue');
-      $Eco_legrandCmd = Eco_legrandCmd::byEqLogicIdAndLogicalId($this->getId(),'conso_circuit5_heure');
-      $valeur_precedente_conso_circuit5=$Eco_legrandCmd->getConfiguration('lastvalue');
-      $Eco_legrandCmd = Eco_legrandCmd::byEqLogicIdAndLogicalId($this->getId(),'conso_autre_heure');
-      $valeur_precedente_conso_autre=$Eco_legrandCmd->getConfiguration('lastvalue');
-
-
+      $Eco_legrandCmd_conso_totale = Eco_legrandCmd::byEqLogicIdAndLogicalId($eqLogic->getId(),'conso_totale_'.$jour_heure);
+      $valeur_precedente_conso_totale=$Eco_legrandCmd_conso_totale->getConfiguration('lastvalue');
+      $Eco_legrandCmd_conso_circuit1 = Eco_legrandCmd::byEqLogicIdAndLogicalId($eqLogic->getId(),'conso_circuit1_'.$jour_heure);
+      $valeur_precedente_conso_circuit1=$Eco_legrandCmd_conso_circuit1->getConfiguration('lastvalue');
+      $Eco_legrandCmd_conso_circuit2 = Eco_legrandCmd::byEqLogicIdAndLogicalId($eqLogic->getId(),'conso_circuit2_'.$jour_heure);
+      $valeur_precedente_conso_circuit2=$Eco_legrandCmd_conso_circuit2->getConfiguration('lastvalue');
+      $Eco_legrandCmd_conso_circuit3 = Eco_legrandCmd::byEqLogicIdAndLogicalId($eqLogic->getId(),'conso_circuit3_'.$jour_heure);
+      $valeur_precedente_conso_circuit3=$Eco_legrandCmd_conso_circuit3->getConfiguration('lastvalue');
+      $Eco_legrandCmd_conso_circuit4 = Eco_legrandCmd::byEqLogicIdAndLogicalId($eqLogic->getId(),'conso_circuit4_'.$jour_heure);
+      $valeur_precedente_conso_circuit4=$Eco_legrandCmd_conso_circuit4->getConfiguration('lastvalue');
+      $Eco_legrandCmd_conso_circuit5 = Eco_legrandCmd::byEqLogicIdAndLogicalId($eqLogic->getId(),'conso_circuit5_'.$jour_heure);
+      $valeur_precedente_conso_circuit5=$Eco_legrandCmd_conso_circuit5->getConfiguration('lastvalue');
+      $Eco_legrandCmd_conso_autre = Eco_legrandCmd::byEqLogicIdAndLogicalId($eqLogic->getId(),'conso_autre_'.$jour_heure);
+      $valeur_precedente_conso_autre=$Eco_legrandCmd_conso_autre->getConfiguration('lastvalue');
+      
       while ( ($data = fgetcsv($devResult,1000,";") ) !== FALSE ) {
-        $date = $data[2] . '-' . $data[1] . '-' .$data[0] .' ' . $data[3] .':00:00';
+        $jour = $data[0];
+        $mois = $data[1];
+        $annee = $data[2];
+        $heure = $data[3];
+        $date =  $annee . '-' . $mois . '-' . $jour .' ' . $heure .':00:00';
+        //self::add_log('info', $eqLogic->getName() . " " . implode(",",$data));
         $valeur=round($data[5],2);
-        if($valeur < $valeur_precedente_conso_totale){
-          $this->add_value('conso_totale_heure',round($valeur - $valeur_precedente_conso_totale,2),$date,"heure");
+        if($valeur > $valeur_precedente_conso_totale){
+          if ($valeur_precedente_conso_totale == 0 ){
+            $valeur_precedente_conso_totale = $valeur;
+          }
+          $valeur=round($data[5],2);
+          self::add_log('debug', 'ajout valeur ' . $Eco_legrandCmd_conso_totale->getName() . ":" . $date . "=>". round($valeur - $valeur_precedente_conso_totale,2));
+          $eqLogic->checkAndUpdateCmd('conso_totale_'.$jour_heure,round($valeur - $valeur_precedente_conso_totale,2),$date);
+          $valeur_precedente_conso_totale = $valeur;
         }
-        $valeur_precedente_conso_totale = $valeur;
+        
 
         $valeur=round($data[7],2);
-        if($valeur < $valeur_precedente_conso_circuit1){
-          $this->add_value('conso_circuit1_heure',round($valeur- $valeur_precedente_conso_circuit1,2),$date,"heure");
+        if($valeur > $valeur_precedente_conso_circuit1){
+          if ($valeur_precedente_conso_circuit1 == 0 ){
+            $valeur_precedente_conso_circuit1 = $valeur;
+          }
+          self::add_log('debug', 'ajout valeur ' . $Eco_legrandCmd_conso_circuit1->getName().":" . $date . "=>". round($valeur- $valeur_precedente_conso_circuit1,2));
+          $eqLogic->checkAndUpdateCmd('conso_circuit1_'.$jour_heure,round($valeur- $valeur_precedente_conso_circuit1,2),$date);
+          $valeur_precedente_conso_circuit1 = $valeur;
         }
-        $valeur_precedente_conso_circuit1 = $valeur;
+        
 
         $valeur=round($data[9],2);
-        if ($valeur < $valeur_precedente_conso_circuit2){
-          $this->add_value('conso_circuit2_heure',round($valeur - $valeur_precedente_conso_circuit2,2),$date,"heure");
+        if ($valeur > $valeur_precedente_conso_circuit2){
+          if ($valeur_precedente_conso_circuit2 == 0 ){
+            $valeur_precedente_conso_circuit2 = $valeur;
+          }
+          self::add_log( 'debug', 'ajout valeur ' . $Eco_legrandCmd_conso_circuit2->getName().":" . $date . "=>". round($valeur - $valeur_precedente_conso_circuit2,2));
+          $eqLogic->checkAndUpdateCmd('conso_circuit2_'.$jour_heure,round($valeur - $valeur_precedente_conso_circuit2,2),$date);
+          $valeur_precedente_conso_circuit2 = $valeur;
         }
-        $valeur_precedente_conso_circuit2 = $valeur;
+        
 
         $valeur=round($data[11],2);
-        if($valeur < $valeur_precedente_conso_circuit3){
-          $this->add_value('conso_circuit3_heure',round($valeur - $valeur_precedente_conso_circuit3,2),$date,"heure");
+        if($valeur > $valeur_precedente_conso_circuit3){
+          if ($valeur_precedente_conso_circuit3 == 0 ){
+            $valeur_precedente_conso_circuit3 = $valeur;
+          }
+          self::add_log( 'debug', 'ajout valeur ' . $Eco_legrandCmd_conso_circuit3->getName().":" . $date . "=>". round($valeur - $valeur_precedente_conso_circuit3,2));
+          $eqLogic->checkAndUpdateCmd('conso_circuit3_'.$jour_heure,round($valeur - $valeur_precedente_conso_circuit3,2),$date);
+          $valeur_precedente_conso_circuit3 = $valeur;
         }
-        $valeur_precedente_conso_circuit3 = $valeur;
-
+       
         $valeur=round($data[13],2);
-        if($valeur < $valeur_precedente_conso_circuit4){
-          $this->add_value('conso_circuit4_heure',round($valeur - $valeur_precedente_conso_circuit4,2),$date,"heure");
-        }
-        $valeur_precedente_conso_circuit4 = $valeur;
+        if($valeur > $valeur_precedente_conso_circuit4){
+          if ($valeur_precedente_conso_circuit4 == 0 ){
+            $valeur_precedente_conso_circuit4 = $valeur;
+          }
+          self::add_log( 'debug', 'ajout valeur ' . $Eco_legrandCmd_conso_circuit4->getName().":" . $date . "=>". round($valeur - $valeur_precedente_conso_circuit4,2));
+          $eqLogic->checkAndUpdateCmd('conso_circuit4_'.$jour_heure,round($valeur - $valeur_precedente_conso_circuit4,2),$date);
+          $valeur_precedente_conso_circuit4 = $valeur;
 
-        $valeur=round($data[15],2);
-        if($valeur < $valeur_precedente_conso_circuit5){
-          $this->add_value('conso_circuit5_heure',round($valeur - $valeur_precedente_conso_circuit5,2),$date,"heure");
         }
-        $valeur_precedente_conso_circuit5 = $valeur;
+       
+        $valeur=round($data[15],2);
+        if($valeur > $valeur_precedente_conso_circuit5){
+          if ($valeur_precedente_conso_circuit5 == 0 ){
+            $valeur_precedente_conso_circuit5 = $valeur;
+          }
+          self::add_log( 'debug', 'ajout valeur ' . $Eco_legrandCmd_conso_circuit5->getName().":" . $date . "=>". round($valeur - $valeur_precedente_conso_circuit5,2));
+          $eqLogic->checkAndUpdateCmd('conso_circuit5_'.$jour_heure,round($valeur - $valeur_precedente_conso_circuit5,2),$date);
+          $valeur_precedente_conso_circuit5 = $valeur;
+        }
+       
 
         $valeur=round($data[5]-$data[7]- $data[9]-$data[11]-$data[13]-$data[15],2);
-        if($valeur < $valeur_precedente_conso_autre){
-          $this->add_value('conso_autre_heure',round($valeur - $valeur_precedente_conso_autre,2),$date,"heure");
+        if($valeur > $valeur_precedente_conso_autre){
+          if ($valeur_precedente_conso_autre == 0 ){
+            $valeur_precedente_conso_autre = $valeur;
+          }
+          self::add_log( 'debug', 'ajout valeur ' . $Eco_legrandCmd_conso_autre->getName().":" . $date . "=>". round($valeur - $valeur_precedente_conso_autre,2));
+          $eqLogic->checkAndUpdateCmd('conso_autre_'.$jour_heure,round($valeur - $valeur_precedente_conso_autre,2),$date);
+          $valeur_precedente_conso_autre = $valeur;
         }
-        $valeur_precedente_conso_autre = $valeur;
+       
 
       }
-      $Eco_legrandCmd = Eco_legrandCmd::byEqLogicIdAndLogicalId($this->getId(),'conso_totale_heure');
-      if( $Eco_legrandCmd->getConfiguration('lastvalue') != $valeur_precedente_conso_totale) {
-        $Eco_legrandCmd->setConfiguration('lastvalue', $valeur_precedente_conso_totale );
-        $Eco_legrandCmd->save();
+      if( $Eco_legrandCmd_conso_totale->getConfiguration('lastvalue') != $valeur_precedente_conso_totale) {
+        $Eco_legrandCmd_conso_totale->setConfiguration('lastvalue', $valeur_precedente_conso_totale );
+        $Eco_legrandCmd_conso_totale->save();
       }
 
-      if( $Eco_legrandCmd->getConfiguration('lastvalue') != $valeur_precedente_conso_circuit1) {
-        $Eco_legrandCmd = Eco_legrandCmd::byEqLogicIdAndLogicalId($this->getId(),'conso_circuit1_heure');
-        $Eco_legrandCmd->setConfiguration('lastvalue',$valeur_precedente_conso_circuit1);
-        $Eco_legrandCmd->save();
+      if( $Eco_legrandCmd_conso_circuit1->getConfiguration('lastvalue') != $valeur_precedente_conso_circuit1) {
+        $Eco_legrandCmd_conso_circuit1->setConfiguration('lastvalue',$valeur_precedente_conso_circuit1);
+        $Eco_legrandCmd_conso_circuit1->save();
       }
 
-      if( $Eco_legrandCmd->getConfiguration('lastvalue') != $valeur_precedente_conso_circuit2) {
-        $Eco_legrandCmd = Eco_legrandCmd::byEqLogicIdAndLogicalId($this->getId(),'conso_circuit2_heure');
-        $Eco_legrandCmd->setConfiguration('lastvalue',$valeur_precedente_conso_circuit2);
-        $Eco_legrandCmd->save();
+      if( $Eco_legrandCmd_conso_circuit2->getConfiguration('lastvalue') != $valeur_precedente_conso_circuit2) {
+        $Eco_legrandCmd_conso_circuit2->setConfiguration('lastvalue',$valeur_precedente_conso_circuit2);
+        $Eco_legrandCmd_conso_circuit2->save();
       }
 
-      if( $Eco_legrandCmd->getConfiguration('lastvalue') != $valeur_precedente_conso_circuit3) {
-        $Eco_legrandCmd = Eco_legrandCmd::byEqLogicIdAndLogicalId($this->getId(),'conso_circuit3_heure');
-        $Eco_legrandCmd->setConfiguration('lastvalue',$valeur_precedente_conso_circuit3);
-        $Eco_legrandCmd->save();
+      if( $Eco_legrandCmd_conso_circuit3->getConfiguration('lastvalue') != $valeur_precedente_conso_circuit3) {
+        $Eco_legrandCmd_conso_circuit3->setConfiguration('lastvalue',$valeur_precedente_conso_circuit3);
+        $Eco_legrandCmd_conso_circuit3->save();
       }
 
-      if( $Eco_legrandCmd->getConfiguration('lastvalue') != $valeur_precedente_conso_circuit4) {
-        $Eco_legrandCmd = Eco_legrandCmd::byEqLogicIdAndLogicalId($this->getId(),'conso_circuit4_heure');
-        $Eco_legrandCmd->setConfiguration('lastvalue',$valeur_precedente_conso_circuit4);
-        $Eco_legrandCmd->save();
+      if( $Eco_legrandCmd_conso_circuit4->getConfiguration('lastvalue') != $valeur_precedente_conso_circuit4) {
+        $Eco_legrandCmd_conso_circuit4->setConfiguration('lastvalue',$valeur_precedente_conso_circuit4);
+        $Eco_legrandCmd_conso_circuit4->save();
       }
 
-      if( $Eco_legrandCmd->getConfiguration('lastvalue') != $valeur_precedente_conso_circuit5) {
-        $Eco_legrandCmd = Eco_legrandCmd::byEqLogicIdAndLogicalId($this->getId(),'conso_circuit5_heure');
-        $Eco_legrandCmd->setConfiguration('lastvalue',$valeur_precedente_conso_circuit5);
-        $Eco_legrandCmd->save();
+      if( $Eco_legrandCmd_conso_circuit5->getConfiguration('lastvalue') != $valeur_precedente_conso_circuit5) {
+        $Eco_legrandCmd_conso_circuit5->setConfiguration('lastvalue',$valeur_precedente_conso_circuit5);
+        $Eco_legrandCmd_conso_circuit5->save();
       }
-
-      if( $Eco_legrandCmd->getConfiguration('lastvalue') != $valeur_precedente_conso_autre) {
-        $Eco_legrandCmd = Eco_legrandCmd::byEqLogicIdAndLogicalId($this->getId(),'conso_totale_heure');
-        $Eco_legrandCmd->setConfiguration('lastvalue',$valeur_precedente_conso_autre);
-        $Eco_legrandCmd->save();
+     
+      if( $Eco_legrandCmd_conso_autre->getConfiguration('lastvalue') != $valeur_precedente_conso_autre) {
+        $Eco_legrandCmd_conso_autre->setConfiguration('lastvalue',$valeur_precedente_conso_autre);
+        $Eco_legrandCmd_conso_autre->save();
       }
-
-      if( $Eco_legrandCmd->getConfiguration('lastvalue') != $valeur_precedente_conso_totale) {
-        $Eco_legrandCmd = Eco_legrandCmd::byEqLogicIdAndLogicalId($this->getId(),'conso_autre_heure');
-        $Eco_legrandCmd->setConfiguration('lastvalue',$valeur_precedente_conso_totale);
-        $Eco_legrandCmd->save();
-      }
-
+     
     }
+    if ($jour_heure == "jour" && $ext == "old"){
+      $ext ="csv";
+      goto redo;
+    }
+    if ($jour_heure == "jour" && $ext == "csv"){
+      $jour_heure = "heure";
+      $ext ="old";
+      $num_fichier = 2;
+      goto redo;
+    }
+    if ($jour_heure == "heure" && $ext == "old"){
+      $ext ="csv";
+      goto redo;
+    }
+    $eqLogic->setConfiguration("Importation en cours",0);
+    $eqLogic->save(true);
   }
-  public function getConsoElec_jour() {
-    if(strpos($this->getConfiguration('addr', ''), "https://")===0 || strpos($this->getConfiguration('addr', ''), "http://")===0){
-      $URL = $this->getConfiguration('addr', '');
-    }else {
-      $URL = "http://" .$this->getConfiguration('addr', '');
-    }
-    $devAddr = $URL . '/LOG1.csv';
-
-    $devResult = fopen($devAddr, "r");
-    if ($devResult === false) {
-      log::add('Eco_legrand', 'error', 'problème de connexion ' . $devAddr);
-    } else  {
-      log::add('Eco_legrand', 'info', 'getConsoElec_jour ' . $devAddr);
-
-      $valeur_precedente_conso_totale=0;
-      $valeur_precedente_conso_circuit1=0;
-      $valeur_precedente_conso_circuit2=0;
-      $valeur_precedente_conso_circuit3=0;
-      $valeur_precedente_conso_circuit4=0;
-      $valeur_precedente_conso_circuit5=0;
-      $valeur_precedente_conso_autre=0;
-      $Eco_legrandCmd = Eco_legrandCmd::byEqLogicIdAndLogicalId($this->getId(),'conso_totale_jour');
-      $valeur_precedente_conso_totale=$Eco_legrandCmd->getConfiguration('lastvalue');
-      $Eco_legrandCmd = Eco_legrandCmd::byEqLogicIdAndLogicalId($this->getId(),'conso_circuit1_jour');
-      $valeur_precedente_conso_circuit1=$Eco_legrandCmd->getConfiguration('lastvalue');
-      $Eco_legrandCmd = Eco_legrandCmd::byEqLogicIdAndLogicalId($this->getId(),'conso_circuit2_jour');
-      $valeur_precedente_conso_circuit2=$Eco_legrandCmd->getConfiguration('lastvalue');
-      $Eco_legrandCmd = Eco_legrandCmd::byEqLogicIdAndLogicalId($this->getId(),'conso_circuit3_jour');
-      $valeur_precedente_conso_circuit3=$Eco_legrandCmd->getConfiguration('lastvalue');
-      $Eco_legrandCmd = Eco_legrandCmd::byEqLogicIdAndLogicalId($this->getId(),'conso_circuit4_jour');
-      $valeur_precedente_conso_circuit4=$Eco_legrandCmd->getConfiguration('lastvalue');
-      $Eco_legrandCmd = Eco_legrandCmd::byEqLogicIdAndLogicalId($this->getId(),'conso_circuit5_jour');
-      $valeur_precedente_conso_circuit5=$Eco_legrandCmd->getConfiguration('lastvalue');
-      $Eco_legrandCmd = Eco_legrandCmd::byEqLogicIdAndLogicalId($this->getId(),'conso_autre_jour');
-      $valeur_precedente_conso_autre=$Eco_legrandCmd->getConfiguration('lastvalue');
-
-      while ( ($data = fgetcsv($devResult,1000,";") ) !== FALSE ) {
-        //log::add('Eco_legrand', 'debug',$data);
-        $date = $data[2] . '-' . $data[1] . '-' .$data[0] .' 23:59:59';
-        $valeur=round($data[5],2);
-        if ($valeur < $valeur_precedente_conso_totale){
-          $this->add_value('conso_totale_jour',round($valeur - $valeur_precedente_conso_totale,2),$date,"jour");
-        }
-        $valeur_precedente_conso_totale=$valeur;
-
-        $valeur=round($data[7],2);
-        if ($valeur < $valeur_precedente_conso_circuit1){
-          $this->add_value('conso_circuit1_jour',round($valeur- $valeur_precedente_conso_circuit1,2),$date,"jour");
-        }
-        $valeur_precedente_conso_circuit1 = $valeur;
-
-        $valeur=round($data[9],2);
-
-        if ($valeur < $valeur_precedente_conso_circuit2){
-          $this->add_value('conso_circuit2_jour',round($valeur - $valeur_precedente_conso_circuit2,2),$date,"jour");
-        }
-        $valeur_precedente_conso_circuit2 = $valeur;
-
-
-        $valeur=round($data[11],2);
-        if ($valeur < $valeur_precedente_conso_circuit3){
-          $this->add_value('conso_circuit3_jour',round($valeur - $valeur_precedente_conso_circuit3,2),$date,"jour");
-        }
-        $valeur_precedente_conso_circuit3 = $valeur;
-
-
-        $valeur=round($data[13],2);
-        if ($valeur < $valeur_precedente_conso_circuit4){
-          $this->add_value('conso_circuit4_jour',round($valeur - $valeur_precedente_conso_circuit4,2),$date,"jour");
-        }
-        $valeur_precedente_conso_circuit4 =$valeur;
-
-
-        $valeur=round($data[15],2);
-        if ($valeur < $valeur_precedente_conso_circuit5){
-          $this->add_value('conso_circuit5_jour',round($valeur - $valeur_precedente_conso_circuit5,2),$date,"jour");
-        }
-        $valeur_precedente_conso_circuit5 = $valeur;
-
-
-        $valeur=round($data[5]-$data[7]- $data[9]-$data[11]-$data[13]-$data[15],2);
-        if ($valeur < $valeur_precedente_conso_autre){
-          $this->add_value('conso_autre_jour',round($valeur - $valeur_precedente_conso_autre,2),$date,"jour");
-        }
-        $valeur_precedente_conso_autre = $valeur;
-
-
-      }
-      $Eco_legrandCmd = Eco_legrandCmd::byEqLogicIdAndLogicalId($this->getId(),'conso_totale_jour');
-      if( $Eco_legrandCmd->getConfiguration('lastvalue') != $valeur_precedente_conso_totale) {
-        $Eco_legrandCmd->setConfiguration('lastvalue', $valeur_precedente_conso_totale );
-        $Eco_legrandCmd->save();
-      }
-
-      if( $Eco_legrandCmd->getConfiguration('lastvalue') != $valeur_precedente_conso_circuit1) {
-        $Eco_legrandCmd = Eco_legrandCmd::byEqLogicIdAndLogicalId($this->getId(),'conso_circuit1_jour');
-        $Eco_legrandCmd->setConfiguration('lastvalue',$valeur_precedente_conso_circuit1);
-        $Eco_legrandCmd->save();
-      }
-
-      if( $Eco_legrandCmd->getConfiguration('lastvalue') != $valeur_precedente_conso_circuit2) {
-        $Eco_legrandCmd = Eco_legrandCmd::byEqLogicIdAndLogicalId($this->getId(),'conso_circuit2_jour');
-        $Eco_legrandCmd->setConfiguration('lastvalue',$valeur_precedente_conso_circuit2);
-        $Eco_legrandCmd->save();
-      }
-
-      if( $Eco_legrandCmd->getConfiguration('lastvalue') != $valeur_precedente_conso_circuit3) {
-        $Eco_legrandCmd = Eco_legrandCmd::byEqLogicIdAndLogicalId($this->getId(),'conso_circuit3_jour');
-        $Eco_legrandCmd->setConfiguration('lastvalue',$valeur_precedente_conso_circuit3);
-        $Eco_legrandCmd->save();
-      }
-
-      if( $Eco_legrandCmd->getConfiguration('lastvalue') != $valeur_precedente_conso_circuit4) {
-        $Eco_legrandCmd = Eco_legrandCmd::byEqLogicIdAndLogicalId($this->getId(),'conso_circuit4_jour');
-        $Eco_legrandCmd->setConfiguration('lastvalue',$valeur_precedente_conso_circuit4);
-        $Eco_legrandCmd->save();
-      }
-
-      if( $Eco_legrandCmd->getConfiguration('lastvalue') != $valeur_precedente_conso_circuit5) {
-        $Eco_legrandCmd = Eco_legrandCmd::byEqLogicIdAndLogicalId($this->getId(),'conso_circuit5_jour');
-        $Eco_legrandCmd->setConfiguration('lastvalue',$valeur_precedente_conso_circuit5);
-        $Eco_legrandCmd->save();
-      }
-
-      if( $Eco_legrandCmd->getConfiguration('lastvalue') != $valeur_precedente_conso_autre) {
-        $Eco_legrandCmd = Eco_legrandCmd::byEqLogicIdAndLogicalId($this->getId(),'conso_totale_jour');
-        $Eco_legrandCmd->setConfiguration('lastvalue',$valeur_precedente_conso_autre);
-        $Eco_legrandCmd->save();
-      }
-
-      if( $Eco_legrandCmd->getConfiguration('lastvalue') != $valeur_precedente_conso_totale) {
-        $Eco_legrandCmd = Eco_legrandCmd::byEqLogicIdAndLogicalId($this->getId(),'conso_autre_jour');
-        $Eco_legrandCmd->setConfiguration('lastvalue',$valeur_precedente_conso_totale);
-        $Eco_legrandCmd->save();
-      }
-    }
-  }
-  public function add_value($cmdLogicalId,$value,$datetime,$type) {
-    $Eco_legrandCmd = Eco_legrandCmd::byEqLogicIdAndLogicalId($this->getId(),$cmdLogicalId);
-
-    $historys=[];
-    if (!is_object($Eco_legrandCmd)){
-      return;
-    }
-    //$Eco_legrandCmd->emptyHistory();
-    //return;
-    $historys=$Eco_legrandCmd->getHistory();
-
-    if(count($historys) !=0){
-
-      $last_history_datetime=$historys[count($historys)-1]->getDatetime();
-      //$last_value=$history[count($history)-1]->getValue();
-      //log::add('Eco_legrand', 'debug', '$last_value valeur ' . $last_value);
-    }else{
-      $last_history_datetime="1900-01-01 00:00:00";
-    } 
-
-    if($type == "heure"){
-      $datetime_compare=strtotime(date('y-n-j G:00:00'));
-    }else{
-      $Date = date('y-n-j 00:00:00');
-      $datetime_compare= strtotime(date('Y-m-d 23:59:59', strtotime($Date. ' - 1 days')));
-      //$datetime_compare=strtotime(date('y-n-j 00:00:00 - 1 days') );
-      //log::add('Eco_legrand', 'debug', strtotime($datetime). "*****".$datetime_compare);
-    }
-
-    if (strtotime($datetime) == $datetime_compare ){
-      $collectDate = $Eco_legrandCmd->getCache(array('collectDate', 'valueDate', 'value'))['collectDate'];
-      if(strtotime($collectDate) != strtotime($datetime)){
-        log::add('Eco_legrand', 'debug', 'ajout valeur ' . $Eco_legrandCmd->getName().":".$value);
-        $Eco_legrandCmd->addHistoryValue($value, $datetime);
-        $this->checkAndUpdateCmd($cmdLogicalId,$value,$datetime);
-      }
-    }else{
-      $existe = false;
-      foreach ($historys as $history){
-        if (strtotime($history->getDatetime()) == strtotime($datetime)){
-          $existe = true;
-          break;
-        }
-      }
-      if(!$existe){
-        log::add('Eco_legrand', 'debug', 'ajout historique ' .  $Eco_legrandCmd->getName()).":".$value ;
-        $Eco_legrandCmd->addHistoryValue($value, $datetime);
-      }
-    }
-
-  }
-
+ 
+  public static function deamon_info() {
+		$return = array();
+		$return['log'] = 'Eco_legrand';
+		$return['state'] = 'nok';
+		$pid_file = jeedom::getTmpFolder('Eco_legrand') . '/Eco_legrand.pid';
+		if (file_exists($pid_file)) {
+      
+			if (@posix_getsid(trim(file_get_contents($pid_file)))) {
+				$return['state'] = 'ok';
+			} else {
+				shell_exec(system::getCmdSudo() . 'rm -rf ' . $pid_file . ' 2>&1 > /dev/null;rm -rf ' . $pid_file . ' 2>&1 > /dev/null;');
+			}
+		}
+		$return['launchable'] = 'ok';
+		return $return;
+	}
+	
+	public static function deamon_start() {
+		self::deamon_stop();
+		self::deamon_info();
+		$cmd = 'sudo /usr/bin/php ' . realpath(dirname(__FILE__) . '/../..') . '/resources/Eco_legrand.php start';
+		//self::add_log('info', 'Lancement démon Eco_legrand : ' . $cmd);
+		exec($cmd . ' >> ' . log::getPathToLog('Eco_legrand') . ' 2>&1 &');
+		return true;
+	}
+	
+	public static function deamon_stop() {
+		$pid_file = jeedom::getTmpFolder('Eco_legrand') . '/Eco_legrand.pid';
+		if (file_exists($pid_file)) {
+			$pid = intval(trim(file_get_contents($pid_file)));
+			system::kill($pid);
+		}
+		system::kill('Eco_legrand.php');
+	}
+   
 }
 
 class Eco_legrandCmd extends cmd {
-
+  public function dontRemoveCmd() {
+    return true;
+  }
 }
 
 ?>
