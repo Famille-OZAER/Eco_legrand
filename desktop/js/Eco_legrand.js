@@ -142,18 +142,12 @@ function addCmdToTable(_cmd) {
         if (init(_cmd.configuration.type) == 'inst') {
             $('#inst_cmd tbody').append(tr);
             var tr = $('#inst_cmd tbody tr:last');
-        } else if (init(_cmd.configuration.type) == 'csv_heure') {
-            $('#csv_cmd tbody').append(tr);
+        } else if (init(_cmd.configuration.type) == 'csv') {
+            $('#csv tbody').append(tr);
             var tr = $('#csv_cmd tbody tr:last');
         } else if (init(_cmd.configuration.type) == 'csv_jour') {
             $('#csv_cmd tbody').append(tr);
             var tr = $('#csv_cmd tbody tr:last');
-        } else if (init(_cmd.configuration.type) == 'calcul_pourcent') {
-            $('#calcul_cmd tbody').append(tr);
-            var tr = $('#calcul_cmd tbody tr:last');
-        } else {
-            $('#teleinfo_cmd tbody').append(tr);
-            var tr = $('#teleinfo_cmd tbody tr:last');
         }
 
     }

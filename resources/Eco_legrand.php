@@ -53,17 +53,16 @@ function recupData($id){
       $démon_heure = date("H");
       if ($démon_minute != $dernier_démon_minute){
         $dernier_démon_minute = $démon_minute;
-        Eco_legrand::getInformations($eqLogic);
-        Eco_legrand::getData($eqLogic);
+        //Eco_legrand::getInformations($eqLogic);
+        //Eco_legrand::getData($eqLogic);
+        Eco_legrand::get_TIC_instantanées($eqLogic);
         //Eco_legrand::add_log('debug',$Dernière_execution_function_démon);
         if($Dernière_execution_function_démon == "01/01/2000 00:00"){
           $dernier_démon_heure = $démon_heure;
           $eqLogic->setConfiguration("Importation en cours",1);
           $eqLogic->save(true);
           $importation_en_cours = 1;
-          //Eco_legrand::add_log('debug',"getConsoElec");
           Eco_legrand::getConsoElec($eqLogic);
-         // Eco_legrand::add_log('debug',"fin execution getConsoElec");
           $eqLogic->setConfiguration("Importation en cours",0);
           $eqLogic->save(true);
           $Dernière_execution_function_démon = date("d/m/Y H:i");

@@ -46,7 +46,7 @@ class Eco_legrand extends eqLogic {
     if (!is_object($Eco_legrandCmd)) {
       //self::add_log('debug', 'Création de la commande ' . $_name);
       $Eco_legrandCmd = new Eco_legrandCmd();
-      $Eco_legrandCmd->setName(__($_type_data . ' - ' . $_name, __FILE__));
+      $Eco_legrandCmd->setName($_name);
       $Eco_legrandCmd->setEqLogic_id($this->getId());
       $Eco_legrandCmd->setEqType('Eco_legrand');
       $Eco_legrandCmd->setLogicalId($_logical_id);
@@ -69,96 +69,34 @@ class Eco_legrand extends eqLogic {
       // $Eco_legrandCmd->event(0);
     }
     $nom=$Eco_legrandCmd->getName();
-    if($Eco_legrandCmd->getName() != $_name){
+    //if($Eco_legrandCmd->getName() != $_name){
       //self::add_log( 'info', 'nom ' . $nom . "|" .$_type_data . ' - ' . $_name);
       $Eco_legrandCmd->setConfiguration('type', $_type_data);
       $Eco_legrandCmd->setName($_name);
       $Eco_legrandCmd->save();
-    }
+    //}
   }
 
-  public function postSave() {
-    $pid_file = jeedom::getTmpFolder('Eco_legrand') . '/Eco_legrand_'.$this->getId().'.pid';
-		if (file_exists($pid_file)) {
-			$pid = intval(trim(file_get_contents($pid_file)));
-			system::kill($pid);
-		}
-	}
-
-  public function preRemove(){
-    $pid_file = jeedom::getTmpFolder('Eco_legrand') . '/Eco_legrand_'.$this->getId().'.pid';
-		if (file_exists($pid_file)) {
-			$pid = intval(trim(file_get_contents($pid_file)));
-			system::kill($pid);
-		}
-  } 
-
-  function getInformations($eqLogic) {
-   
-    if(strpos( $eqLogic->getConfiguration('addr', ''), "https://")===0 || strpos( $eqLogic->getConfiguration('addr', ''), "http://")===0){
-      $URL =  $eqLogic->getConfiguration('addr', '');
-    }else {
-      $URL = "http://" . $eqLogic->getConfiguration('addr', '');
-    }
-    $devAddr = $URL . '/instant.json';
-    
-    $request_http = new com_http($devAddr);
-    $devResult = $request_http->exec(30);
-     //self::add_log( 'info', $devAddr);
-     //self::add_log( 'debug', print_r($devResult, true));
-    if ($devResult === false) {
-      self::add_log( 'error', 'problème de connexion ' . $devAddr);
-    } else {
-      $devResbis = utf8_encode($devResult);
-      $devList = json_decode($devResbis, true);
-       //self::add_log( 'debug', print_r($devList, true));
-      $i=1;
-      foreach($devList as $name => $value) {
-        if ($name === 'classe' || $name === 'minute') {
-          // pas de traitement sur l'heure
-        } else {
-         
-          $eqLogic->checkCmdOk('inst','numeric', trim($name), 'inst_circuit' . $i , '<i class="fas fa-bolt"></i>',"W");
-         
-  
-          $eqLogic->checkCmdOk('csv_heure','numeric', "Consommation " .trim($name) . " par heure","conso_circuit".$i ."_heure",'<i class="fas fa-bolt"></i>',"kW");
-          $eqLogic->checkCmdOk('calcul_pourcent','numeric', "Pourcentage " .trim($name) . " par heure","pourcent_circuit".$i ."_heure",'<i class="fas fa-bolt"></i>',"%");
-  
-          $eqLogic->checkCmdOk('csv_heure','numeric', "Consommation totale par heure","conso_totale_heure",'<i class="fas fa-bolt"></i>',"kW");
-          $eqLogic->checkCmdOk('calcul_pourcent','numeric', "Pourcentage totale par heure","pourcent_totale_heure",'<i class="fas fa-bolt"></i>',"%");
-          
-          $eqLogic->checkCmdOk('csv_heure','numeric', "Consommation Autre par heure" ,"conso_autre_heure",'<i class="fas fa-bolt"></i>',"kW");
-          $eqLogic->checkCmdOk('calcul_pourcent','numeric', "Pourcentage Autre par heure","pourcent_autre_heure",'<i class="fas fa-bolt"></i>',"%");
-          
-          $eqLogic->checkCmdOk('csv_jour','numeric', "Consommation " .trim($name) . " journalière","conso_circuit".$i ."_jour",'<i class="fas fa-bolt"></i>',"kW");
-          $eqLogic->checkCmdOk('calcul_pourcent','numeric', "Pourcentage " .trim($name) . " journalière","pourcent_circuit".$i ."_jour",'<i class="fas fa-bolt"></i>',"%");
-  
-         
-          $eqLogic->checkCmdOk('csv_jour','numeric', "Consommation totale journalière",'conso_totale_jour','<i class="fas fa-bolt"></i>',"kW");
-          $eqLogic->checkCmdOk('calcul_pourcent','numeric', "Pourcentage totale journalière",'pourcent_totale_jour','<i class="fas fa-bolt"></i>',"%");
-  
-          $eqLogic->checkCmdOk('csv_jour','numeric', "Consommation Autre journalière" ,'conso_autre_jour','<i class="fas fa-bolt"></i>',"kW");
-          $eqLogic->checkCmdOk('calcul_pourcent','numeric', "Pourcentage Autre journalière",'pourcent_autre_jour','<i class="fas fa-bolt"></i>',"%");
-  
-          $eqLogic->checkAndUpdateCmd('inst_circuit' . $i, $value);
-          $i=$i+1;
-        }
-      }
-    }
-    $eqLogic->refreshWidget();
-  }
-  
-  function getData($eqLogic) {
-    
+ 
+  function get_TIC_instantanées($eqLogic){
     if(strpos($eqLogic->getConfiguration('addr', ''), "https://")===0 || strpos($eqLogic->getConfiguration('addr', ''), "http://")===0){
       $URL = $eqLogic->getConfiguration('addr', '');
     }else {
       $URL = "http://" .$eqLogic->getConfiguration('addr', '');
     }
-    $devAddr = $URL . '/ti.json';
-  
+    $nom_fichier = "ti.json";
+    $valeur_totale_des_tores=0;
+    $conso_hc = 0;
+    $conso_hp = 0;
+    $option_tarifaire ="";
+    $periode_tarifaire ="";
+    redo:
+    $devAddr = $URL . '/' . $nom_fichier;
+   
     $request_http = new com_http($devAddr);
     $devResult = $request_http->exec(30);
+    //$devResult = fopen($devAddr, "r");
+    
     //self::add_log( 'info',  $devAddr);
     if ($devResult === false) {
       self::add_log( 'error', 'problème de connexion ' . $devAddr);
@@ -167,33 +105,83 @@ class Eco_legrand extends eqLogic {
       $corrected = preg_replace('/\s+/', '', $devResbis);
       $corrected = preg_replace('/\:0,/', ': 0,', $corrected);
       $corrected = preg_replace('/\:[0]+/', ":", $corrected);
-      $devList = json_decode($corrected, true);
+      $devList = json_decode($devResbis, true);
       //self::add_log( 'debug', print_r($devList, true));
-      if (json_last_error() == JSON_ERROR_NONE) {
-        foreach($devList as $name => $value) {
-          if ($name === 'classe') {
-            // pas de traitement sur ces données
-          }else if ($name === 'OPTARIF'){
-            $eqLogic->checkCmdOk('teleinfo','string', 'Option tarifaire',trim($name), '<i class="fas fa-info-circle"></i>',"");
-            $eqLogic->checkAndUpdateCmd($name, str_replace('..','',$value) );
-          }else if ($name === 'PTEC'){
-            $eqLogic->checkCmdOk('teleinfo','string', 'Période Tarifaire en cours',trim($name), '<i class="fas fa-random"></i>',"");
-            $eqLogic->checkAndUpdateCmd($name, str_replace('..','',$value) );
-          } else {
+      $i=1;
+      
+      //if (json_last_error() == JSON_ERROR_NONE) {
+      foreach($devList as $name => $value) {
+        if ($name === 'classe') {
+          // pas de traitement sur ces données
+        }else if ($name === 'OPTARIF'){
+          $eqLogic->checkCmdOk('teleinfo','string', 'Option tarifaire',trim($name), '<i class="fas fa-info-circle"></i>',"");
+          $option_tarifaire = $value;
+          $eqLogic->checkAndUpdateCmd($name, str_replace('..','',$value) );
+        }else if ($name === 'PTEC'){
+          $eqLogic->checkCmdOk('teleinfo','string', 'Période Tarifaire en cours',trim($name), '<i class="fas fa-random"></i>',"");
+          $eqLogic->checkAndUpdateCmd($name, str_replace('..','',$value) );
+          $periode_tarifaire = $value;
+        } else {
+          if ($nom_fichier  == "ti.json"){
             if ($value != 0){
-              $eqLogic->checkCmdOk('teleinfo','numeric', str_replace('conso','index',$name),trim($name), '<i class="fas fa-bolt"></i>',"kWh");
-              if ($value > 100){
-                $eqLogic->checkAndUpdateCmd($name, round($value/1000,0));
-              }else{
-                $eqLogic->checkAndUpdateCmd($name,$value );
+              if (str_replace('conso','index',$name) == "index_hc"){
+                $conso_hc = ($value - Eco_legrandCmd::byEqLogicIdAndLogicalId( $eqLogic->getId(),"index_hc")->execCmd());
               }
-  
-  
+              if (str_replace('conso','index',$name) == "index_hp"){
+                $conso_hp = ($value - Eco_legrandCmd::byEqLogicIdAndLogicalId( $eqLogic->getId(),"index_hp")->execCmd());
+              }
+              $eqLogic->checkCmdOk('teleinfo','numeric', str_replace('conso','Index',$name),trim(str_replace('conso','index',$name)), '<i class="fas fa-bolt"></i>',"Wh");
+              $eqLogic->checkCmdOk('teleinfo','numeric', ucfirst( $name),$name, '<i class="fas fa-bolt"></i>',"W");
+              $eqLogic->checkAndUpdateCmd(trim(str_replace('conso','index',$name)), $value);
+              
             }
+          }else{
+            $eqLogic->checkCmdOk('inst','numeric', trim($name), 'inst_circuit' . $i , '<i class="fas fa-bolt"></i>',"W");
+           
+            $eqLogic->checkCmdOk('csv','numeric', "Consommation " .trim($name) . " par heure","conso_circuit".$i ."_heure",'<i class="fas fa-bolt"></i>',"kW");
+           // $eqLogic->checkCmdOk('calcul_pourcent','numeric', "Pourcentage " .trim($name) . " par heure","pourcent_circuit".$i ."_heure",'<i class="fas fa-bolt"></i>',"%");
+    
+            $eqLogic->checkCmdOk('csv','numeric', "Consommation totale par heure","conso_totale_heure",'<i class="fas fa-bolt"></i>',"kW");
+            //$eqLogic->checkCmdOk('calcul_pourcent','numeric', "Pourcentage totale par heure","pourcent_totale_heure",'<i class="fas fa-bolt"></i>',"%");
+            
+            $eqLogic->checkCmdOk('csv','numeric', "Consommation Autre par heure" ,"conso_autre_heure",'<i class="fas fa-bolt"></i>',"kW");
+            //$eqLogic->checkCmdOk('calcul_pourcent','numeric', "Pourcentage Autre par heure","pourcent_autre_heure",'<i class="fas fa-bolt"></i>',"%");
+            
+            $eqLogic->checkCmdOk('csv','numeric', "Consommation " .trim($name) . " journalière","conso_circuit".$i ."_jour",'<i class="fas fa-bolt"></i>',"kW");
+           // $eqLogic->checkCmdOk('calcul_pourcent','numeric', "Pourcentage " .trim($name) . " journalière","pourcent_circuit".$i ."_jour",'<i class="fas fa-bolt"></i>',"%");
+    
+          
+            $eqLogic->checkCmdOk('csv','numeric', "Consommation totale journalière",'conso_totale_jour','<i class="fas fa-bolt"></i>',"kW");
+            //$eqLogic->checkCmdOk('calcul_pourcent','numeric', "Pourcentage totale journalière",'pourcent_totale_jour','<i class="fas fa-bolt"></i>',"%");
+    
+            $eqLogic->checkCmdOk('csv','numeric', "Consommation Autre journalière" ,'conso_autre_jour','<i class="fas fa-bolt"></i>',"kW");
+           // $eqLogic->checkCmdOk('calcul_pourcent','numeric', "Pourcentage Autre journalière",'pourcent_autre_jour','<i class="fas fa-bolt"></i>',"%");
+    
+            $eqLogic->checkAndUpdateCmd('inst_circuit' . $i, $value);
+            
+           
+            $i=$i+1;
+
           }
+          
         }
       }
+      //}
+      if ($nom_fichier  == "ti.json"){
+        $nom_fichier  = "instant.json";
+        goto redo;
+      }
     }
+    
+      $eqLogic->checkAndUpdateCmd('conso_hp', $conso_hp*60);
+  
+      $eqLogic->checkAndUpdateCmd('conso_hc', $conso_hc*60);
+   
+    
+     
+     
+    
+        
     $eqLogic->refreshWidget();
   }
 
@@ -203,7 +191,7 @@ class Eco_legrand extends eqLogic {
     }else {
       $URL = "http://" .$eqLogic->getConfiguration('addr', '');
     }
-    //$devAddr = $URL . '/LOG2.csv';
+   
     $jour_heure = "jour";
     $num_fichier = 1;
     $ext = "old";
@@ -212,20 +200,21 @@ class Eco_legrand extends eqLogic {
     $nom_log = "log" . $num_fichier . "." . $ext;
     $devAddr = $URL .'/'. $nom_log;
     $devResult = fopen($devAddr, "r");
+       
     //self::add_log( 'info', $eqLogic->getName() . " " . $devAddr);
+    
     //self::add_log( 'info', $eqLogic->getId() . " " .$eqLogic->getName());
     /*
       jour	mois	annee	heure	minute	energie_tele_info	prix_tele_info	energie_circuit1	prix_circuit1	energie_cirucit2	prix_circuit2	energie_circuit3	prix_circuit3	energie_circuit4	prix_circuit4	energie_circuit5	prix_circuit5	volume_entree1	volume_entree2	tarif	energie_entree1	energie_entree2	prix_entree1	prix_entree2
       17	   8	  15	   20	   2	     0.000	         0.000	          0.000	             0.000	      0.000	            0.000	         0.000	           0.000	       0.000	          0.000	        0.000	              0.000	          0.000	            0.000	     0	   0.000	          0.000	         0.000	        0.000
       17	8	15	21	2	0.000	0.000	0.000	0.000	0.000	0.000	0.000	0.000	0.000	0.000	0.000	0.000	0.000	0.000	11	0.000	0.000	0.000	0.000
       */
+     
     if ($devResult === false) {
       if(substr($devAddr, -3) == 'csv'){
         self::add_log( 'error', 'problème de connexion ' . $devAddr);
       }
     } else {
-
-
       $Eco_legrandCmd_conso_totale = Eco_legrandCmd::byEqLogicIdAndLogicalId($eqLogic->getId(),'conso_totale_'.$jour_heure);
       $valeur_precedente_conso_totale=$Eco_legrandCmd_conso_totale->getConfiguration('lastvalue');
       $Eco_legrandCmd_conso_circuit1 = Eco_legrandCmd::byEqLogicIdAndLogicalId($eqLogic->getId(),'conso_circuit1_'.$jour_heure);
@@ -240,13 +229,15 @@ class Eco_legrand extends eqLogic {
       $valeur_precedente_conso_circuit5=$Eco_legrandCmd_conso_circuit5->getConfiguration('lastvalue');
       $Eco_legrandCmd_conso_autre = Eco_legrandCmd::byEqLogicIdAndLogicalId($eqLogic->getId(),'conso_autre_'.$jour_heure);
       $valeur_precedente_conso_autre=$Eco_legrandCmd_conso_autre->getConfiguration('lastvalue');
-      
-      while ( ($data = fgetcsv($devResult,1000,";") ) !== FALSE ) {
+        while(!feof($devResult)){
+        $line = fgets($devResult);
+        $data= explode(";",$line);
         $jour = $data[0];
         $mois = $data[1];
         $annee = $data[2];
         $heure = $data[3];
         $date =  $annee . '-' . $mois . '-' . $jour .' ' . $heure .':00:00';
+        
         //self::add_log('info', $eqLogic->getName() . " " . implode(",",$data));
         $valeur=round($data[5],2);
         if($valeur > $valeur_precedente_conso_totale){
@@ -323,9 +314,8 @@ class Eco_legrand extends eqLogic {
           $eqLogic->checkAndUpdateCmd('conso_autre_'.$jour_heure,round($valeur - $valeur_precedente_conso_autre,2),$date);
           $valeur_precedente_conso_autre = $valeur;
         }
-       
-
       }
+      
       if( $Eco_legrandCmd_conso_totale->getConfiguration('lastvalue') != $valeur_precedente_conso_totale) {
         $Eco_legrandCmd_conso_totale->setConfiguration('lastvalue', $valeur_precedente_conso_totale );
         $Eco_legrandCmd_conso_totale->save();
@@ -362,6 +352,7 @@ class Eco_legrand extends eqLogic {
       }
      
     }
+    fclose($devResult);
     if ($jour_heure == "jour" && $ext == "old"){
       $ext ="csv";
       goto redo;
@@ -378,6 +369,7 @@ class Eco_legrand extends eqLogic {
     }
     $eqLogic->setConfiguration("Importation en cours",0);
     $eqLogic->save(true);
+    
   }
  
   public static function deamon_info() {
