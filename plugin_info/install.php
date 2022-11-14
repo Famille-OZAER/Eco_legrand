@@ -20,10 +20,22 @@
 
 
 function Eco_legrand_install() {
-  
+  //exec('sudo chmod 777 '.dirname(__FILE__) . '/sql/install.sql');
+ // $sql = file_get_contents(dirname(__FILE__) . '/sql/install.sql');
+  //log::add('conso', 'debug', 'sql : '.$sql);
+
+  //DB::Prepare($sql, array(), DB::FETCH_TYPE_ALL);
+  Eco_legrand::install_sql();
+  Eco_legrand::deamon_start();
 }
 
 function legrandeco_update() {
+  //exec('sudo chmod 777 '.dirname(__FILE__) . '/sql/install.sql');
+  //$sql = file_get_contents(dirname(__FILE__) . '/sql/install.sql');
+  //log::add('conso', 'debug', 'sql : '.$sql);
+
+  //DB::Prepare($sql, array(), DB::FETCH_TYPE_ALL);
+  Eco_legrand::install_sql();
   $cron = cron::byClassAndFunction('Eco_legrand', 'getConsoall_heure');
   if (is_object($cron)) {
     $cron->remove();

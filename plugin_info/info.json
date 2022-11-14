@@ -6,6 +6,7 @@
     "author": "Michaël OZAER",
     "require": "4.3.0",
     "category": "energy",
+    "display": "panel",
     "language": ["fr_FR"],
     "compatibility": ["miniplus", "smart", "rpi", "docker", "diy", "mobile", "v4"],
     "hasOwnDeamon": 1,

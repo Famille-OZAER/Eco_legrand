@@ -1,0 +1,55 @@
+    .widget {
+        position: relative;
+        clear: both;
+        width: auto;
+        margin-bottom: 2em;
+        overflow: hidden;
+    }
+    
+    .widget-header h3 {
+        position: relative;
+        top: 2px;
+        left: 10px;
+        display: inline-block;
+        margin-right: 2em;
+        font-size: 14px;
+        font-weight: 800;
+        color: rgb(var(--txt-color));
+        line-height: 18px;
+        margin-top: 0px;
+        margin-bottom: 0px;
+    }
+    
+    .widget-header {
+        position: relative;
+        height: 40px;
+        line-height: 40px;
+        background: var(--form-bg-color);
+        filter: progid: DXImageTransform.Microsoft.gradient(startColorstr='#f9f6f1', endColorstr='#f2efea');
+        -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr='#f9f6f1', endColorstr='#f2efea')";
+        border: 1px solid #d6d6d6;
+        -webkit-background-clip: padding-box;
+    }
+    
+    .widget-content {
+        padding: 20px 15px 15px;
+        background: rgba(var(--panel-bg-color), var(--opacity));
+        border: 1px solid #D5D5D5;
+    }
+    
+    .ajout_prix {
+        cursor: pointer;
+        text-align: right;
+        line-height: 34px;
+    }
+    
+    .ajout_prix:hover i,
+    .ajout_prix:hover h3 {
+        color: green
+    }
+    
+    .table-hover tbody tr:hover td,
+    .table-hover tbody tr:hover th,
+    .table-hover tbody tr:hover input {
+        background-color: #FFFFFF;
+    }

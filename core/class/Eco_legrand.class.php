@@ -16,8 +16,8 @@
   * along with Jeedom. If not, see <http://www.gnu.org/licenses/>.
   */
 
-  require_once dirname(__FILE__) . '/../../../../core/php/core.inc.php';
 
+require_once dirname(__FILE__) . '/../../core/php/Eco_legrand.inc.php';
 class Eco_legrand extends eqLogic {
 
  
@@ -39,6 +39,7 @@ class Eco_legrand extends eqLogic {
     if ($this->getConfiguration('addr') == '') {
       throw new Exception(__('L\'adresse ne peut être vide',__FILE__));
     }
+   
   }
 
    public function checkCmdOk($_type_data, $_subtype, $_name,$_logical_id, $_template,$_unite) {
@@ -372,6 +373,18 @@ class Eco_legrand extends eqLogic {
     
   }
  
+  public static function getAbo($id){
+    
+    $eqLogics = eqLogic::byId($id);
+    $cmd_type_abo=Eco_legrandCmd::byEqLogicIdAndLogicalId($id,"OPTARIF");
+    if (is_object($cmd_type_abo)){
+      $type_abo=$cmd_type_abo->execCmd();
+    }
+		
+
+		return $type_abo;
+	}
+
   public static function deamon_info() {
 		$return = array();
 		$return['log'] = 'Eco_legrand';
@@ -406,7 +419,65 @@ class Eco_legrand extends eqLogic {
 		}
 		system::kill('Eco_legrand.php');
 	}
-   
+
+  public static function install_sql(){
+    $sql  = "CREATE TABLE IF NOT EXISTS `Eco_legrand_jour` (
+      `timestamp` bigint(10) DEFAULT NULL,
+      `date` date NOT NULL ,
+      `hp` float DEFAULT '0',
+      `hc` float DEFAULT '0',
+      `idx_max_hp` bigint(9) NOT NULL DEFAULT '0',
+      `idx_min_hp` bigint(9) NOT NULL DEFAULT '0',
+      `idx_max_hc` bigint(9) NOT NULL DEFAULT '0',
+      `idx_min_hc` bigint(9) NOT NULL DEFAULT '0',
+      `Eqlogic_ID` int(11) NOT NULL DEFAULT '0',
+      `temp_max` float DEFAULT NULL,
+      `temp_min` float DEFAULT NULL,
+      `temp_moy` float DEFAULT NULL,
+      PRIMARY KEY (`date`,`Eqlogic_ID`));";
+    DB::Prepare($sql, $values, DB::FETCH_TYPE_ROW, PDO::FETCH_CLASS, __CLASS__);
+    $sql="CREATE TABLE IF NOT EXISTS `Eco_legrand_prix` (
+      `id` int(11) NOT NULL AUTO_INCREMENT,
+      `hc` float DEFAULT NULL,
+      `hp` float DEFAULT NULL,
+      `date_debut` date ,
+      `date_fin` date ,
+      `type` varchar(255) DEFAULT 'electricité',
+      PRIMARY KEY (`id`));";
+    DB::Prepare($sql, $values, DB::FETCH_TYPE_ROW, PDO::FETCH_CLASS, __CLASS__);
+    $sql="CREATE TABLE IF NOT EXISTS `Eco_legrand_teleinfo` (
+      `timestamp` bigint(10) NOT NULL DEFAULT '0',
+      `date` date NOT NULL ,
+      `time` time NOT NULL DEFAULT '00:00:00',
+      `index_hp` bigint(9) NOT NULL DEFAULT '0',
+      `index_hc` bigint(9) NOT NULL DEFAULT '0',
+      `ptec` varchar(2)  NOT NULL,
+      `intensité_instantanée` tinyint(3) NOT NULL DEFAULT '0',
+      `puissance_totale` int(5) NOT NULL DEFAULT '0',
+      `index_circuit1` int(5) NOT NULL DEFAULT '0',
+      `inst_circuit1` int(5) NOT NULL DEFAULT '0',
+      `index_circuit2` int(5) NOT NULL DEFAULT '0',
+      `inst_circuit2` int(5) NOT NULL DEFAULT '0',
+      `index_circuit3` int(5) NOT NULL DEFAULT '0',
+      `inst_circuit3` int(5) NOT NULL DEFAULT '0',
+      `index_circuit4` int(5) NOT NULL DEFAULT '0',
+      `inst_circuit4` int(5) NOT NULL DEFAULT '0',
+      `index_circuit5` int(5) NOT NULL DEFAULT '0',
+      `inst_circuit5` int(5) NOT NULL DEFAULT '0',
+      `index_pulse1` int(5) NOT NULL DEFAULT '0',
+      `inst_pulse1` int(5) NOT NULL DEFAULT '0',
+      `index_pulse2` int(5) NOT NULL DEFAULT '0',
+      `inst_pulse2` int(5) NOT NULL DEFAULT '0',
+      `Eqlogic_ID` int(11) NOT NULL DEFAULT '0',
+      `temperature` float DEFAULT NULL,
+      PRIMARY KEY (`timestamp`,`Eqlogic_ID`),
+      UNIQUE KEY `timestamp` (`timestamp`),
+      KEY `date` (`date`),
+      KEY `date_time` (`date`,`time`),
+      KEY `time` (`time`),
+      KEY `index_hc` (`index_hc`));";
+    DB::Prepare($sql, $values, DB::FETCH_TYPE_ROW, PDO::FETCH_CLASS, __CLASS__);
+  }
 }
 
 class Eco_legrandCmd extends cmd {

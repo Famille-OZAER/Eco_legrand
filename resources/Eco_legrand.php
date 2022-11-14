@@ -27,6 +27,7 @@ function start(){
           continue;
         }
       }
+      
       exec("sudo /usr/bin/php ".__FILE__." ".$eqLogic->getId()." > /dev/null 2>/dev/null &");
     }
     //  Eco_legrand::add_log( 'info',"Fin de lancement des eqLogics");
@@ -47,48 +48,19 @@ function recupData($id){
   $dernier_démon_heure = date('H', $Dernière_execution_function_démon);
   $dernier_démon_jour = date('D', $Dernière_execution_function_démon);
   $importation_en_cours = $eqLogic->getConfiguration("Importation en cours",0);
+  
   while(1==1){
-    if($eqLogic->getIsEnable() == 1){
-      $démon_minute = date("i");
-      $démon_heure = date("H");
-      if ($démon_minute != $dernier_démon_minute){
-        $dernier_démon_minute = $démon_minute;
-        //Eco_legrand::getInformations($eqLogic);
-        //Eco_legrand::getData($eqLogic);
-        Eco_legrand::get_TIC_instantanées($eqLogic);
-        //Eco_legrand::add_log('debug',$Dernière_execution_function_démon);
-        if($Dernière_execution_function_démon == "01/01/2000 00:00"){
-          $dernier_démon_heure = $démon_heure;
-          $eqLogic->setConfiguration("Importation en cours",1);
-          $eqLogic->save(true);
-          $importation_en_cours = 1;
-          Eco_legrand::getConsoElec($eqLogic);
-          $eqLogic->setConfiguration("Importation en cours",0);
-          $eqLogic->save(true);
-          $Dernière_execution_function_démon = date("d/m/Y H:i");
-          $importation_en_cours = 0;
-        }
-        $eqLogic->setConfiguration("Dernière execution functions du démon",date("d/m/Y H:i"));
-        $eqLogic->save(true);
-      }
-    
-      
-      if ($démon_heure != $dernier_démon_heure && $démon_minute == 4 ){
-        if( $importation_en_cours != 1){
-          $dernier_démon_heure = $démon_heure;
-          $eqLogic->setConfiguration("Importation en cours",1);
-          $eqLogic->save(true);
-          $importation_en_cours = 1;
-          Eco_legrand::getConsoElec($eqLogic);
-          $eqLogic->setConfiguration("Importation en cours",0);
-          $eqLogic->save(true);
-          $importation_en_cours = 0;
-        }
-        
-      }
-      
 
+    $démon_minute = date("i");
+    if ($démon_minute != $dernier_démon_minute){
+      $eqLogic=eqLogic::byId($id);
+      $dernier_démon_minute = $démon_minute;
+      if($eqLogic->getIsEnable() == 1){
+        Eco_legrand::get_TIC_instantanées($eqLogic);
+      }
+      //Eco_legrand::add_log('debug',$Dernière_execution_function_démon);
       sleep(1);
+
     }
   }
 }
