@@ -22,7 +22,7 @@ include_file('3rdparty', 'css/bootstrap-select', 'css', 'Eco_legrand');
 include_file('3rdparty', 'css/jquery.datetimepicker', 'css', 'Eco_legrand');
 include_file('3rdparty', 'css/datatable', 'css', 'Eco_legrand');
 include_file('desktop', 'ionicons', 'css', 'conso');
-include_file('desktop', 'panel', 'css', 'Eco_legrand');
+//include_file('desktop', 'panel', 'css', 'Eco_legrand');
 /*Theme*/
 include_file('desktop', 'style', 'css', 'Eco_legrand');
 include_file('desktop/css/theme', 'font-awesome', 'css', 'conso');
