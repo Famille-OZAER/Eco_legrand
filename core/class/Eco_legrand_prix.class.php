@@ -9,7 +9,7 @@ class Eco_legrand_prix{
     public $date_debut;
     public $date_fin;
     public $type='electricité';
-    public $EqLogicId;
+    public $eqLogicId;
     
 
     /*RECUPERATION*/
@@ -29,7 +29,7 @@ class Eco_legrand_prix{
     public function setDate_debut($data) {	$this->date_debut = $data;}
     public function setDate_fin($data) {	$this->date_fin = $data;}
     public function settype($data){ $this->type = $data; }
-    public function setEqLogicId($data){ $this->EqLogicId = $data; }
+    public function setEqLogicId($data){ $this->eqLogicId = $data; }
 
     public static function all() {//OK
 

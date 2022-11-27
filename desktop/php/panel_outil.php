@@ -1,6 +1,6 @@
 <?php
 
-echo '<div  class="col-lg-12" id="conso_outil" style="padding-right:25px;border-left: solid 1px #EEE; padding-left: 25px;display:none;">
+echo '<div  class="col-lg-12" id="Eco_legrand_outil" style="padding-right:25px;border-left: solid 1px #EEE; padding-left: 25px;display:none;">
 
 	<div id="div_outilAlert" style="display: none;"></div>
 

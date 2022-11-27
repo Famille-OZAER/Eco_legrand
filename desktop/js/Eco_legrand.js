@@ -368,8 +368,8 @@ $('body').on('click', '.tester_ajout_teleinfo', function() {
         type: 'POST',
         url: 'plugins/Eco_legrand/core/ajax/Eco_legrand.ajax.php',
         data: {
-            action: 'Ajout_teleinfo',
-            id: $('.eqLogicAttr[data-l1key=id]').value(),
+            action: 'Synchroniser_teleinfo',
+            id_ecq: $('.eqLogicAttr[data-l1key=id]').value(),
         },
         dataType: 'json',
         error: function(request, status, error) {

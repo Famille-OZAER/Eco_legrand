@@ -103,7 +103,12 @@ $eqLogics = eqLogic::byType('Eco_legrand');
                   <label class="checkbox-inline"><input type="checkbox" class="eqLogicAttr" data-l1key="isVisible" checked/>{{Visible}}</label>
                 </div>
               </div>
-
+              <div class="form-group">
+                <label class="col-sm-3 control-label" ></label>
+                <div class="col-sm-8">
+                  <label class="checkbox-inline"><input type="checkbox" class="eqLogicAttr configuration" data-l1key="configuration" data-l2key="afficher_panel"/>{{Afficher dans le panel}}</label>
+                </div>
+              </div>
               <div class="form-group">
                 <label class="col-sm-3 control-label">{{Adresse IP}}</label>
                 <div class="col-sm-3">
@@ -142,7 +147,7 @@ $eqLogics = eqLogic::byType('Eco_legrand');
                 </div>
                 <div class="form-group ">
                 <a style="width: 300px;" class="btn btn-default btn-sm tester_ajout_teleinfo btn-danger" >
-                    <i class="fa fa-list-alt"></i>ajouter teleinfo
+                    <i class="fa fa-list-alt"></i>Synchroniser teleinfo
                   </a> 
                 </div>
             </fieldset>

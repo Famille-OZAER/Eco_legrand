@@ -36,18 +36,7 @@ function legrandeco_update() {
 
   //DB::Prepare($sql, array(), DB::FETCH_TYPE_ALL);
   Eco_legrand::install_sql();
-  $cron = cron::byClassAndFunction('Eco_legrand', 'getConsoall_heure');
-  if (is_object($cron)) {
-    $cron->remove();
-  }
-  $cron = cron::byClassAndFunction('Eco_legrand', 'getConsoAll_jour');
-  if (is_object($cron)) {
-    $cron->remove();
-  }
-  $cron = cron::byClassAndFunction('Eco_legrand', 'cron_getinfos');
-  if (is_object($cron)) {
-    $cron->remove();
-  }
+  Eco_legrand::deamon_start();
 }
 
 function Eco_legrand_remove() {

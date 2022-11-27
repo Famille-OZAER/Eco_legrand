@@ -6,100 +6,78 @@ if (!isConnect()) {
 	throw new Exception('{{401 - Accès non autorisé}}');
 }
 
-$deamon_statut =  conso::deamon_info();
+$deamon_statut =  Eco_legrand::deamon_info();
 if($deamon_statut['state'] == 'nok'){
-				log::add('conso_trame', 'debug', 'Chargement du Panel - Deamon non lancée - Redemarre le Deamon');
-				conso::deamon_stop();
-				conso::deamon_start();
+    Eco_legrand::add_log( 'debug', 'Chargement du Panel - Deamon non lancée - Redemarre le Deamon');
+    Eco_legrand::deamon_stop();
+    Eco_legrand::deamon_start();
 }
-			//conso_tools::CheckOptionIsValid();
+			//Eco_legrand::CheckOptionIsValid();
 $cron = cron::byClassAndFunction('conso', 'StartDeamon');
 
 if (is_object($cron)) {
 	sendVarToJS('refreshTime', $cron->getDeamonSleepTime());
 }
-include_file('3rdparty', 'bootstrap-select/dist/css/bootstrap-select', 'css', 'conso');
-include_file('3rdparty', 'datetimepicker/jquery.datetimepicker', 'css', 'conso');
-include_file('3rdparty', 'datetimepicker/jquery.datetimepicker', 'css', 'conso');
-include_file('3rdparty', 'datetimepicker/jquery.datetimepicker', 'css', 'conso');
-include_file('3rdparty', 'datatable/datatable', 'css', 'conso');
+include_file('3rdparty', 'bootstrap-select', 'css', 'Eco_legrand');
+include_file('3rdparty', 'jquery.datetimepicker', 'css', 'Eco_legrand');
+include_file('3rdparty', 'datatable', 'css', 'Eco_legrand');
 include_file('desktop', 'ionicons', 'css', 'conso');
-include_file('desktop', 'panel', 'css', 'conso');
+include_file('desktop', 'panel', 'css', 'Eco_legrand');
 /*Theme*/
-include_file('desktop/css/theme', 'style', 'css', 'conso');
+include_file('desktop', 'style', 'css', 'Eco_legrand');
 include_file('desktop/css/theme', 'font-awesome', 'css', 'conso');
+//sendVarToJS('date_abo', config::byKey('date_abo', 'Eco_legrand', '01-01'));
+//sendVarToJS('versiontheme', "v4");
+//sendVarToJS('stylecss', 'cssdefault');
+//sendVarToJS('bgmodalcolorvar', "var(--bg-modal-color)");
+//sendVarToJS('txtcolor', "var(--txt-color)");
+//	echo '<style type="text/css">
+//	.highcharts-axis-labels text tspan {fill: var(--txt-color) !important;}
+//	.highcharts-yaxis-labels > text {fill: var(--txt-color) !important;}
+//	#gauge .highcharts-yaxis-labels > text {fill: #484343 !important;}
+//	#widget_statBox .highcharts-label > text {fill: var(--txt-color) !important;}
+//	#widget_statBox .carousel-caption {fill: var(--txt-color) !important;}
+//	.container {width: 1300px;}
+//	</style>';
 
-//if ($_SESSION['user']->getOptions('bootstrap_theme') == 'darksobre') {
-//	include_file('desktop/theme', 'dark', 'css', 'conso');
-//	sendVarToJS('stylecss', 'cssdark');
-//} else {
-	sendVarToJS('stylecss', 'cssdefault');
-	sendVarToJS('Devise', config::byKey('Devise', 'conso'));
+$eqLogics = eqLogic::byType('Eco_legrand');
 
-//}
-
-
-	sendVarToJS('bgmodalcolorvar', "var(--bg-modal-color)");
-	sendVarToJS('txtcolor', "var(--txt-color)");
-	echo '<style type="text/css">
-	.highcharts-axis-labels text tspan {fill: var(--txt-color) !important;}
-	.highcharts-yaxis-labels > text {fill: var(--txt-color) !important;}
-	#gauge .highcharts-yaxis-labels > text {fill: #484343 !important;}
-	#widget_statBox .highcharts-label > text {fill: var(--txt-color) !important;}
-	#widget_statBox .carousel-caption {fill: var(--txt-color) !important;}
-	.container {width: 1300px;}
-	</style>';
-
-/*Date abonnement de l'onglet outils*/
-sendVarToJS('date_abo', config::byKey('date_abo', 'conso', '01-01'));
-sendVarToJS('versiontheme', "v4");
-//$sql = 'ALTER TABLE `test`.`conso_periode` ADD COLUMN `libelle` VARCHAR(255) NULL AFTER `position`; ';
-//$result =  DB::Prepare($sql,  array(), DB::FETCH_TYPE_ALL);
-$eqLogics = eqLogic::byType('conso');
-if (!$eqLogics) {
-	echo '
-<div style="width: 100%; padding: 7px 35px 7px 15px; margin-bottom: 5px; overflow: auto; max-height: 675px; z-index: 9999;" class=" alert-danger">
-<span href="#" style="position : relative; left : 30px;color : grey" class="btn_closeAlert pull-right cursor">×</span>
-<span class="displayError">Aucun équipement trouvé merci de parametrer au moins 1 équipement.
-</span>
-</div>';
-	die();
-}
-
-		$power = (count($eqLogics) == 0 ? 6 : conso::getPower($eqLogics[0]->getId()));
-		$powerperso = (count($eqLogics) == 0 ? 6 : conso::getPowerPerso($eqLogics[0]->getId()));
-		$powerpersostatus = (count($eqLogics) == 0 ? 6 : conso::getPowerPersoStatus($eqLogics[0]->getId()));
-		$type_abo = (count($eqLogics) == 0 ? 'HCHP' : conso::getAbo($eqLogics[0]->getId()));
-		$type = (count($eqLogics) == 0 ? 'electricity' : conso::getType($eqLogics[0]->getId()));
-		$eqLogic_default = $eqLogics[0]->getId();
-
-foreach ($eqLogics as $eqLogic) {
-	if ((int)$eqLogic->getConfiguration('default') > 0 && $eqLogic->getIsEnable() == 1) {
-		$power = conso::getPower($eqLogic->getId());
-		$powerperso = conso::getPowerPerso($eqLogic->getId());
-		$powerpersostatus = conso::getPowerPersoStatus($eqLogic->getId());
-		$type_abo = conso::getAbo($eqLogic->getId());
-		$type = conso::getType($eqLogic->getId());
+$eqlogic_actif=false;
+ foreach ($eqLogics as $eqLogic) {
+	if ( $eqLogic->getIsEnable() && $eqLogic->getConfiguration("afficher_panel",0) == 1) {
+        $eqlogic_actif = true;
+		//$power = Eco_legrand::getPower($eqLogic->getId());
+		//$powerperso = Eco_legrand::getPowerPerso($eqLogic->getId());
+		//$powerpersostatus = Eco_legrand::getPowerPersoStatus($eqLogic->getId());
+		$type_abo = Eco_legrand::get_type_abo($eqLogic->getId());
+		//$type = Eco_legrand::getType($eqLogic->getId());
 		$eqLogic_default = $eqLogic->getId();
+       // var_dump( $type_abo);
 	}
 }
+if (!$eqlogic_actif) {
+   
+	/*echo '
+    <div style="width: 100%; padding: 7px 35px 7px 15px; margin-bottom: 5px; overflow: auto; max-height: 675px; z-index: 9999;" class=" alert-danger">
+       <span class="displayError">Aucun équipement trouvé merci de parametrer au moins 1 équipement actif et afficher dans le panel.</span>
+    </div>';*/
+   
+  // echo '</div></div>';
+   exit(0);
+	//die();
+}
 
-$display = ($type_abo == 'HCHP' ? '' : 'displaynone');
-$title = ($type_abo == 'HCHP' ? 'HP' : '');
-if ($type == 'water' or $type == 'oil' or $type == 'gaz') $title = 'M3';
-
-$btnreturn = config::byKey('btn_return', 'conso', false);
-$datesynchro = config::byKey('date_update_conso_jour', 'conso', date("d-m-Y H:i:s"));
+$btnreturn = config::byKey('btn_return', 'Eco_legrand', false);
 $datesynchro =  date("d-m-Y H:i:s");
-sendVarToJS('ismobile', false);
-sendVarToJS('eqType', 'conso');
-sendVarToJS('datesynchro', $datesynchro);
+//sendVarToJS('ismobile', false);
+sendVarToJS('eqType', 'Eco_legrand');
+/*sendVarToJS('datesynchro', $datesynchro);
 sendVarToJS('abo_power', $power);
 sendVarToJS('abo_power_perso', $powerperso);
 sendVarToJS('abo_power_perso_status', $powerpersostatus);
 sendVarToJS('type_abo', $type_abo);
 sendVarToJS('display', $display);
-sendVarToJS('type', $type);
+sendVarToJS('type', $type);*/
 ?>
     <div id="md_eau"></div>
     <div id="md_gaz"></div>
@@ -116,11 +94,11 @@ sendVarToJS('type', $type);
 					?>
 
 					<li class="menu_equipement cursor"><span>Equipement :
-                        <select id="conso_ecq">
+                        <select id="Eco_legrand_ecq">
                             <?php
                                 foreach ($eqLogics as $eqLogic) {
 
-                                    if ($eqLogic->getIsEnable()) {
+                                    if ($eqLogic->getIsEnable() && $eqLogic->getConfiguration("afficher_panel",0) == 1) {
                                         if ($eqLogic->getConfiguration('parent_id') == "") {
                                             echo '<option  ' . ($eqLogic_default == $eqLogic->getId() ? 'selected' : '') . ' data-id="' . $eqLogic->getId() . '" value=' . $eqLogic->getId() . ' >(' . $eqLogic->getId() . ') ' . $eqLogic->getHumanName(true) . '</option>';
                                             $valueid = $eqLogic->getId();
@@ -163,12 +141,12 @@ sendVarToJS('type', $type);
 						<div id="tab_detail" class="inner">
 							<div class="infoblock first">
 								<i title="Période" class="tooltips iconeptec shortcut-icon icon-bookmark-empty">
-									<span id="conso_ptec"></span>
+									<span id="Eco_legrand_ptec"></span>
 									</i>
 							</div>
 							<div class="infoblock middle">
 								<i title="Intensité instantanée totale" class="tooltips iconeptec shortcut-icon icon-bookmark-empty">
-									<span class="ints1" id="conso_ints1"></span>
+									<span class="ints1" id="Eco_legrand_ints1"></span>
 									</i>
 							</div>
 							
@@ -192,11 +170,11 @@ sendVarToJS('type', $type);
 					        <div class="widget flip" id="tableau_prix">
 					            <div class="card">
                                     <div class="face front">
-                                        <img style="position: absolute;top: 2px;right: 2px;width: 35px; "class="icon_flip" src="plugins/conso/desktop/css/theme/img/euro.png" title="Voir le coût">
+                                        <img style="position: absolute;top: 2px;right: 2px;width: 35px; "class="icon_flip" src="plugins/Eco_legrand/desktop/img/euro.png" title="Voir le coût">
                                         <div class="widget-header">
                                             <i class="icon-money"></i>
                                             <h3>Consommation en KWh</h3>
-                                            <span class="datesynchro"></span>
+                                            <span class="datesynchro" style="position: absolute; right: 35px;"></span>
                                         </div>
                                         <div style="height:240px;" class="widget-content">
                                             <table data-role="table" id="table-column-toggle2 "  class="tableauwatt movie-list table table-striped table-bordered ui-responsive">
@@ -246,11 +224,11 @@ sendVarToJS('type', $type);
                                         </div>
                                     </div>
 						            <div class="face back">
-						                <img style="position: absolute;top: 2px;right: 2px;width: 35px; " class="icon_flip" src="plugins/conso/desktop/css/theme/img/elec.png" title="Voir la consommation">
+						                <img style="position: absolute;top: 2px;right: 2px;width: 35px; " class="icon_flip" src="plugins/Eco_legrand/desktop/img/elec.png" title="Voir la consommation">
 						                <div class="widget-header">
 							                <i class="icon-money"></i>
 							                <h3>Montant en €uros</h3>
-							                <span class="datesynchro"></span>
+							                <span class="datesynchro" style="position: absolute; right: 35px;"></span>
 						                </div>
 						                <div style="height:240px;" class="widget-content">
                                             <div class="col-xs-1 changeType" style="display:none;">
@@ -379,13 +357,16 @@ sendVarToJS('type', $type);
                                         <div class="col-lg-8" style="display:block">
                                             <i class="icon-bar-chart"></i>
                                             <h3>Statistique</h3>
-                                            <span class="datesynchro"></span>
+                                            <span class="datesynchro" style="position: absolute; right: 35px;"></span>
                                         </div>
                                     </div>
                                     <div  class="widget-content">
-                                        <div class="shortcuts" >';
-                                            include('panel_carousel.php');
-                                                    echo '</div>
+                                        <div class="shortcuts" >
+                                       
+                                            <?php
+                                                //include('panel_carousel.php');
+                                                    echo '</div>'
+                                            ?>
                                     </div>
                                 </div>
                             </div>
@@ -398,11 +379,11 @@ sendVarToJS('type', $type);
                             <div class="flip widget">
                                 <div class="card">
                                     <div class="face front">
-                                        <img id="Temp7jBox" class="icon_flip" src="plugins/conso/desktop/css/theme/img/temp.png" title="Voir les températures de cette période">
+                                        <img id="Temp7jBox" class="icon_flip" src="plugins/Eco_legrand/desktop/img/temp.png" title="Voir les températures de cette période">
                                         <div class="widget-header">
                                             <i class="icon-bar-chart"></i>
                                             <h3>7 derniers jours</h3>
-                                            <span class="datesynchro"></span>
+                                            <span class="datesynchro" style="position: absolute; right: 35px;"></span>
                                         </div>
                                         <div style="height:340px;" class="  widget-content">
                                             <div class=" shortcuts" >
@@ -413,7 +394,7 @@ sendVarToJS('type', $type);
                                         </div>
                                     </div>
                                     <div class="face back">
-                                        <img class="icon_flip" src="plugins/conso/desktop/css/theme/img/elec.png" title="Voir la consommation de cette période">
+                                        <img class="icon_flip" src="plugins/Eco_legrand/desktop/img/elec.png" title="Voir la consommation de cette période">
                                         <div class="widget-header">
                                             <i class="icon-bar-chart"></i>
                                             <h3>Température 7 derniers jours</h3>
@@ -435,11 +416,11 @@ sendVarToJS('type', $type);
                             <div class="flip widget">
                                 <div class="card">
                                     <div class="face front">
-                                        <img id="Temp4sBox" class="icon_flip" src="plugins/conso/desktop/css/theme/img/temp.png" title="Voir les températures de cette période">
+                                        <img id="Temp4sBox" class="icon_flip" src="plugins/Eco_legrand/desktop/img/temp.png" title="Voir les températures de cette période">
                                         <div class="widget-header">
                                             <i class="icon-bar-chart"></i>
                                             <h3>4 dernières semaines</h3>
-                                            <span class="datesynchro"></span>
+                                            <span class="datesynchro" style="position: absolute; right: 35px;"></span>
                                         </div>
                                         <div style="height:340px;" class="  widget-content">
                                             <div class=" shortcuts" >
@@ -450,11 +431,11 @@ sendVarToJS('type', $type);
                                         </div>
                                     </div>
                                     <div class="face back">
-                                        <img class="icon_flip" src="plugins/conso/desktop/css/theme/img/elec.png" title="Voir la consommation de cette période">
+                                        <img class="icon_flip" src="plugins/Eco_legrand/desktop/img/elec.png" title="Voir la consommation de cette période">
                                         <div class="widget-header">
                                             <i class="icon-bar-chart"></i>
                                             <h3>Température 4 dernières semaines</h3>
-                                            <span class="datesynchro"></span>
+                                            <span class="datesynchro" style="position: absolute; right: 35px;"></span>
                                         </div>
                                         <div style="height:340px;" class="  widget-content">
                                             <div class=" shortcuts" >
@@ -472,11 +453,11 @@ sendVarToJS('type', $type);
                             <div class="flip widget">
                                 <div class="card">
                                     <div class="face front">
-                                        <img id="Temp12mBox" class="icon_flip" src="plugins/conso/desktop/css/theme/img/temp.png" title="Voir les températures de cette période">
+                                        <img id="Temp12mBox" class="icon_flip" src="plugins/Eco_legrand/desktop/img/temp.png" title="Voir les températures de cette période">
                                         <div class="widget-header">
                                             <i class="icon-bar-chart"></i>
                                             <h3>12 derniers mois</h3>
-                                            <span class="datesynchro"></span>
+                                            <span class="datesynchro" style="position: absolute; right: 35px;"></span>
                                         </div>
                                         <div style="height:340px;" class="  widget-content">
                                             <div class=" shortcuts" >
@@ -487,11 +468,11 @@ sendVarToJS('type', $type);
                                         </div>
                                     </div>
                                     <div class="face back">
-                                        <img class="icon_flip" src="plugins/conso/desktop/css/theme/img/elec.png" title="Voir la consommation de cette période">
+                                        <img class="icon_flip" src="plugins/Eco_legrand/desktop/img/elec.png" title="Voir la consommation de cette période">
                                         <div class="widget-header">
                                             <i class="icon-bar-chart"></i>
                                             <h3>Température 12 derniers mois</h3>
-                                            <span class="datesynchro"></span>
+                                            <span class="datesynchro" style="position: absolute; right: 35px;"></span>
                                         </div>
                                         <div style="height:340px;" class="  widget-content">
                                             <div class=" shortcuts" >
@@ -583,11 +564,11 @@ sendVarToJS('type', $type);
                             <div class="flip widget">
                                 <div class="card">
                                     <div class="face front">
-                                       <!-- <img id="DJU12mBox" class="icon_flip" src="plugins/conso/desktop/css/theme/img/dju.png" title="Voir les DJU de cette période">-->
+                                       <!-- <img id="DJU12mBox" class="icon_flip" src="plugins/Eco_legrand/desktop/img/dju.png" title="Voir les DJU de cette période">-->
                                         <div class="widget-header">
                                             <i class="icon-bar-chart"></i>
                                             <h3>12 derniers mois en €uros (HT)</h3>
-                                            <span class="datesynchro"></span>
+                                            <span class="datesynchro" style="position: absolute; right: 35px;"></span>
                                         </div>
                                         <div style="height:340px;" class="widget-content">
                                             <div class="shortcuts" >
@@ -598,11 +579,11 @@ sendVarToJS('type', $type);
                                         </div>
                                     </div>
                                     <!--<div class="face back">
-                                        <img class="icon_flip" src="plugins/conso/desktop/css/theme/img/euro.png" title="Voir la consommation de cette période">
+                                        <img class="icon_flip" src="plugins/Eco_legrand/desktop/img//euro.png" title="Voir la consommation de cette période">
                                         <div class="widget-header">
                                             <i class="icon-bar-chart"></i>
                                             <h3>DJU des 12 derniers mois</h3>
-                                            <span class="datesynchro"></span>
+                                            <span class="datesynchro" style="position: absolute; right: 35px;"></span>
                                         </div>
                                         <div style="height:340px;" class="  widget-content">
                                             <div class=" shortcuts" >
@@ -623,7 +604,7 @@ sendVarToJS('type', $type);
                                 <div class="widget-header">
                                     <i class="icon-bar-chart"></i>
                                     <h3>12 derniers mois TTC</h3>
-                                    <span class="datesynchro"></span>
+                                    <span class="datesynchro" style="position: absolute; right: 35px;"></span>
                                 </div>
                                 <div style="height:340px;" class="widget-content">
                                     <div class="shortcuts" >
@@ -641,11 +622,11 @@ sendVarToJS('type', $type);
                             <div class="flip widget">
                                 <div class="card">
                                     <div class="face front">
-                                        <img id="Temp12mBox" class="icon_flip" src="plugins/conso/desktop/css/theme/img/temp.png" title="Voir les températures de cette période">
+                                        <img id="Temp12mBox" class="icon_flip" src="plugins/Eco_legrand/desktop/img/temp.png" title="Voir les températures de cette période">
                                         <div class="widget-header">
                                             <i class="icon-bar-chart"></i>
                                             <h3>Pluriannuel en KWh</h3>
-                                            <span class="datesynchro"></span>
+                                            <span class="datesynchro" style="position: absolute; right: 35px;"></span>
                                         </div>
                                         <div style="height:340px;" class="widget-content">
                                             <div class="shortcuts" >
@@ -656,11 +637,11 @@ sendVarToJS('type', $type);
                                         </div>
                                     </div>
                                     <div class="face back">
-                                        <img class="icon_flip" src="plugins/conso/desktop/css/theme/img/elec.png" title="Voir la consommation de cette période">
+                                        <img class="icon_flip" src="plugins/Eco_legrand/desktop/img/elec.png" title="Voir la consommation de cette période">
                                         <div class="widget-header">
                                             <i class="icon-bar-chart"></i>
                                             <h3>Température pluriannuelles</h3>
-                                            <span class="datesynchro"></span>
+                                            <span class="datesynchro" style="position: absolute; right: 35px;"></span>
                                         </div>
                                         <div style="height:340px;" class="  widget-content">
                                             <div class=" shortcuts" >
@@ -677,11 +658,11 @@ sendVarToJS('type', $type);
                             <div class="flip widget">
                                 <div class="card">
                                     <div class="face front">
-                                        <!--<img id="DJUaBox" class="icon_flip" src="plugins/conso/desktop/css/theme/img/dju.png" title="Voir les DJU de cette période">-->
+                                        <!--<img id="DJUaBox" class="icon_flip" src="plugins/Eco_legrand/desktop/img/dju.png" title="Voir les DJU de cette période">-->
                                         <div class="widget-header">
                                             <i class="icon-bar-chart"></i>
                                             <h3>Pluriannuel en €uros (HT)</h3>
-                                            <span class="datesynchro"></span>
+                                            <span class="datesynchro" style="position: absolute; right: 35px;"></span>
                                         </div>
                                         <div style="height:340px;" class="widget-content">
                                             <div class="shortcuts" >
@@ -692,11 +673,11 @@ sendVarToJS('type', $type);
                                         </div>
                                     </div>
                                     <!--<div class="face back">
-                                        <img class="icon_flip" src="plugins/conso/desktop/css/theme/img/euro.png" title="Voir la consommation de cette période">
+                                        <img class="icon_flip" src="plugins/Eco_legrand/desktop/img/euro.png" title="Voir la consommation de cette période">
                                         <div class="widget-header">
                                             <i class="icon-bar-chart"></i>
                                             <h3>DJU pluriannuels</h3>
-                                            <span class="datesynchro"></span>
+                                            <span class="datesynchro" style="position: absolute; right: 35px;"></span>
                                         </div>
                                         <div style="height:340px;" class="  widget-content">
                                             <div class=" shortcuts" >
@@ -714,7 +695,7 @@ sendVarToJS('type', $type);
 	</div>
 		
 
-        <div  class="col-lg-12" id="conso_tab" style="padding-right:25px;border-left: solid 1px #EEE; padding-left: 25px;display:none;">
+        <div  class="col-lg-12" id="Eco_legrand_tab" style="padding-right:25px;border-left: solid 1px #EEE; padding-left: 25px;display:none;">
             <div id="div_tabAlert" style="display: none;"></div>
         </div>
 
@@ -737,35 +718,35 @@ sendVarToJS('type', $type);
 <?php
 include_file('3rdparty', 'bootstrap-select/dist/js/bootstrap-select', 'js', 'conso');
 include_file('3rdparty', 'bootstrap-select/dist/js/bootstrap-select.min', 'js', 'conso');
-//include_file('3rdparty', 'datetimepicker/jquery.datetimepicker', 'js', 'conso');
+//include_file('3rdparty', 'datetimepicker/jquery.datetimepicker', 'js', 'Eco_legrand');
 //include_file('3rdparty', 'jquery.fileTree/jquery.easing.1.3', 'js');
 //include_file('3rdparty', 'jquery.fileTree/jqueryFileTree', 'js');
-//include_file('3rdparty', 'datatable/datatable', 'js', 'conso');
-include_file('3rdparty', 'circles/circles.min', 'js', 'conso');
-include_file('desktop', 'gauge', 'js', 'conso');
-include_file('desktop', 'bib_graph', 'js', 'conso');
-//include_file('desktop', 'panel_temperature', 'js', 'conso');
-include_file('desktop', 'panel_dashboard', 'js', 'Eco_legrand');
-//include_file('desktop', 'pie', 'js', 'conso');
+//include_file('3rdparty', 'datatable/datatable', 'js', 'Eco_legrand');
+//include_file('3rdparty', 'circles/circles.min', 'js', 'Eco_legrand');
+//include_file('desktop', 'gauge', 'js', 'Eco_legrand');
+//include_file('desktop', 'bib_graph', 'js', 'Eco_legrand');
+//include_file('desktop', 'panel_temperature', 'js', 'Eco_legrand');
+//include_file('desktop', 'panel_dashboard', 'js', 'Eco_legrand');
+//include_file('desktop', 'pie', 'js', 'Eco_legrand');
 include_file('desktop', 'panel', 'js', 'Eco_legrand');
-//include_file('desktop', 'panel_price', 'js', 'conso');
-//include_file('desktop', 'panel_periode', 'js', 'conso');
-//include_file('desktop', 'panel_groupe', 'js', 'conso');
-//nclude_file('desktop', 'panel_taxe', 'js', 'conso');
-//include_file('desktop', 'panel_tva', 'js', 'conso');
-//include_file('desktop', 'panel_tab', 'js', 'conso');
-//include_file('desktop', 'statistique/categorie/panel_graph_categorie', 'js', 'conso');
-//include_file('desktop', 'statistique/periode/panel_graph_periode', 'js', 'conso');
-//include_file('desktop', 'statistique/synthese/panel_graph_synthese', 'js', 'conso');
-//include_file('desktop', 'panel_table', 'js', 'conso');
-//include_file('desktop', 'panel_correcteur', 'js', 'conso');
-//include_file('desktop', 'panel_abo', 'js', 'conso');
-include_file('desktop', 'panel_outil', 'js', 'Eco_legrand');
-//include_file('desktop', 'panel_backup', 'js', 'conso');
+//include_file('desktop', 'panel_price', 'js', 'Eco_legrand');
+//include_file('desktop', 'panel_periode', 'js', 'Eco_legrand');
+//include_file('desktop', 'panel_groupe', 'js', 'Eco_legrand');
+//nclude_file('desktop', 'panel_taxe', 'js', 'Eco_legrand');
+//include_file('desktop', 'panel_tva', 'js', 'Eco_legrand');
+//include_file('desktop', 'panel_tab', 'js', 'Eco_legrand');
+//include_file('desktop', 'statistique/categorie/panel_graph_categorie', 'js', 'Eco_legrand');
+//include_file('desktop', 'statistique/periode/panel_graph_periode', 'js', 'Eco_legrand');
+//include_file('desktop', 'statistique/synthese/panel_graph_synthese', 'js', 'Eco_legrand');
+//include_file('desktop', 'panel_table', 'js', 'Eco_legrand');
+//include_file('desktop', 'panel_correcteur', 'js', 'Eco_legrand');
+//include_file('desktop', 'panel_abo', 'js', 'Eco_legrand');
+//include_file('desktop', 'panel_outil', 'js', 'Eco_legrand');
+//include_file('desktop', 'panel_backup', 'js', 'Eco_legrand');
 include_file('3rdparty', 'jqueryflip/jquery.flip.min', 'js', 'conso');
 
 
-//include_file('desktop', 'statistique', 'js', 'conso');
+//include_file('desktop', 'statistique', 'js', 'Eco_legrand');
 
 
 ?>

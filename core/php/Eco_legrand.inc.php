@@ -20,17 +20,14 @@ require_once dirname(__FILE__) . '/../../../../core/php/core.inc.php';
 include_file('core', 'Eco_legrand_prix', 'class', 'Eco_legrand');
 include_file('core', 'Eco_legrand', 'class', 'Eco_legrand');
 include_file('core', 'Eco_legrand_teleinfo', 'class', 'Eco_legrand');
-/*include_file('core', 'conso_tools', 'class', 'conso');
-include_file('core', 'conso_price', 'class', 'conso');
-include_file('core', 'conso_periode', 'class', 'conso');
-include_file('core', 'conso_groupe', 'class', 'conso');
-include_file('core', 'conso_taxe', 'class', 'conso');
-include_file('core', 'conso_tva', 'class', 'conso');
-
-
-include_file('core', 'conso_abo', 'class', 'conso');
-include_file('core', 'conso_teleinfo', 'class', 'conso');
-include_file('core', 'conso_jour', 'class', 'conso');
-include_file('core', 'conso_dju', 'class', 'conso');
-include_file('core', 'conso_panel', 'class', 'conso');*/
+//include_file('core', 'Eco_legrand_tools', 'class', 'Eco_legrand');
+//include_file('core', 'conso_price', 'class', 'conso');
+//include_file('core', 'conso_periode', 'class', 'conso');
+//include_file('core', 'conso_groupe', 'class', 'conso');
+//include_file('core', 'conso_taxe', 'class', 'conso');
+//include_file('core', 'conso_tva', 'class', 'conso');
+//include_file('core', 'conso_abo', 'class', 'conso');
+//include_file('core', 'conso_jour', 'class', 'conso');
+//include_file('core', 'conso_dju', 'class', 'conso');
+//include_file('core', 'conso_panel', 'class', 'conso');
 ?>
