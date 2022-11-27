@@ -18,9 +18,9 @@ $cron = cron::byClassAndFunction('conso', 'StartDeamon');
 if (is_object($cron)) {
 	sendVarToJS('refreshTime', $cron->getDeamonSleepTime());
 }
-include_file('3rdparty', 'bootstrap-select', 'css', 'Eco_legrand');
-include_file('3rdparty', 'jquery.datetimepicker', 'css', 'Eco_legrand');
-include_file('3rdparty', 'datatable', 'css', 'Eco_legrand');
+include_file('3rdparty', 'css/bootstrap-select', 'css', 'Eco_legrand');
+include_file('3rdparty', 'css/jquery.datetimepicker', 'css', 'Eco_legrand');
+include_file('3rdparty', 'css/datatable', 'css', 'Eco_legrand');
 include_file('desktop', 'ionicons', 'css', 'conso');
 include_file('desktop', 'panel', 'css', 'Eco_legrand');
 /*Theme*/
