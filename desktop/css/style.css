@@ -1,3 +1,76 @@
+.icon_flip {
+    cursor: pointer;
+    z-index: 9;
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    width: 35px;
+}
+
+.datesynchro {
+    position: absolute;
+    right: 35px;
+}
+
+.icon-hand-down {
+    color: green
+}
+
+.icon-hand-up {
+    color: red
+}
+
+.bluecolor {
+    color: #4572A7;
+}
+
+.redcolor {
+    color: #AA4643
+}
+
+#Eco_legrand_ecq {
+    width: auto;
+    height: 56px;
+    background-color: rgb(var(--defaultBkg-color)) !important;
+}
+
+#Eco_legrand_ptec {
+    font-size: 23px;
+    position: absolute;
+    left: 8px;
+    top: 13px;
+    font-weight: bold;
+}
+
+.instmax {
+    top: -24px;
+    line-height: 13px;
+    left: 0px;
+}
+
+.iconeptec {
+    font-size: 64px;
+    position: relative;
+    /* color: #D5D5D5;*/
+}
+
+#div_pageContainer .subnavbar .container>ul>li>i {
+    display: inline-block;
+    width: 24px;
+    height: 24px;
+    margin-top: 11px;
+    margin-bottom: -3px;
+    font-size: 20px;
+}
+
+#div_pageContainer {
+    /*background: #191919;*/
+    font: 13px/1.7em 'Open Sans';
+    /*margin-right: -15px;*/
+    /*margin-left: -15px;*/
+}
+
+
 /*------------------------------------------------------------------
 Bootstrap Admin Template by EGrappler.com
 ------------------------------------------------------------------*/
@@ -96,15 +169,6 @@ Bootstrap Admin Template by EGrappler.com
     font-size: 16px;
     text-align: center;}
 */
-
-.icon_flip {
-    position: absolute;
-    width: 43px;
-    bottom: 20px;
-    right: 20px;
-    cursor: pointer;
-    z-index: 9;
-}
 
 .tableaueuros>tbody>tr>td,
 .tableaueuros>tbody>tr>th,
@@ -306,13 +370,6 @@ tspan {
     display: none;
 }
 
-#div_pageContainer {
-    /*background: #191919;*/
-    font: 13px/1.7em 'Open Sans';
-    /*margin-right: -15px;*/
-    /*margin-left: -15px;*/
-}
-
 
 /*toolstips*/
 
@@ -490,32 +547,6 @@ tspan {
     stroke: none;
 }
 
-#Eco_legrand_ecq {
-    width: auto;
-    height: 56px;
-    background-color: rgb(var(--defaultBkg-color)) !important;
-}
-
-#Eco_legrand_ptec {
-    font-size: 23px;
-    position: absolute;
-    left: 8px;
-    top: 13px;
-    font-weight: bold;
-}
-
-.instmax {
-    top: -24px;
-    line-height: 13px;
-    left: 0px;
-}
-
-.iconeptec {
-    font-size: 64px;
-    position: relative;
-    /* color: #D5D5D5;*/
-}
-
 #tab_detail .middle,
 #tab_detail .first,
 #tab_detail .last {
@@ -530,14 +561,6 @@ tspan {
     left: -2px;
     color: #333;
     font: 13px/1.7em 'Open Sans'
-}
-
-.bluecolor {
-    color: #4572A7;
-}
-
-.redcolor {
-    color: #AA4643
 }
 
 .backbluecolor {
@@ -1144,15 +1167,6 @@ body {
 #md_GestionPrix,
 #md_GestionAbo {
     overflow: hidden;
-}
-
-#div_pageContainer .subnavbar .container>ul>li>i {
-    display: inline-block;
-    width: 24px;
-    height: 24px;
-    margin-top: 11px;
-    margin-bottom: -3px;
-    font-size: 20px;
 }
 
 #div_pageContainer .subnavbar .container>ul>li>span {

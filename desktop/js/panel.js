@@ -1263,7 +1263,13 @@ function TabVariation(data, init) {
                 var tclass = ' class="redcolor" ';
             //console.debug(value.heure + ' '+ value.puissance_totale);
             if (nb <= 9 && diff != '' && diff != '-') { //Si pas de variation on n affiche rien
-                $("#tab_info").append('<tr  ' + tclass + '><td ' + tclass + '>' + old_heure + '</td><td ' + tclass + ' >' + parseInt(old_val) + ' W' + '</td><td  ' + tclass + '>' + image + '  ' + diff + '</td><td  ' + tclass + '>' + old_ptec + '</td></tr>');
+                $("#tab_info").append(
+                    '<tr  ' + tclass + '>' +
+                    '<td ' + tclass + ' >' + old_heure + ' </td>' +
+                    '<td ' + tclass + ' >' + parseInt(old_val) + ' W' + '</td>' +
+                    '<td ' + tclass + ' > ' + image + diff + ' </td>' +
+                    '<td  ' + tclass + '>' + old_ptec + '</td> ' +
+                    '</tr>');
             }
 
             //highlight
@@ -1438,74 +1444,103 @@ function Gauge(data, init, isous) {
         function(chart) {
             if (!chart.renderer.forExport) {
                 var timergauge = setInterval(function() {
-                    if ($('#contentebar').length == 0) {
-                        console.info('Suivi Conso - arret de la mise a jour du graphique jour.');
-                        clearInterval(timergauge);
-                    } else {
-                        if (typeof chart.series === 'undefined') {
-                            console.info('cette gauge n\'existe plus on supprime.');
+                        if ($('#contentebar').length == 0) {
+                            console.info('Suivi Conso - arret de la mise a jour du graphique jour.');
                             clearInterval(timergauge);
-                            return;
-                        }
-                        var point = chart.series[0].points[0],
-                            watt;
-                        $.ajax({
-                            type: 'POST',
-                            global: false,
-                            url: 'plugins/Eco_legrand/core/ajax/Eco_legrand.ajax.php',
-                            data: {
-                                id_ecq: data.eqLogicID,
-                                action: "Trame_actuelle",
-                                yesterday: false,
-                                limit: '1'
-                            },
-                            dataType: 'json',
-                            error: function(request, status, error) {
-                                handleAjaxError(request, status, error, $('#div_DashboardAlert'));
-                            },
-                            success: function(data_init) {
-                                //console.debug(data);
-                                if (data_init.state != 'ok') {
-                                    $('#div_DashboardAlert').showAlert({ message: data_init.result, level: 'danger' });
-                                    return;
-                                } else {
-                                    var data = data_init.result;
-                                    watt = data.puissance_totale;
-
-                                    /*msie a jour du  detail a coté de la gauge*/
-                                    Tabdetail(data_init.result, false);
-                                    console.info('Mise a jour de la gauge : ' + parseInt(watt));
-                                    point.update(parseInt(watt)); /*Mise a jour de la gauge*/
-
-                                    TabVariation(data_init.result, false); /*Mise a jour du tableau des conso*/
-
-                                    /*Mise a jour de la courbe d hier*/
-                                    //									var series_yesterday = CurrentTrame.get('Hier');
-                                    //									series_yesterday.addPoint([data.timestamp*1000, parseInt(data.yesterday_papp)]);
-
-                                    /*Mise a jour du graphique du jour*/
-                                    var serie_selected = 'CurrentSerie';
-                                    series = ChartCurrentTrame.get(serie_selected);
-                                    series.addPoint([data.timestamp * 1000, parseInt(data.puissance_totale)]);
-
-                                    /*Mise a jour du graphique du jour Température*/
-                                    var serie_selected_temp = 'Temp';
-                                    series_temp = ChartCurrentTrame.get(serie_selected_temp);
-                                    series_temp.addPoint([data.timestamp * 1000, parseFloat(data.temperature)]);
-
-
-                                    /*Mise a jour de la date de la derniere trame teleinfo dans panel_outil*/
-                                    $('#trame_date').html(data.date);
-                                    $('.date_isrefresh').html(data.date);
-
-
-                                }
+                        } else {
+                            if (typeof chart.series === 'undefined') {
+                                console.info('cette gauge n\'existe plus on supprime.');
+                                clearInterval(timergauge);
+                                return;
                             }
-                        });
-                    }
+                            var point = chart.series[0].points[0],
+                                watt;
+                            $.ajax({
+                                type: 'POST',
+                                global: false,
+                                url: 'plugins/Eco_legrand/core/ajax/Eco_legrand.ajax.php',
+                                data: {
+                                    id_ecq: data.eqLogicID,
+                                    action: "Trame_actuelle",
+                                    yesterday: false,
+                                    limit: '1'
+                                },
+                                dataType: 'json',
+                                error: function(request, status, error) {
+                                    handleAjaxError(request, status, error, $('#div_DashboardAlert'));
+                                },
+                                success: function(data_init) {
+                                    //console.debug(data);
+                                    if (data_init.state != 'ok') {
+                                        $('#div_DashboardAlert').showAlert({ message: data_init.result, level: 'danger' });
+                                        return;
+                                    } else {
+                                        var data = data_init.result;
+                                        console.log(data.puissance_totale)
+                                        watt = data.puissance_totale;
+
+                                        /*msie a jour du  detail a coté de la gauge*/
+                                        Tabdetail(data_init.result, false);
+                                        console.info('Mise a jour de la gauge : ' + parseInt(watt));
+                                        point.update(parseInt(watt)); /*Mise a jour de la gauge*/
+
+                                        TabVariation(data_init.result, false); /*Mise a jour du tableau des conso*/
+
+                                        /*Mise a jour du graphique du jour*/
+                                        var serie_selected = 'CurrentSerie';
+                                        series = ChartCurrentTrame.get(serie_selected);
 
 
-                }, refreshTime * 1000);
+                                        var color_byHP = "#AA4643";
+                                        var color_byHC = "#4572A7";
+
+                                        series.addPoint([data.timestamp * 1000, parseInt(data.puissance_totale)]);
+                                        //création de nouvelles zones pour le maintient des bonnes couleurs lors de la mise à jour de données
+                                        zones = series.zones
+                                        dataZone = []
+
+                                        zones.forEach((item, index) => {
+                                            if (index < zones.length - 1) {
+                                                dataZone.push({ value: item.value, color: item.color });
+                                            }
+                                        })
+                                        if (data.ptec == "HP") {
+                                            if (dataZone[dataZone.length - 1].color == color_byHP) {
+                                                dataZone[dataZone.length - 1].value = data.timestamp * 1000
+                                            } else {
+                                                dataZone.push({ value: data.timestamp * 1000, color: color_byHP });
+                                            }
+                                        }
+                                        if (data.ptec == "HC") {
+                                            if (dataZone[dataZone.length - 1].color == color_byHC) {
+                                                dataZone[dataZone.length - 1].value = data.timestamp * 1000
+                                            } else {
+                                                dataZone.push({ value: data.timestamp * 1000, color: color_byHC });
+                                            }
+                                        }
+                                        series.update({
+                                            zones: dataZone
+                                        });
+
+                                        /*Mise a jour du graphique du jour Température*/
+                                        var serie_selected_temp = 'Temp';
+                                        series_temp = ChartCurrentTrame.get(serie_selected_temp);
+                                        series_temp.addPoint([data.timestamp * 1000, parseFloat(data.temperature)]);
+
+
+                                        /*Mise a jour de la date de la derniere trame teleinfo dans panel_outil*/
+                                        $('#trame_date').html(data.date);
+                                        $('.date_isrefresh').html(data.date);
+
+
+                                    }
+                                }
+                            });
+                        }
+
+
+                    },
+                    refreshTime * 1000);
                 var point = chart.series[0].points[0],
                     watt;
                 point.update(parseInt(watt));
@@ -1567,7 +1602,13 @@ function showCurrentTrame(data_init, yesterday_trame, max, min) {
 
         lastvalue = [value.timestamp * 1000, parseInt(value.puissance_totale)];
         last_timestamp = value.timestamp * 1000;
-        last_color = (value.ptec == "HP" ? color_byHP : color_byHC);
+
+        if (value.ptec == "HP") {
+            last_color = color_byHP
+        } else {
+            last_color = color_byHC
+        }
+
 
 
     });

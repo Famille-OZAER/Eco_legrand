@@ -309,7 +309,7 @@ sendVarToJS('type', $type);*/
                                     <span class="date_isrefresh"></span>
                                 </div>
                                 <div id="widgetvariation" style="height:240px;" class="widget-content">
-                                    <div id="tab_list" class="shortcuts" >
+                                    <div id="tab_list" class="" >
                                         <div class="box-body no-padding">
                                             <table data-role="table" id="tab_info" class="movie-list table table-striped ui-responsive"></table>
                                         </div>
@@ -743,7 +743,7 @@ include_file('desktop', 'panel', 'js', 'Eco_legrand');
 //include_file('desktop', 'panel_abo', 'js', 'Eco_legrand');
 //include_file('desktop', 'panel_outil', 'js', 'Eco_legrand');
 //include_file('desktop', 'panel_backup', 'js', 'Eco_legrand');
-include_file('3rdparty', 'jqueryflip/jquery.flip.min', 'js', 'conso');
+include_file('3rdparty', 'jquery.flip', 'js', 'Eco_legrand');
 
 
 //include_file('desktop', 'statistique', 'js', 'Eco_legrand');
