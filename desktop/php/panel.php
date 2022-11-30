@@ -743,7 +743,7 @@ include_file('desktop', 'panel', 'js', 'Eco_legrand');
 //include_file('desktop', 'panel_abo', 'js', 'Eco_legrand');
 //include_file('desktop', 'panel_outil', 'js', 'Eco_legrand');
 //include_file('desktop', 'panel_backup', 'js', 'Eco_legrand');
-include_file('3rdparty', 'jquery.flip', 'js', 'Eco_legrand');
+include_file('3rdparty', 'js/jquery.flip', 'js', 'Eco_legrand');
 
 
 //include_file('desktop', 'statistique', 'js', 'Eco_legrand');
