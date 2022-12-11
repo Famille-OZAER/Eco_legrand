@@ -29,7 +29,7 @@ class Eco_legrand_teleinfo
 	//public $inst_pulse2;
 	public $temperature=0;
 	public $eqLogicId=0;
-
+//
 	public function get_value($nom_param,$data){
 			
 		switch ($nom_param) {
@@ -172,11 +172,11 @@ class Eco_legrand_teleinfo
 	}
 
 	
-	public static function byId($_id){
+	public static function byEqlogicId($_id){
 		$values = array('id' => $_id);
-		$sql = 'SELECT ' . DB::buildField(__CLASS__) . 'FROM Eco_legrand_teleinfo WHERE eqlogicID=:id';
+		$sql = 'SELECT * FROM Eco_legrand_teleinfo WHERE eqlogicID=:id';
 
-		return DB::Prepare($sql, $values, DB::FETCH_TYPE_ROW, PDO::FETCH_CLASS, __CLASS__);
+		return DB::Prepare($sql, $values, DB::FETCH_TYPE_ALL);
 	}
 
 	public static function crontabAllJour(){
@@ -186,11 +186,19 @@ class Eco_legrand_teleinfo
 	}
 	
 	public static function crontabJour($tous_les_jours=false){
+
+
 		$sql = "REPLACE INTO Eco_legrand_jour ";
 		$sql .= "(`timestamp`,";
 		$sql .= "`date`,";
 		$sql .= "`conso_totale_hp`,";
 		$sql .= "`conso_totale_hc`,";
+		$sql .= "`conso_circuit1`,";
+		$sql .= "`conso_circuit2`,";
+		$sql .= "`conso_circuit3`,";
+		$sql .= "`conso_circuit4`,";
+		$sql .= "`conso_circuit5`,";
+		$sql .= "`conso_autre`,";
 		$sql .= "`index_total_max_hp`,";
 		$sql .= "`index_total_min_hp`,";
 		$sql .= "`index_total_max_hc`,";
@@ -198,12 +206,25 @@ class Eco_legrand_teleinfo
 		$sql .= "`eqLogicID`,";
 		$sql .= "`temperature_max`,";
 		$sql .= "`temperature_min`,";
+		
+		
 		$sql .= "`temperature_moy`)";
 		$sql .= "SELECT ";
 		$sql .= "MIN(`timestamp`) AS `timestamp`,";
 		$sql .= "`Eco_legrand_teleinfo`.`date` AS `date`,";
 		$sql .= "((MAX(`index_hp`) - MIN(`index_hp`)) / 1000)  AS `conso_totale_hp`,";
 		$sql .= "((MAX(`index_hc`) - MIN(`index_hc`)) / 1000)  AS `conso_totale_hc`,";
+		$sql .= "((MAX(`index_circuit1`) - MIN(`index_circuit1`)) / 1000)  AS `conso_circuit1`,";
+		$sql .= "((MAX(`index_circuit2`) - MIN(`index_circuit2`)) / 1000)  AS `conso_circuit2`,";
+		$sql .= "((MAX(`index_circuit3`) - MIN(`index_circuit3`)) / 1000)  AS `conso_circuit3`,";
+		$sql .= "((MAX(`index_circuit4`) - MIN(`index_circuit4`)) / 1000)  AS `conso_circuit4`,";
+		$sql .= "((MAX(`index_circuit5`) - MIN(`index_circuit5`)) / 1000)  AS `conso_circuit5`,";
+		$sql .= "((MAX(`index_hp`) - MIN(`index_hp`)) / 1000)+((MAX(`index_hc`) - MIN(`index_hc`)) / 1000
+                                              -((MAX(`index_circuit1`) - MIN(`index_circuit1`)) / 1000)
+                                              -((MAX(`index_circuit2`) - MIN(`index_circuit2`)) / 1000)
+                                              -((MAX(`index_circuit3`) - MIN(`index_circuit3`)) / 1000)
+                                              -((MAX(`index_circuit4`) - MIN(`index_circuit4`)) / 1000)
+                                              -((MAX(`index_circuit5`) - MIN(`index_circuit5`)) / 1000) )  AS `conso_autre`,";
 		$sql .= "MAX(index_hp) as `index_total_max_hp`,";
 		$sql .= "MIN(index_hp) as `index_total_min_hp`,";
 		$sql .= "MAX(index_hc) as `index_total_max_hc`,";
@@ -218,58 +239,106 @@ class Eco_legrand_teleinfo
 		if (!$tous_les_jours) $sql .= " where date = CURRENT_DATE ";
 
 		$sql .= "GROUP BY date,eqLogicID";
-		//Eco_legrand::add_log('info', 'CrontabJour:'. $sql);
 		DB::Prepare($sql, array(), DB::FETCH_TYPE_ROW);
 	}
 
-	public function save( $day = false){//OK
-
-		/*$day permet de creer la derniere Trame du jour et la premiere trame du lendemain*/
-		if ($day) {
-			/*Force le dernier relevé du jour*/
-			$rec_date = date('Y-m-d', strtotime("-1 day"));
-			$rec_time = date('23:59:59');
-			$timestamp = strtotime($rec_date . ' ' . $rec_time);
-			$this->settimestamp($timestamp);
-			$this->setrec_date($rec_date);
-			$this->setrec_time($rec_time);
-			if ($consommation || $power) {
-				//log::add('conso_trame', 'debug', '(' . $conso->getId() . ') Mode  POWER Je n ai que la puissance de mon équipement activé.');
-				Eco_legrand_teleinfo::SaveConsommation($this,$hchp_unity,$confConso,$power); /*Si consommation alors il faut gerer la coupure de courant*/
-			} else {
-				DB::save($this, false, true);
-			}
-			/*Force le premier relevé du lendemain*/
-			$rec_date = date('Y-m-d');
-			$rec_time = date('00:00:00');
-			$timestamp = strtotime($rec_date . ' ' . $rec_time);
-			$this->settimestamp($timestamp);
-			$this->setrec_date($rec_date);
-			$this->setrec_time($rec_time);
-
-			if ($consommation || $power) {
-				return Eco_legrand_teleinfo::SaveConsommation($this,$hchp_unity,$confConso,$power);
-			} else {
-				Eco_legrand::add_log("debug","sauvegarde");
-				return DB::save($this, false, true);
-			}
-
-		} else {
-
-			return DB::save($this, false, true);
-			
-		}
+	public function save(){//OK
+		return DB::save($this, false, true);	
 	}
+	static public function get_erreur($id_ecq){
+		$sql = 'SELECT * FROM Eco_legrand_teleinfo where EqlogicID = ' . $id_ecq . ' ORDER BY timestamp ASC';
+		$lignes = DB::Prepare($sql, array(), DB::FETCH_TYPE_ALL);
+		$i=0;
+		$sql ="";
+		$index_total_circuits=0;
+		$index_circuit1=0;
+		$index_circuit2=0;
+		$index_circuit3=0;
+		$index_circuit4=0;
+		$index_circuit5=0;
+		foreach($lignes as $ligne){
+			
+			
+			if($i >0 
+			AND $ligne["puissance_totale"] == 0 
+			OR $ligne["index_total_circuits"] == 0 
+			OR $ligne["index_circuit1"] == 0 
+			OR $ligne["index_circuit2"] == 0 
+			OR $ligne["index_circuit3"] == 0 
+			OR $ligne["index_circuit4"] == 0 
+			OR $ligne["index_circuit5"] == 0){
+					if ($index_total_circuits==0 OR $index_total_circuits < $ligne["index_total_circuits"]){$index_total_circuits=$ligne["index_total_circuits"];}
+					if ($index_circuit1==0 OR $index_circuit1 < $ligne["index_total_circuits"]){$index_circuit1=$ligne["index_circuit1"];}
+					if ($index_circuit2==0 OR $index_circuit2 < $ligne["index_total_circuits"]){$index_circuit2=$ligne["index_circuit2"];}
+					if ($index_circuit3==0 OR $index_circuit3 < $ligne["index_total_circuits"]){$index_circuit3=$ligne["index_circuit3"];}
+					if ($index_circuit4==0 OR $index_circuit4 < $ligne["index_total_circuits"]){$index_circuit4=$ligne["index_circuit4"];}
+					if ($index_circuit5==0 OR $index_circuit5 < $ligne["index_total_circuits"]){$index_circuit5=$ligne["index_circuit5"];}
+				if($ligne["index_total_circuits"] < $index_total_circuits){$ligne["index_total_circuits"]=$index_total_circuits;}
+				if($ligne["index_circuit1"] < $index_circuit1){$ligne["index_circuit1"]=$index_circuit1;}
+				if($ligne["index_circuit2"] < $index_circuit2){$ligne["index_circuit2"]=$index_circuit2;}
+				if($ligne["index_circuit3"] < $index_circuit3){$ligne["index_circuit3"]=$index_circuit3;}
+				if($ligne["index_circuit4"] < $index_circuit4){$ligne["index_circuit4"]=$index_circuit4;}
+				if($ligne["index_circuit5"] < $index_circuit5){$ligne["index_circuit5"]=$index_circuit5;}
 
+				//if($ligne["index_total_circuits"] ==0){$ligne["index_total_circuits"]=$lignes[$i-1]["index_total_circuits"];}
+				//if($ligne["index_circuit1"] ==0){$ligne["index_circuit1"]=$lignes[$i-1]["index_circuit1"];}
+				//if($ligne["index_circuit2"] ==0){$ligne["index_circuit2"]=$lignes[$i-1]["index_circuit2"];}
+				//if($ligne["index_circuit3"] ==0){$ligne["index_circuit3"]=$lignes[$i-1]["index_circuit3"];}
+				//if($ligne["index_circuit4"] ==0){$ligne["index_circuit4"]=$lignes[$i-1]["index_circuit4"];}
+				//if($ligne["index_circuit5"] ==0){$ligne["index_circuit5"]=$lignes[$i-1]["index_circuit5"];}
+				$nb_minute=($ligne["timestamp"]-$lignes[$i-1]["timestamp"])/60;
+				//return($nb_minute);
+				$différence_hp=$ligne["index_hp"]-$lignes[$i-1]["index_hp"];
+				$différence_hc=$ligne["index_hc"]-$lignes[$i-1]["index_hc"];
+				$différence_moyenne=($différence_hp + $différence_hc) / $nb_minute*60;
+				$intensité_moyenne=round($différence_moyenne/230,0);
+				if($différence_moyenne < 0){
+					$différence_moyenne=0;
+					$intensité_moyenne=0;
+					if($ligne["index_hc"]<$lignes[$i-1]["index_hc"]){
+						$ligne["index_hc"]=$lignes[$i-1]["index_hc"];
+					}
+					if($ligne["index_hp"]<$lignes[$i-1]["index_hp"]){
+						$ligne["index_hp"]=$lignes[$i-1]["index_hp"];
+					}
+				}
+				
+				if ($différence_moyenne>0){
+					$sql .= "UPDATE Eco_legrand_teleinfo SET 
+					puissance_totale = " . $différence_moyenne . ",
+					int_instant = " . $intensité_moyenne. ",
+					index_hc = " . $ligne["index_hc"] . ",
+					index_hp = " . $ligne["index_hp"]. ",
+					index_total_circuits = " . $ligne["index_total_circuits"] .",
+					index_circuit1 = " . $ligne["index_circuit1"] .",
+					index_circuit2 = " . $ligne["index_circuit2"] .",
+					index_circuit3 = " . $ligne["index_circuit3"] .",
+					index_circuit4 = " . $ligne["index_circuit4"] .",
+					index_circuit5 = " . $ligne["index_circuit5"] .
+					" WHERE `timestamp` = " . $ligne["timestamp"] . 
+					' AND eqLogicID = ' . $id_ecq .";\n";
+				
+				}
+				
+				
+				//return	($différence_moyenne);
+			}
+			$i++;
+		}	
+		if ($sql !=""){
+			DB::Prepare($sql, array(), DB::FETCH_TYPE_ROW);
+		}
+		return($sql);
+	}
 	static public function get_calcul_prix($pdate_debut, $pdate_fin, $type_graph = 'mois', $old = false, $limit = false, $id_periode = false, $yesterday = false, $id_ecq, $group_by = false){
 		$query_limit = '';
 	
-		$eqLogics = eqLogic::byId($id_ecq);
-		DB::Prepare("SET lc_time_names = 'fr_BE'", array(), DB::FETCH_TYPE_ALL);
+		//$eqLogics = eqLogic::byId($id_ecq);
+		//DB::Prepare("SET lc_time_names = 'fr_BE'", array(), DB::FETCH_TYPE_ALL);
 
 		$query = ' SELECT ';
 		$query .= $id_ecq . ' as EqlogicID,
-				tva,
+				
 				annee,
 				mois,
 				jour
@@ -304,8 +373,7 @@ class Eco_legrand_teleinfo
 						ROUND(SUM(s.conso_totale_hc),2) AS hc,
 						(SELECT SUM(FORMAT(hc,4)) AS hc FROM Eco_legrand_prix  where  `type` like "electricité" AND UNIX_TIMESTAMP(DATE_FORMAT(`date` , "%Y-%m-%d")) BETWEEN UNIX_TIMESTAMP( DATE_FORMAT( date_debut,  "%Y-%m-%d" ) ) AND UNIX_TIMESTAMP( DATE_FORMAT( date_fin,  "%Y-%m-%d" ) ) ) as prix_hc,
 						(SELECT SUM(FORMAT(hp,4)) AS hp FROM Eco_legrand_prix  where  `type` like "electricité" AND UNIX_TIMESTAMP(DATE_FORMAT(`date` , "%Y-%m-%d")) BETWEEN UNIX_TIMESTAMP( DATE_FORMAT( date_debut,  "%Y-%m-%d" ) ) AND UNIX_TIMESTAMP( DATE_FORMAT( date_fin,  "%Y-%m-%d" ) ) ) as prix_hp,
-						(SELECT  FORMAT(valeur ,2)  FROM conso_tva where UNIX_TIMESTAMP(DATE_FORMAT(`date` , "%Y-%m-%d")) BETWEEN UNIX_TIMESTAMP( DATE_FORMAT( date_debut,  "%Y-%m-%d" ) ) AND UNIX_TIMESTAMP( DATE_FORMAT( date_fin,  "%Y-%m-%d")) and global = 1 limit 0,1) as tva, 	
-		
+						
 						ROUND(SUM((SELECT SUM(FORMAT(hc,4)) AS hc 
 							FROM Eco_legrand_prix 
 							WHERE   `type` like "electricité" AND UNIX_TIMESTAMP(DATE_FORMAT(`date` , "%Y-%m-%d")) BETWEEN UNIX_TIMESTAMP(DATE_FORMAT(date_debut, "%Y-%m-%d")) AND UNIX_TIMESTAMP(DATE_FORMAT(date_fin, "%Y-%m-%d")) ) * s.conso_totale_hc ),2) AS total_hc,
@@ -347,7 +415,7 @@ class Eco_legrand_teleinfo
 		$sql = $query . $query_periode . $query_group . $query_limit;
 
 		
-		Eco_legrand::add_log("debug",$sql);
+		
 		
 		
 		$result = DB::Prepare($sql, array(), DB::FETCH_TYPE_ALL);
@@ -361,10 +429,6 @@ class Eco_legrand_teleinfo
 	static public function Trame_hier( $id_ecq = false){
 	
 		$sql = '';
-		$eqLogics = eqLogic::byId($id_ecq);
-		$consoYesterday = $eqLogics->getConfiguration('consoyesterday');
-		//log::add('conso', 'debug', 'get_trame_actuelle consoYesterday'.$consoYesterday );
-		
 		$sql .= 'select * from (select timestamp,index_hp,index_hc,ptec,puissance_totale,int_instant,heure,temperature,eqLogicID,DATE_FORMAT(FROM_UNIXTIME(`timestamp`), "%d-%m-%Y %H:%i") as date';
 		$sql .= ' From Eco_legrand_teleinfo WHERE ';
 		$sql .= 'date = DATE_SUB(current_date(), INTERVAL 1 DAY)';
@@ -372,7 +436,7 @@ class Eco_legrand_teleinfo
 		$sql .= ' order by timestamp desc';
 		$sql .= ') as req order by req.timestamp desc';
 		
-		Eco_legrand::add_log('debug', 'requête sql: '.$sql);
+		
 		$row = DB::Prepare($sql, array(), DB::FETCH_TYPE_ALL);
 		return $row;
 
@@ -381,21 +445,20 @@ class Eco_legrand_teleinfo
 	static public function get_trame_actuelle($limit = false, $yesterday = false, $max = false, $min = false, $date_debut = false, $date_fin = false, $id_ecq = false){
 	
 		$sql = '';
-		$eqLogics = eqLogic::byId($id_ecq);
-		$consoYesterday = $eqLogics->getConfiguration('consoyesterday');
-		//log::add('conso', 'debug', 'get_trame_actuelle consoYesterday'.$consoYesterday );
+		
+		
 		if ($yesterday) $sql .= 'select * from (';
 
 		$sql .= 'select timestamp,index_hp,index_hc,ptec,puissance_totale,int_instant,heure,temperature,eqLogicID,DATE_FORMAT(FROM_UNIXTIME(`timestamp`), "%d-%m-%Y %H:%i") as date ';
 
 		if (!$date_debut) {
 			$sql .= ' From Eco_legrand_teleinfo WHERE ';
-			if (!$yesterday and !$consoYesterday) $sql .= 'date = current_date() '; else
+			if (!$yesterday ) $sql .= 'date = current_date() '; else
 				$sql .= 'date = DATE_SUB(current_date(), INTERVAL 1 DAY)';
 		} else {
 			$sql .= ' From Eco_legrand_teleinfo WHERE ';
 
-			if (!$yesterday and !$consoYesterday) $sql .= 'date between "' . $date_debut . '" AND "' . $date_fin . '"'; else
+			if (!$yesterday ) $sql .= 'date between "' . $date_debut . '" AND "' . $date_fin . '"'; else
 				$sql .= 'date between DATE_SUB("' . $date_debut . '", INTERVAL 1 DAY) AND DATE_SUB("' . $date_fin . '", INTERVAL 1 DAY)';
 
 		}
@@ -410,15 +473,7 @@ class Eco_legrand_teleinfo
 
 		if ($yesterday) $sql .= ') as req order by req.timestamp desc';
 		
-		/*Eco_legrand::add_log('debug', 'limit: '.$limit);
-		Eco_legrand::add_log('debug', 'yesterday: '.$yesterday);
-		Eco_legrand::add_log('debug', 'max: '.$max);
-		Eco_legrand::add_log('debug', 'min: '.$min);
-		Eco_legrand::add_log('debug', 'date_debut: '.$date_debut);
-		Eco_legrand::add_log('debug', 'date_fin: '.$date_fin);
-		Eco_legrand::add_log('debug', 'date_fin: '.$date_fin);
-		Eco_legrand::add_log('debug', 'id_ecq: '.$id_ecq);*/
-		Eco_legrand::add_log('debug', 'requête sql: '.$sql);
+		
 		if (!$limit) $row = DB::Prepare($sql, array(), DB::FETCH_TYPE_ALL); else
 			$row = DB::Prepare($sql, array(), DB::FETCH_TYPE_ROW);
 
@@ -427,10 +482,8 @@ class Eco_legrand_teleinfo
 	}
 
 	static public function consoResult($tab, $type = 'day', $date_debut, $date_fin, $id_equipement){//OK
-		//log::add('conso', 'debug','date_deb:'.$date_debut.' date_fin:'.$date_fin);
-		//log::add('conso', 'debug', '-------------------Calcul du tableau ' . $type . ' -------------');
 		$conso = array('prix_hp' => 0,'total_hp' => 0, 'total_hc' => 0, 'total' => 0, 'hp' => 0, 'hc' => 0, 'total_hc_ttc' => 0, 'total_hp_ttc' => 0,  'total_ttc' => 0,  'total_ht'=> 0);
-		$eqLogics = eqLogic::byId($id_equipement);
+		$eqLogic = eqLogic::byId($id_equipement);
 		foreach ($tab as $key => $cs) {
 			$conso['hp'] += $cs['hp'];
 			$conso['hc'] += $cs['hc'];
@@ -439,14 +492,12 @@ class Eco_legrand_teleinfo
 			$conso['total'] += ($cs['hp'] + $cs['hc']);
 			$conso['total_hp'] += $cs['total_hp'];
 			$conso['total_hc'] += $cs['total_hc'];
-			$tva=$eqLogics->getConfiguration("tva",1);
+			$tva=$eqLogic->getConfiguration("tva",1);
 			$conso['total_hp_ttc'] += (($cs['total_hp']  * $tva) / 100) + $cs['total_hp'] ;
 			$conso['total_hc_ttc'] += (($cs['total_hc']  * $tva) / 100) + $cs['total_hc'] ;
 			$conso['total_ttc'] = round($conso['total_hp_ttc'] + $conso['total_hc_ttc'],2) ;
 			$conso['total_ht'] = round($conso['total_hp'] + $conso['total_hc'],2) ;  
-			//Eco_legrand::add_log("debug", 'consoResult total_ttc:'.$conso['total_ttc'].' total_hp:'.$conso['total_hp'].' total_hp_ttc:'.$conso['total_hp_ttc']. 'total_hc_ttc:'.$conso['total_hc_ttc']);
 		}
-		//log::add('conso', 'debug', '---------------------FIN-------------------------');
 		$conso['total_hp'] = round($conso['total_hp'],2);
 		$conso['total_hp_ttc'] = round($conso['total_hp_ttc'],2);
 		$conso['total_hc'] = round($conso['total_hc'],2);
@@ -456,9 +507,10 @@ class Eco_legrand_teleinfo
 	}
 
 	static public function get_conso_jour($eqLogicID){//OK
-		$day_conso = Eco_legrand_teleinfo::get_calcul_prix(date("Y-m-d"), date("Y-m-d"), "jours", false, false, false, false, $eqLogicID); /*Conso du jour */
+		
+		$day_conso = self::get_calcul_prix(date("Y-m-d"), date("Y-m-d"), "jours", false, false, false, false, $eqLogicID); /*Conso du jour */
 		if ($day_conso !== false) {
-			return Eco_legrand_teleinfo::consoResult($day_conso, 'day', date("Y-m-d"), date("Y-m-d"), $eqLogicID);
+			return self::consoResult($day_conso, 'day', date("Y-m-d"), date("Y-m-d"), $eqLogicID);
 		} else {
 			return false;
 		}
@@ -466,19 +518,19 @@ class Eco_legrand_teleinfo
 
 	static public function get_conso_hier($id_ecq){
 		$hier = new DateTime('-1 day');
-		$day_conso = Eco_legrand_teleinfo::get_calcul_prix($hier->format('Y-m-d'), $hier->format('Y-m-d'), "jours", false, false, false, false, $id_ecq); /*Conso du jour */
+		$day_conso = self::get_calcul_prix($hier->format('Y-m-d'), $hier->format('Y-m-d'), "jours", false, false, false, false, $id_ecq); /*Conso du jour */
 		if ($day_conso !== false) {
-			return Eco_legrand_teleinfo::consoResult($day_conso, 'day', $hier->format('Y-m-d'), $hier->format('Y-m-d'), $id_ecq);
+			return self::consoResult($day_conso, 'day', $hier->format('Y-m-d'), $hier->format('Y-m-d'), $id_ecq);
 		} else {
 			return false;
 		}
 	}
 
 	static public function get_conso_semaine($id_ecq){//OK
-		$date_week = Eco_legrand_teleinfo::get_debut_fin_semaine(true); /*retourne la date de debut et de fin de la semaine en cours*/
-		$week_conso = Eco_legrand_teleinfo::get_calcul_prix($date_week['debut'], $date_week['fin'], "semaine", false, false, false, false, $id_ecq); /*Conso de la semaine en cours  */
+		$date_week = self::get_debut_fin_semaine(); /*retourne la date de debut et de fin de la semaine en cours*/
+		$week_conso = self::get_calcul_prix($date_week['debut'], $date_week['fin'], "semaine", false, false, false, false, $id_ecq); /*Conso de la semaine en cours  */
 		if ($week_conso !== false) {
-			return Eco_legrand_teleinfo::consoResult($week_conso, 'week', $date_week['debut'], $date_week['fin'], $id_ecq);
+			return self::consoResult($week_conso, 'week', $date_week['debut'], $date_week['fin'], $id_ecq);
 		} else {
 			return false;
 		}
@@ -486,9 +538,9 @@ class Eco_legrand_teleinfo
 
 	static public function get_conso_mois($id_ecq){//OK
 		$date = new DateTime();
-		$month_conso = Eco_legrand_teleinfo::get_calcul_prix($date->format('Y-m-01'), $date->format('Y-m-t'), "mois", false, false, false, false, $id_ecq); /*Conso du mois en cours  */
+		$month_conso = self::get_calcul_prix($date->format('Y-m-01'), $date->format('Y-m-t'), "mois", false, false, false, false, $id_ecq); /*Conso du mois en cours  */
 		if ($month_conso !== false) {
-			return Eco_legrand_teleinfo::consoResult($month_conso, 'month', $date->format('Y-m-01'), $date->format('Y-m-t'), $id_ecq);
+			return self::consoResult($month_conso, 'month', $date->format('Y-m-01'), $date->format('Y-m-t'), $id_ecq);
 		} else {
 			return false;
 		}
@@ -497,22 +549,17 @@ class Eco_legrand_teleinfo
 	static public function get_conso_annee($id_ecq){
 		$date = new DateTime();
 		$d = Eco_legrand::getDateAbo($id_ecq);
-		Eco_legrand::add_log("debug",$d);
-		$year_conso = Eco_legrand_teleinfo::get_calcul_prix($date->format($d['date_debut_fact']), $date->format($d['date_fin_fact']), "mois", false, false, false, false, $id_ecq); /*Conso de  l année en cours  */
+		$year_conso = self::get_calcul_prix($date->format($d['date_debut_fact']), $date->format($d['date_fin_fact']), "mois", false, false, false, false, $id_ecq); /*Conso de  l année en cours  */
 		if ($year_conso !== false) {
-			return Eco_legrand_teleinfo::consoResult($year_conso, 'year', $date->format($d['date_debut_fact']), $date->format($d['date_fin_fact']), $id_ecq);
+			return self::consoResult($year_conso, 'year', $date->format($d['date_debut_fact']), $date->format($d['date_fin_fact']), $id_ecq);
 		} else {
 			return false;
 		}
 	}
 
-	public static function get_debut_fin_semaine($firstDayIsMonday = false, $format = 'Y-m-d'){
-
-		//   $weekStartTime = mktime(0, 0, 0, date('m'), date('d') - date('w'), date('Y'));
+	public static function get_debut_fin_semaine(){
+		$format = 'Y-m-d';	
 		$weekStartTime = mktime(0, 0, 0, date('m'), date('d') - date('N') + 1, date('Y'));
-
-		// $weekStartTime += ($firstDayIsMonday)? 86400 : 0;
-		//log::add('conso', 'debug', 'date week debut:'.$weekStartTime. 'fin:'.date($format, strtotime('+6 days', $weekStartTime)));
 		return array('debut' => date($format, $weekStartTime), 'fin' => date($format, strtotime('+6 days', $weekStartTime)));
 	}
 
@@ -520,7 +567,6 @@ class Eco_legrand_teleinfo
 
 		$JourEnCours = date("N",strtotime($date));
 		$shiftDeb = $JourEnCours - 1;
-		//log::add('conso', 'debug','get_lundi_vendredi_from_week debut:'.$date.' type:'.$type.' jourencours:'.$JourEnCours.' shiftdeb:'.$shiftDeb);
 		if ($JourEnCours >= 5) {
 			$shiftFin = $JourEnCours - 5;
 		} 
@@ -529,30 +575,123 @@ class Eco_legrand_teleinfo
 		}	
 		$timestamp=strtotime($date)-($shiftDeb*86400);
 		$timestamp_vendredi=strtotime($date)+($shiftFin*86400);
-		
-		/*$firstDayInYear=date("N",mktime(0,0,0,1,1,$year));
-		if ($firstDayInYear<5)
-		$shift=-($firstDayInYear-1)*86400;
-		else
-		$shift=(8-$firstDayInYear)*86400;
-		if ($week>1) $weekInSeconds=($week-1)*604800; else $weekInSeconds=0;
-		$timestamp=mktime(0,0,0,1,1,$year)+$weekInSeconds+$shift;
-		$timestamp_vendredi=mktime(0,0,0,1,7,$year)+$weekInSeconds+$shift;*/
-			
-	
-		if($type == "debut") {
-				//log::add('conso', 'debug','get_lundi_vendredi_from_week debut:'.date($format,$timestamp));
+				if($type == "debut") {
 				return  date($format,$timestamp);
 		}
 		else {
-				//log::add('conso', 'debug','get_lundi_vendredi_from_week fin:'.date($format,$timestamp_vendredi));
 				return  date($format,$timestamp_vendredi);
 		}
 	
 	
-		//	return array("Lundi " . date($format,$timestamp),"Vendredi " . date($format,$timestamp_vendredi));
 	
 	}
+
+	static public function GetTabPie($sql_periode,  $id_ecq = false){
+		if ($sql_periode=="jour"){
+			$result=self::get_conso_jour($id_ecq);
+		}elseif ($sql_periode=="hier") {
+			$result=self::get_conso_hier($id_ecq);
+		}elseif ($sql_periode=="semaine") {
+			$result=self::get_conso_semaine($id_ecq);
+		}elseif ($sql_periode=="mois") {
+			$result=self::get_conso_mois($id_ecq);
+		}elseif ($sql_periode=="année") {
+			$result=self::get_conso_annee($id_ecq);
+		}
+		
+		
+		//{"prix_hp":0.1374,"total_hp":1.06,"total_hc":0.43,"total":11.64,"hp":7.72,"hc":3.92,"total_hc_ttc":0.52,"total_hp_ttc":1.27,"total_ttc":1.79,"total_ht":1.49,"prix_hc":0.1092}
+
+		
+		if ($result) {
+					
+			
+			
+			$conso_hp = $result['hp'];
+			$conso_hc = $result['hc'];
+			$conso_totale = $result['total'];
+			$pourcent_hp=$conso_hp/$conso_totale*100;
+			$pourcent_hc=$conso_hc/$conso_totale*100;
+
+
+			$montant_hp = $result['total_hp_ttc'];
+			$montant_hc = $result['total_hc_ttc'];
+			$montant_total = $result['total_hp_ttc'] + $result['total_hc_ttc'];
+			
+			$color_byHP = "#AA4643";
+            $color_byHC = "#4572A7";
+			$color=[];
+			if(Eco_legrand::get_type_abo($id_ecq)=="HC"){
+				array_push($color, $color_byHP);
+				array_push($color, $color_byHC);
+			}else{
+				array_push($color, $color_byHP);
+			}
+			$tooltip_data=[];
+			
+			array_push($tooltip_data, "Conso: " . round($conso_hp,2) . 'kWh<br>Prix: ' . round($montant_hp,2)."€");
+			array_push($tooltip_data, "Conso: " . round($conso_hc,2) . 'kWh<br>Prix: ' .round($montant_hc,2)."€");
+
+
+
+			$tab= array(
+			'tooltip_data' =>  $conso_totale ,
+			'categorie' =>  ['HP', 'HC'],
+			'data' =>[$pourcent_hp,$pourcent_hc],
+			'color' => $color,
+			'tooltip_data' => $tooltip_data);
+			
+			
+			return $tab;	
+		}
+
+
+
+
+
+
+
+			
+	}
+
+
+	static public function GetPie($id_ecq = false,$type=false){
+		$tabresult = array();
+		if ($type=="jour"){
+			$tabresult = self::GetTabPie("jour", $id_ecq);
+		}else{
+			$tabresult['jour'] = self::GetTabPie("jour", $id_ecq);
+			$tabresult['hier'] = self::GetTabPie("hier", $id_ecq);
+			$tabresult['mois'] = self::GetTabPie("mois", $id_ecq);
+			$tabresult['semaine'] = self::GetTabPie("semaine", $id_ecq);
+			$tabresult['annee'] = self::GetTabPie("année", $id_ecq);
+
+		}
+
+			
+			return $tabresult;
+
+	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 	static function getMaxIndexByEcq($eqLogicId){
@@ -686,7 +825,7 @@ class Eco_legrand_teleinfo
 			$backup_file = $backup_file . '_' . date("Y-m-dHis") . '.sql';
 			$command = "mysqldump --opt -h$dbhost -u$dbuser -p$dbpass " . "jeedom " . $table . " " . $param . " " . $where . "  > " . $tmp . $backup_file;
 
-			log::add('conso', 'debug', $command);
+			Eco_legrand::add_log( 'debug', $command);
 
 			$cmd = 'echo "Préparation de la sauvegarde ' . $where_libelle . ' (' . $tmp . $backup_file . ') \n"  >> ' . log::getPathToLog('conso_historique') . ' 2>&1 &';
 			exec($cmd);
@@ -717,7 +856,7 @@ class Eco_legrand_teleinfo
 			$cmd = 'echo "Préparation de la sauvegarde ' . "$where_libelle" . ' (' . $tmp . $backup_file . ') \n"  >> ' . log::getPathToLog('conso_historique') . ' 2>&1 &';
 			exec($cmd);
 
-			log::add('conso', 'debug', $command);
+			Eco_legrand::add_log( 'debug', $command);
 
 			$cmd = 'echo "Création de la Sauvegarde en cours ........ \n"  >> ' . log::getPathToLog('conso_historique') . ' 2>&1 &';
 			exec($cmd);
@@ -736,7 +875,7 @@ class Eco_legrand_teleinfo
 			//$command = "mysqldump --opt -h$dbhost -u$dbuser -p$dbpass " . "jeedom " . $table . " " . $where . " | gzip > " . $tmp . $backup_file;
 			$command = "mysqldump --skip-add-drop-table --no-create-info --add-locks --quick --extended-insert --lock-tables --set-charset --disable-keys -h$dbhost -u$dbuser -p$dbpass " . "jeedom " . $table . " " . $where . " | gzip > " . $tmp . $backup_file;
 
-			log::add('conso', 'debug', $command);
+			Eco_legrand::add_log( 'debug', $command);
 
 			$cmd = 'echo "Sauvegarde en GZ \n"  >> ' . log::getPathToLog('conso_historique') . ' 2>&1 &';
 			exec($cmd);
@@ -817,7 +956,6 @@ class Eco_legrand_teleinfo
 	
 	static public function getMonthOldConso($id_ecq){
 		$date = new DateTime();
-		//log::add('conso', 'debug', 'getMonthOldConso ');
 		$month_conso = Eco_legrand_teleinfo::get_calcul_prix($date->modify('-1 year')->format('Y-m-01'), $date->format('Y-m-t'), "mois", false, false, false, false, $id_ecq); /*Conso du mois en cours  */
 		if ($month_conso !== false) {
 			return Eco_legrand_teleinfo::consoResult($month_conso, 'month', $date->modify('-1 year')->format('Y-m-01'), $date->format('Y-m-t'), $id_ecq);
@@ -830,321 +968,7 @@ class Eco_legrand_teleinfo
 
 	
 
-	static public function GetTabPie($sql_periode, $group_type = 'myid', $id_ecq = false){
-		if ($sql_periode == 'hier%d%c%Y') {
-			$sql_periode2 = '%d%c%Y';
-			$decalage = 1;
-		} else {
-			$sql_periode2 = $sql_periode;
-			$decalage = 0;
-		}
-		$eqLogics = eqLogic::byId((int)$id_ecq);
-		$parent_id = $eqLogics->getConfiguration('parent_id');
-		if ($parent_id) {
-			$id_ecq = $parent_id;
-		}
-		$eqLogics = eqLogic::byId((int)$id_ecq);
-		$production = false;
-		//log::add('conso', 'info', 'parametre:'.$eqLogics->getConfiguration('production_sup'));
-		if ($eqLogics->getConfiguration('production_sup')) {
-			//log::add('conso', 'info', 'production sup true');
-			$production = true;
-		}
-
-		$liste = '';
-		//log::add('conso', 'debug', 'GetTabPie Requete:'.$group_type.' '.$id_ecq);
-		//log::add('conso', 'debug', 'GetTabPie group type:'.$group_type.' '.$id_ecq);
-		$sql = 'SELECT 	distinct id_eq  from conso_jour where id_eq > 0';
-		$result = DB::Prepare($sql, array(), DB::FETCH_TYPE_ALL);
-		if ($result) {
-			$nb_ecq = 0;
-			foreach ($result as $key => $val) {
-				$eqLogics = eqLogic::byId((int)$val['id_eq']);
-				if($eqLogics) {
-					$parent_id = $eqLogics->getConfiguration('parent_id');
-					if ((int)$parent_id == $id_ecq or (int)$val['id_eq'] == $id_ecq ) {
-						$nb_ecq += 1;
-						if ((int)$parent_id == $id_ecq) {
-							$liste = $liste.$val['id_eq'].',';
-						}
-					}
-				}
-			}
-		}
-		$liste = $liste.$id_ecq;
-
-
-		$sql = 'SELECT
-				myid AS id,
-				' . ($group_type == 'myid' ? ' myname ' : ' IF(IFNULL(istotal,0)>0 ,"Total",IF(categorie="NC",myname,categorie)) ') . ' AS name_cat,
-				isHCHP ,
-				istotal ,
-				IFNULL(SUM(shc),0) AS totalhc,
-				IFNULL(SUM(shp),0) AS totalhp,
-				IFNULL(ROUND(SUM(shp)+SUM(shc),2),0) AS total,
-
-				ROUND(SUM(hcprix),2) AS  prixhc,
-				ROUND(SUM(hpprix),2) AS  prixhp,
-				ROUND(SUM(totalprix),2) AS prix,
-
-				IFNULL(ROUND(SUM(shc)*100/(case WHEN (SUM(shc)+SUM(shp)) > (res.totalhc+res.totalhp) THEN (SUM(shc)+SUM(shp)) ELSE (res.totalhc+res.totalhp) END),2),0) AS total_percent_ecq_hc,
-				IFNULL(ROUND(SUM(shp)*100/(case WHEN (SUM(shc)+SUM(shp)) > (res.totalhc+res.totalhp) THEN (SUM(shc)+SUM(shp)) ELSE (res.totalhc+res.totalhp) END),2),0) AS total_percent_ecq_hp,
-				IFNULL(SUM(shc)*100/(SUM(shp)+SUM(shc)),0) AS percent_ecq_hc,
-				IFNULL(SUM(shp)*100/(SUM(shp)+SUM(shc)),0) AS percent_ecq_hp,
-
-				IFNULL(ROUND((SUM(shc)+SUM(shp))*100/ (case WHEN (SUM(shc)+SUM(shp)) > (res.totalhc+res.totalhp) THEN (SUM(shc)+SUM(shp)) ELSE (res.totalhc+res.totalhp) END),2),0) AS percent_ecq_reel,
-				IFNULL(ROUND((SUM(shc)+SUM(shp))*100/ (res.totalhc+res.totalhp),2),0) AS percent_ecq,
-				myid
-			FROM (
-				SELECT
-					CASE
-						WHEN configuration  like  \'%"visibleConsumptionLight":"1"%\' THEN "Lumieres"
-						WHEN configuration  like  \'%"visibleConsumptionElectrical":"1"%\' THEN "Electromenager"
-						WHEN configuration  like  \'%"visibleConsumptionAutomatism":"1"%\' THEN "Automatisme"
-						WHEN configuration  like  \'%"visibleConsumptionHeating":"1"%\' THEN "Chauffage"
-						WHEN configuration  like  \'%"visibleConsumptionMultimedia":"1"%\' THEN "Multimedia"
-						WHEN configuration  LIKE  \'%"visibleConsumptionVehicules":"1"%\' THEN "Véhicules"
-						WHEN configuration  LIKE  \'%"visibleConsumptionHardware":"1"%\' THEN "Mat. Informatique"
-						WHEN configuration  LIKE  \'%"visibleConsumptionAirConditioner":"1"%\' THEN "Climatisation"
-						WHEN configuration  LIKE  \'%"visibleConsumptionSwimmingPool":"1"%\' THEN "Piscine"
-						WHEN configuration  LIKE  \'%"visibleConsumptionAutomation":"1"%\' THEN "Domotique"
-						WHEN configuration  LIKE  \'%"visibleConsumptionOther":"1"%\' THEN "Autres"
-						ELSE "NC"
-					END as categorie,
-				id AS myid,
-				IF(INSTR(configuration, \'"type_abo":"HCHP"\' )>0 , 1 , 0 ) AS isHCHP ,
-				IF(INSTR(configuration, \'"total":"1"\' )>0 , 1 , 0 ) AS istotal ,
-				NAME AS myname,
-				/* MIN(j.rec_date) AS DATE,*/
-				periode,
-				hc AS shc,
-				hp AS shp,
-				totalhp,
-				totalhc,
-				prix_hc * hc AS hcprix,
-				prix_hp * hp AS hpprix,
-				(prix_hc * hc) + (prix_hp * hp)  AS totalprix,
-				DATE_FORMAT(j.`rec_date`,"' . $sql_periode2 . '") AS mois,
-				j.`rec_date`,
-				p.id_eq
-				FROM conso_jour j
-				INNER JOIN
-				(
-					SELECT jo.id_eq,
-					DATE_FORMAT(jo.`rec_date`,"' . $sql_periode2 . '"),
-					jo.rec_date,
-					SUM(hp) AS totalhp,
-					SUM(hc) AS totalhc,
-					(SELECT FORMAT(hc,4) AS hc FROM conso_price  WHERE type_ecq LIKE "%elect%" AND UNIX_TIMESTAMP(DATE_FORMAT(jo.rec_date , "%Y-%m-%d")) BETWEEN UNIX_TIMESTAMP( DATE_FORMAT( date_debut,  "%Y-%m-%d" ) ) AND UNIX_TIMESTAMP( DATE_FORMAT( date_fin,  "%Y-%m-%d" ) ) LIMIT 0,1) AS prix_hc,
-					(SELECT FORMAT(hp,4) AS hc FROM conso_price  WHERE type_ecq LIKE "%elect%" AND UNIX_TIMESTAMP(DATE_FORMAT(jo.rec_date , "%Y-%m-%d")) BETWEEN UNIX_TIMESTAMP( DATE_FORMAT( date_debut,  "%Y-%m-%d" ) ) AND UNIX_TIMESTAMP( DATE_FORMAT( date_fin,  "%Y-%m-%d" ) ) LIMIT 0,1 ) AS prix_hp
-					FROM
-						conso_jour jo
-					INNER JOIN
-						eqLogic eqc ON eqc.id = jo.id_eq
-					WHERE
-						jo.id_eq in ('.$liste.') and
-						DATE_FORMAT(jo.`rec_date`,"' . $sql_periode2 . '")  = DATE_FORMAT(CURDATE()- INTERVAL '.$decalage.' DAY,"' . $sql_periode2 . '")
-						AND   configuration LIKE "%elect%"
-						AND configuration LIKE \'%"total":"1"%\'
-					GROUP BY
-						DATE_FORMAT(jo.`rec_date`,"' . $sql_periode2 . '"), jo.id_eq
-				    ) AS p ON DATE_FORMAT(p.`rec_date`,"' . $sql_periode2 . '") = DATE_FORMAT(j.`rec_date`,"' . $sql_periode2 . '")
-
-				INNER JOIN eqLogic eq ON eq.id = j.id_eq AND isEnable = 1
-				WHERE
-				j.id_eq in ('.$liste.') and
-				DATE_FORMAT(j.`rec_date`,"' . $sql_periode2 . '")  = DATE_FORMAT(CURDATE()- INTERVAL '.$decalage.' DAY,"' . $sql_periode2 . '")  AND
-				configuration LIKE "%elect%"
-				/* GROUP BY  j.id_eq*/
-			) AS res
-			 GROUP BY  DATE_FORMAT(res.`rec_date`,"' . $sql_periode2 . '"), name_cat ORDER BY istotal DESC ';
-		//log::add('conso', 'debug', 'GetTabPie Requete:'.$sql);
-		$result = DB::Prepare($sql, array(), DB::FETCH_TYPE_ALL);
-		if ($result) {
-			$other_total = 0;
-			$other_hp = 0;
-			$other_hc = 0;
-			$total_hp = 0;
-			$total_hc = 0;
-			$total = 0;
-
-			$prix_hp = 0;
-			$prix_hc = 0;
-			$prix = 0;
-
-			$nb_total = 0;
-			$totalkey = -1;
-			$ishphc = false;
-
-			foreach ($result as $key => $val) {
-
-				//$eqLogics = eqLogic::byId((int)$val['id']);
-				//$parent_id = $eqLogics->getConfiguration('parent_id');
-				//log::add('conso', 'debug', 'GetTabPie parent_id:'.$parent_id.' id:'.$val['id'].' result0 id:'.$result[0]['id']);
-				/*if ((int)$parent_id == $id_ecq or (int)$val['id'] == $id_ecq ) {
-					$nb_ecq += 1;
-				}*/
-				if ((int)$val['istotal'] > 0) {
-					//log::add('conso', 'debug', 'GetTabPie total id:'.$val['id']);
-					$nb_total += 1;
-					$totalkey = $key;
-				} else {
-					//Il ne faut prendre que les equipements qui on comme pere le total.
-					//log::add('conso', 'debug', 'GetTabPie detail avant id:'.$val['id']);
-					//if ((int)$parent_id == $id_ecq) {
-						//log::add('conso', 'debug', 'GetTabPie detail id:'.$val['id']);
-						$tab['info']['categories'][] = $val['name_cat'];
-						if ((int)$val['isHCHP'] > 0) $ishphc = true;
-						/*Calcul pour connaitre le delta avec le total si il est connu*/
-						$other_total += $val['percent_ecq'];
-						$other_hp += $val['percent_ecq_hp'];
-						$other_hc += $val['percent_ecq_hc'];
-
-						$total_hp += $val['totalhp'];
-						$total_hc += $val['totalhc'];
-						$total += $val['total'];
-
-						$prix_hp += $val['prixhp'];
-						$prix_hc += $val['prixhc'];
-						$prix += $val['prix'];
-
-						/**********************/
-
-						$tab['categorie'][$val['name_cat']] = array(
-															'percent_hp' => (float)$val['percent_ecq_hp'],
-															'percent_hc' => (float)$val['percent_ecq_hc'],
-															'prix_hp' => (float)$val['prixhp'],
-															'prix_hc' => (float)$val['prixhc'],
-															'conso_hc' => (float)$val['totalhc'],
-															'conso_hp' => (float)$val['totalhp']);
-
-							$tab['detail'][] = array('name' => $val['name_cat'], 'percent' => (float)$val['percent_ecq_reel'], 'tooltip_data' => (((float)$result[$totalkey]['percent_ecq'] - (float)$other_total) < 0 ? $total : (float)$val['total']),
-							'drilldown' => array('categories' => ((int)$val['isHCHP'] > 0 ? ['HP', 'HC'] : ['HB']),
-								'data' => ((int)$val['isHCHP'] > 0 ?
-									[(float)$val['total_percent_ecq_hp'],(float)$val['total_percent_ecq_hc']] :
-									[(float)$val['total_percent_ecq_hp']]),
-								'color' => ((int)$val['isHCHP'] > 0 ? ['#AA4643', '#4572A7'] : ['#AA4643']),
-								'tooltip_data' => ($ishphc ? ['Conso : ' . (((float)$result[$totalkey]['percent_ecq'] - (float)$other_total) < 0 ? $total_hp : (float)$val['totalhp']) . 'kWh<br>Prix : ' . (((float)$result[$totalkey]['percent_ecq'] - (float)$other_total) < 0 ? $prix_hp : (float)$val['prixhp']) .config::byKey('Devise', 'conso'), 'Conso : ' . (((float)$result[$totalkey]['percent_ecq'] - (float)$other_total) < 0 ? $total_hc : (float)$val['totalhc']) . 'kWh<br>Prix : ' . (((float)$result[$totalkey]['percent_ecq'] - (float)$other_total) < 0 ? $prix_hc : (float)$val['prixhc']) . config::byKey('Devise', 'conso')] : ['Conso : ' . (((float)$result[$totalkey]['percent_ecq'] - (float)$other_total) < 0 ? $total : (float)$val['total']) . 'Kwh<br>Prix : ' . (((float)$result[$totalkey]['percent_ecq'] - (float)$other_total) < 0 ? $prix : (float)$val['prix']) . config::byKey('Devise', 'conso')])));
-					//	}
-				}
-			}
-
-			if ($totalkey >= 0) {
-
-				if(((float)$result[$totalkey]['percent_ecq'] - (float)$other_total) < 0){
-					if ($production) {
-						// On prend la somme des enfants si consommation > à celle du père et que la case production est coché
-						$result[$totalkey]['percent_ecq'] = 100;
-						$result[$totalkey]['percent_ecq_hp'] = $other_hp;
-						$result[$totalkey]['percent_ecq_hc'] = $other_hc;
-						$result[$totalkey]['prixhp'] = $prix_hp;
-						$result[$totalkey]['prixhc'] = $prix_hc;
-						$result[$totalkey]['totalhc'] = $total_hc;
-						$result[$totalkey]['totalhp'] = $total_hp;
-					}
-					ELSE {
-						switch ($sql_periode) {
-							case "%c%Y":
-								$periode = "mois";
-								break;
-							case "%Y":
-								$periode = "année";
-								break;
-							case "%v%c%Y":
-								$periode = "semaine";
-								break;
-							case "hier%d%c%Y":
-								$periode = "hier";
-								break;
-							case "%d%c%Y":
-								$periode = "jour";
-								break;
-						}
-						log::add('conso', 'error', 'La somme des sous-équipements est supérieure au total de l\'équipement père pour la période '.$periode.'. Le camembert ne peut plus être affiché. Total père: '.$result[$totalkey]['percent_ecq'].'% Total sous-équipements: '.$other_total.'%');
-						$tab['nb_equipement'] = 1;
-
-						$tab['havetotal'] = $nb_total;
-						$tab['retour'] = 'ok';
-						$tab['other'] = 'no'; //ne pas afficher le camembert
-						return $tab;
-					}
-				}
-
-				$tab['info']['categories'][] = 'Indéfini';
-				$tab['categorie']['Indéfini'] = array(
-					'percent_hp' =>(float)($result[$totalkey]['totalhc'] + $result[$totalkey]['totalhp'] - $total_hp - $total_hc == 0 ? 0 : (((float)$result[$totalkey]['totalhp'] - (float)$total_hp) * 100) / ($result[$totalkey]['totalhc'] + $result[$totalkey]['totalhp'] - $total_hp - $total_hc)), //((float)$result[$totalkey]['percent_ecq'] - (float)$other_total),
-					'percent_hc' =>(float)($result[$totalkey]['totalhc'] + $result[$totalkey]['totalhp'] - $total_hp - $total_hc == 0 ? 0 : (((float)$result[$totalkey]['totalhc'] - (float)$total_hc) * 100) / ($result[$totalkey]['totalhc'] + $result[$totalkey]['totalhp'] - $total_hp - $total_hc)), //((float)$result[$totalkey]['percent_ecq'] - (float)$other_total),
-					'prix_hp' => ((float)$result[$totalkey]['prixhp'] - (float)$prix_hp),
-					'prix_hc' => ((float)$result[$totalkey]['prixhc'] - (float)$prix_hc),
-					'conso_hc' => ((float)$result[$totalkey]['totalhc'] - (float)$total_hc),
-					'conso_hp' => ((float)$result[$totalkey]['totalhp'] - (float)$total_hp));
-					log::add('conso', 'debug', 'GetTabpie id:'.$result[$totalkey]['id'].' Total HC:'.$result[$totalkey]['totalhc'].' Total HP:'.$result[$totalkey]['totalhp']);
-					$tab['detail'][] = array('name' => 'Non relevé - ' . $result[$totalkey]['name_cat'],
-														'percent' => (float)$result[(float)$totalkey]['percent_ecq'] - (float)$other_total,
-														'tooltip_data' =>  (float)$result[$totalkey]['total'],
-														'drilldown' => array(
-														'categories' => ($ishphc ? ['HP', 'HC'] : ['HB']),
-														'data' => ($ishphc ? [	(float)(($result[$totalkey]['totalhp'] - $total_hp) * 100) / ($result[$totalkey]['totalhc'] + $result[$totalkey]['totalhp'] == 0 ? 0.1 : $result[$totalkey]['totalhc'] + $result[$totalkey]['totalhp']),
-																(float)(($result[$totalkey]['totalhc'] - $total_hc) * 100) / ($result[$totalkey]['totalhc'] + $result[$totalkey]['totalhp'] == 0 ? 0.1 : $result[$totalkey]['totalhc'] + $result[$totalkey]['totalhp'])] :
-																[(float)(($result[$totalkey]['totalhp'] - $total_hp) * 100) / ($result[$totalkey]['totalhp'] == 0 ? 0.1 :$result[$totalkey]['totalhp'])]),
-																	'color' => ($ishphc ? ['#AA4643', '#4572A7'] : ['#AA4643']), 'tooltip_data' => ($ishphc ? ['Conso : ' . ((float)$result[$totalkey]['totalhp'] - (float)$total_hp) . 'Kwh
-																	<br>Prix : ' . ((float)$result[$totalkey]['prixhp'] - (float)$prix_hp) . config::byKey('Devise', 'conso'), 'Conso : ' . ((float)$result[$totalkey]['totalhc'] - (float)$total_hc) . 'Kwh
-																	<br>Prix : ' . ((float)$result[$totalkey]['prixhc'] - (float)$prix_hc) . config::byKey('Devise', 'conso')] : ['Conso : ' . ((float)$result[$totalkey]['total'] - (float)$total) . 'Kwh
-																	<br>Prix : ' . ((float)$result[$totalkey]['prix'] - (float)$prix) . config::byKey('Devise', 'conso')])));
-			}
-			$tab['retour'] = 'ok';
-			$tab['havetotal'] = $nb_total;
-			$tab['abonnement'] = ($ishphc ? 'HCHP' : 'HB');
-			$tab['nb_equipement'] = $nb_ecq;
-			$tab['other'] = 'visible';
-			log::add('conso', 'debug', 'GetTabPie Equipement:'.$nb_ecq);
-			return $tab;
-
-		} else{
-			$tab['havetotal'] = 0;
-			$tab['retour'] = 'ko';
-			$tab['other'] = 'hidden';
-			}
-
-		return $tab;
-	}
-
-	static public function GetPie($periode = 'all', $type = 'myid', $id_ecq = false){
-
-		switch ($periode) {
-			case "mois":
-				$sql_periode = "%c%Y";
-				break;
-			case "annee":
-				$sql_periode = "%Y";
-				break;
-			case "semaine":
-				$sql_periode = "%v%c%Y";
-				break;
-			case "hier":
-				$sql_periode = "hier%d%c%Y";
-				break;
-			case "jour":
-				$sql_periode = "%d%c%Y";
-				break;
-		}
-		//log::add('conso', 'debug', 'GetPie Equipement:'.$periode.' '.$id_ecq);
-		if ($periode == 'all') {
-
-			$tabresult = array();
-
-			$tabresult['jour'] = self::GetTabPie("%d%c%Y", $type, $id_ecq);
-			$tabresult['hier'] = self::GetTabPie("hier%d%c%Y", $type, $id_ecq);
-			$tabresult['mois'] = self::GetTabPie("%c%Y", $type, $id_ecq);
-			$tabresult['semaine'] = self::GetTabPie("%v%c%Y", $type, $id_ecq);
-			$tabresult['annee'] = self::GetTabPie("%Y", $type, $id_ecq);
-
-			return $tabresult;
-
-		} else {
-			return self::GetTabPie($sql_periode, 'myid', $id_ecq);
-		}
-	}
+	
 
 	static public function getSyntheseByMonth($type = 'electricity'){
 
@@ -1209,7 +1033,6 @@ class Eco_legrand_teleinfo
 					WHERE /*id_eq = 13*/ isEnable = 1  AND  eqc.configuration LIKE \'%"type":"'.$type.'"%\' AND  (
 					 `rec_date` BETWEEN DATE_SUB(CURRENT_DATE(), INTERVAL 1 YEAR)   AND CURRENT_DATE()  )
 					GROUP BY   id_eq,cat_month ORDER BY id_eq,rec_date DESC';
-		//log::add('conso', 'debug', 'requete synthese par mois:'.$sql);
 		$result = DB::Prepare($sql, array(), DB::FETCH_TYPE_ALL);
 		$details = array();
 

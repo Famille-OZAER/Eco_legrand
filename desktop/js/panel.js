@@ -1,22 +1,23 @@
 hideall();
+$('#Eco_legrand_elec').show();
 verifParam();
 
 
-$(".mainnav li.bt_dashboard").addClass('active');
+$(".mainnav li.bt_elec").addClass('active');
 
-var ecq = $('#Eco_legrand_ecq').val();
+
 var datesynchro = $('#datesynchro').val();
 
-loadingDash(ecq, datesynchro);
+loadingDash($('#Eco_legrand_ecq').val(), datesynchro);
 
 $('#conso_dashboard').show();
 
 $('#Eco_legrand_ecq').on('change', function() {
-    var ecq = $(this).val();
+
     $(".mainnav li.active").click();
-    loadingDash(ecq); // chargement du dashboard
+    loadingDash($('#Eco_legrand_ecq').val()); // chargement du dashboard
 });
-$('.datetimepicker').datepicker({ 'format': 'yyyy-m-d', 'autoclose': true }).datepicker("setDate", "0");
+//$('.datetimepicker').datepicker({ 'format': 'yyyy-m-d', 'autoclose': true }).datepicker("setDate", "0");
 
 jQuery(function($) {
 
@@ -37,11 +38,32 @@ jQuery(function($) {
 
 });
 
-$('.back').hide();
+
 /*clique pour basculer sur le graph temperature*/
 $('.icon_flip, .icon_return').click(function() {
-    $(this).parents('.card').find('.front').slideToggle();
-    $(this).parents('.card').find('.back').slideToggle();
+    /*
+    $(this).parents('.card').find('.front').fadeToggle("fast");
+   
+    $(this).parents('.card').find('.back').fadeToggle("fast");*/
+    if ($(this).parents('.card').find('.front').is(":visible")) {
+        if ($(this).parents('.card').find('.back').length) {
+            $(this).parents('.card').find('.back').fadeToggle();
+        }
+        if ($(this).parents('.card').find('.back1').length) {
+
+            $(this).parents('.card').find('.back1').fadeToggle();
+        }
+        $(this).parents('.card').find('.front').hide()
+    } else if ($(this).parents('.card').find('.back').is(":visible")) {
+        $(this).parents('.card').find('.front').fadeToggle();
+        $(this).parents('.card').find('.back').hide()
+    } else if ($(this).parents('.card').find('.back1').is(":visible")) {
+        $(this).parents('.card').find('.back2').fadeToggle();
+        $(this).parents('.card').find('.back1').hide()
+    } else if ($(this).parents('.card').find('.back2').is(":visible")) {
+        $(this).parents('.card').find('.front').fadeToggle();
+        $(this).parents('.card').find('.back2').hide()
+    }
 
     $('.chart').each(function() {
         let highcharts = $(this).highcharts();
@@ -70,27 +92,18 @@ Highcharts.setOptions({
         rangeSelectorTo: "a"
     }
 });
-$('.changeType button').click(function() {
-    var serie_selected = 'CurrentSerie';
-    series = ChartCurrentTrame.get(serie_selected);
-    for (i = 0; i < ChartCurrentTrame.series.length; i++) {
-        if (ChartCurrentTrame.series[i].name == "Aujourd'hui") {
-            series = ChartCurrentTrame.series[i];
-        }
-    }
-    series.update({ data: series.options.data, type: (series.type == 'column' ? "areaspline" : "column") });
-});
+
 
 $('#validedatecurrent').click(function() {
     if (($('#current_debut').val() != '' && $('#current_fin').val() != '') && (($('#current_debut').val() < $('#current_fin').val()) || ($('#current_debut').val() == $('#current_fin').val()))) {
-        var ecq = $('#Eco_legrand_ecq').val();
+
 
         $.ajax({
             type: 'POST',
             url: 'plugins/Eco_legrand/core/ajax/Eco_legrand.ajax.php',
             global: true,
             data: {
-                id_ecq: ecq,
+                id_ecq: $('#Eco_legrand_ecq').val(),
                 action: 'loadingDash',
                 date_debut: $('#current_debut').val(),
                 date_fin: $('#current_fin').val()
@@ -105,7 +118,6 @@ $('#validedatecurrent').click(function() {
 
                 } else {
                     if (data.result.nb_trame > 0) {
-                        console.log(data.result)
                         showCurrentTrame(data.result.trame_du_jour, data.result.trame_hier, data.result.max_current_trame, data.result.min_current_trame,
                             data.result.type_abo, data.result.isous);
                     } else {
@@ -119,34 +131,28 @@ $('#validedatecurrent').click(function() {
 
 function hideall() {
 
-    $('#Eco_legrand_dashboard').hide();
     //$('#Eco_legrand_tab').hide();
-    $('#cEco_legrand_outil').hide();
+    $('#Eco_legrand_elec').hide();
+    $('#Eco_legrand_outil').hide();
     //$('#Eco_legrand_graph').hide();
     //$('#Eco_legrand_graph_cat').hide();
     $('#Eco_legrand').hide();
     //$('#Eco_legrand_table').hide();
     $('.mainnav li').removeClass('active');
-    $('.btn-group').hide();
+    //$('.btn-group').hide();
 }
 
 $('.bt_graph_cat').on('click', function() {
     hideall();
-    var ecq = $('#Eco_legrand_ecq').val();
-    refreshGraphCat(ecq);
+
+    refreshGraphCat($('#Eco_legrand_ecq').val());
     //showGraph();
     $('.bt_graph_cat').addClass('active');
     $('#Eco_legrand_graph_cat').show();
 
 });
 
-$('.bt_temperature').on('click', function() {
-    hideall();
-    getDateMysql();
-    showTemperature();
-    $('.bt_temperature').addClass('active');
-    $('#cEco_legrand_temperature').show();
-});
+
 
 $('.bt_graph').on('click', function() {
     hideall();
@@ -162,14 +168,15 @@ $('.bt_tab').on('click', function() {
     $('#Eco_legrand_tab').show();
 });
 
-$('.bt_dashboard').on('click', function() {
+$('.bt_elec').on('click', function() {
     hideall();
-    var ecq = $('#Eco_legrand_ecq').val();
-    loadingPie(ecq); // chargement des statistiques
-    loadingDash(ecq); // chargement du dashboard
-    $('.bt_dashboard').addClass('active');
-    $('#Eco_legrand_dashboard').show();
-    $(window).resize();
+
+    //loadingPie($('#Eco_legrand_ecq').val()); // chargement des statistiques
+    loadingDash($('#Eco_legrand_ecq').val()); // chargement du dashboard
+
+    $('.bt_elec').addClass('active');
+    $('#Eco_legrand_elec').show();
+    //$(window).resize();
 
 });
 
@@ -183,18 +190,11 @@ $('.bt_backup').on('click', function() {
 
 $('.bt_outil').on('click', function() {
     hideall();
-    getDateMysql();
+    //getDateMysql();
     $('.bt_outil').addClass('active');
     $('#Eco_legrand_outil').show();
 });
 
-
-
-$('.bt_Eco_legrand').on('click', function() {
-    hideall();
-    $('.bt_Eco_legrand').addClass('active');
-    $('#Eco_legrand').show();
-});
 
 $('.bt_synthese').on('click', function() {
 
@@ -212,11 +212,7 @@ $('.bt_table').on('click', function() {
 
 });
 
-$('.bt_correcteur').on('click', function() {
-    hideall();
-    $('.bt_correcteur').addClass('active');
-    $('#Eco_legrand_correcteur').show();
-});
+
 
 $('.dtimepicker').datetimepicker({
     lang: 'fr',
@@ -236,7 +232,7 @@ $('.dtimepickerTime').datetimepicker({
 /*
  * Génération d un graphique  pour la temeprature min, max et moyenne
  * */
-function show_graph_temp(data, conteneur, legend) {
+function show_graph_temp(data, conteneur) {
 
     if (timezonebis == null) {
         var timezonebis = "Europe/Brussels";
@@ -258,9 +254,9 @@ function show_graph_temp(data, conteneur, legend) {
             events: {
                 load: function(chart) {
                     this.myTooltip = new Highcharts.Tooltip(this, this.options.tooltip);
-                    if ($('#' + legend).length) {
-                        $('#' + legend).html(data.subtitle);
-                    }
+                    // if ($('#' + legend).length) {
+                    //     $('#' + legend).html(data.subtitle);
+                    // }
 
                 }
             },
@@ -402,9 +398,7 @@ function show_graph_temp(data, conteneur, legend) {
 
 }
 
-function show_graph(data, conteneur, legend, mystyle) {
-
-    var type_ecq = data.type_ecq;
+function show_graph(data, conteneur) {
     var HC_name = data.HC_name;
     var HP_name = data.HP_name;
 
@@ -412,42 +406,27 @@ function show_graph(data, conteneur, legend, mystyle) {
 
         var HP_data = data.HP_data;
         var HC_data = data.HC_data;
-
-        var HP_data_old = data.HP_data_old;
-        var HC_data_old = data.HC_data_old;
-
-
         var title_text = ' kWh';
         var title_text2 = '';
-        var tooltip_text = ' ';
-        var tooltip_text2 = 'kWh';
+        var tooltip_text = '';
+        var tooltip_text2 = ' kWh';
 
     } else { /*Affichage des prix */
-        if (conteneur == 'YearTaxe') {
-            var HP_data = data.HP_data_prix_ttc;
-            var HC_data = data.HC_data_prix_ttc;
-            var HC_name = data.HC_name + ' TTC';
-            var HP_name = data.HP_name + ' TTC';
 
-        } else {
-            var HP_data = data.HP_data_prix;
-            var HC_data = data.HC_data_prix;
-        }
+        var HP_data = data.HP_data_prix_ttc;
+        var HC_data = data.HC_data_prix_ttc;
+        var title_text = ' €';
+        var tooltip_text = ' €';
+        var title_text2 = ' €';
+        var tooltip_text2 = ' €';
 
-        var HP_data_old = data.HP_data_old_prix;
-        var HC_data_old = data.HC_data_old_prix;
-
-        var title_text = Devise;
-        var title_text2 = Devise;
-        var tooltip_text = Devise;
-        var tooltip_text2 = Devise;
     }
 
 
     if (timezonebis == null) {
         var timezonebis = "Europe/Brussels";
     }
-    //console.log(timezonebis + "| Bibligrap : " + conteneur);
+
     return {
         chart: {
             renderTo: conteneur,
@@ -458,127 +437,10 @@ function show_graph(data, conteneur, legend, mystyle) {
             events: {
                 load: function(chart) {
                     this.myTooltip = new Highcharts.Tooltip(this, this.options.tooltip);
-                    if ($('#' + legend).length) {
-                        $('#' + legend).html(data.subtitle);
-                    }
-
-
-
-
-                    /*-------------------------------------------------*/
-                    /*------------------TAXE----------------------*/
-                    /*-------------------------------------------------*/
-                    if (conteneur == 'YearTaxe') {
-
-                        this.addSeries({
-                            name: data.fixe_name,
-                            data: data.total_fixe,
-                            stack: 'current',
-                            index: 90,
-                            id: 'serie_fixe',
-                            color: '#7F7F7F',
-                            dataLabels: {
-                                enabled: true,
-                                color: "var(--txt-color)",
-                                y: 0,
-                                formatter: function() {
-                                    return parseFloat(this.y) + Devise;
-                                },
-                                style: {
-                                    textOutline: false,
-                                    textShadow: false,
-                                    fontSize: '8px !important',
-                                    font: 'normal 13px Verdana, sans-serif'
-                                }
-                            },
-                            type: data.HP_type_graph,
-                            showInLegend: true
-
-                        });
-
-                        this.addSeries({
-                            name: data.inte_name,
-                            data: data.total_inte,
-                            stack: 'current',
-                            color: '#333333',
-                            index: 80,
-                            id: 'serie_inte',
-                            dataLabels: {
-                                enabled: true,
-                                color: "var(--txt-color)",
-                                y: 0,
-                                formatter: function() {
-                                    return parseFloat(this.y) + Devise;
-                                },
-                                style: {
-                                    textOutline: false,
-                                    fontSize: '8px !important',
-                                    font: 'normal 13px Verdana, sans-serif'
-                                }
-                            },
-                            type: data.HP_type_graph,
-                            showInLegend: true
-                        });
-                    }
-
-
-                    /*Année précédente HP*/
-                    if (data.enabled_old) {
-                        this.addSeries({
-                            name: data.HP_name_old,
-                            data: HP_data_old,
-                            stack: 'old',
-                            index: undefined,
-                            id: 'serie_hp_old',
-                            color: '#F18221',
-                            dataLabels: {
-                                enabled: (data.enabled_old === true ? false : false),
-                                color: "var(--txt-color)",
-                                y: 0,
-                                formatter: function() {
-                                    return parseFloat(this.y) + title_text2;
-                                },
-                                style: {
-                                    textOutline: false,
-                                    font: 'normal 10px Verdana, sans-serif'
-                                }
-                            },
-                            type: (conteneur != 'YearTaxe' ? data.HP_type_graph_old : 'column'),
-                            showInLegend: true
-                        });
-
-
-
-                        /*Année précédente HC*/
-                        this.addSeries({
-                            name: data.HC_name_old,
-                            data: HC_data_old,
-                            id: 'serie_hc_old',
-                            stack: 'old',
-                            visible: ((data.tarif_type == "HCHP" && (type_ecq == 'electricity' || type_ecq == 'electprod')) ? true : false),
-                            index: undefined,
-                            color: '#7CB5EC',
-                            dataLabels: {
-                                enabled: (data.enabled_old ? false : false),
-                                color: "var(--txt-color)",
-                                y: 0,
-                                formatter: function() {
-                                    return parseFloat(this.y) + title_text2;
-                                },
-                                style: {
-                                    textOutline: false,
-                                    font: 'normal 10px Verdana, sans-serif'
-                                }
-                            },
-                            type: (conteneur != 'YearTaxe' ? data.HC_type_graph_old : 'column'),
-                            showInLegend: ((data.tarif_type == "HCHP" && (type_ecq == 'electricity' || type_ecq == 'electprod')) ? true : false)
-                        });
-                    }
-
-
                 }
             },
-            defaultSeriesType: data.type_graph,
+
+            Type: 'column',
         },
         legend: {
             itemStyle: {
@@ -596,15 +458,12 @@ function show_graph(data, conteneur, legend, mystyle) {
             enabled: false
         },
         title: {
-            //text : data.title
             text: ''
         },
 
         subtitle: {
             text: ''
-                // ,
-                //        align: 'center',
-                //        y: 297
+
         },
 
         xAxis: [{
@@ -651,136 +510,7 @@ function show_graph(data, conteneur, legend, mystyle) {
             useHTML: true,
             share: true,
             formatter: function() {
-
-                var title = "HP";
-                var display = '';
-                if (data.tarif_type != "HCHP" || type_ecq == 'water' || type_ecq == 'oil' || type_ecq == 'gaz') {
-                    title = 'HB';
-                    display = 'displaynone';
-                    if (type_ecq == 'water') {
-                        title = 'Eau';
-                    }
-                    if (type_ecq == 'oil') {
-                        title = 'Fioul';
-                    }
-                    if (type_ecq == 'gaz') {
-                        title = 'Gaz';
-                    }
-                }
-
-                //			console.debug(this.point);
-                //			console.debug(data);
-
-                var old = true;
-
-                var prix_HP = data.HP_data_prix[this.point.index];
-                var prix_HC = data.HC_data_prix[this.point.index];
-
-                var prix_old_HP = data.HP_data_old_prix[this.point.index];
-                var prix_old_HC = data.HC_data_old_prix[this.point.index];
-
-                var fixe = Highcharts.numberFormat(data.total_fixe[this.point.index], 2);
-                var inte = Highcharts.numberFormat(data.total_inte[this.point.index], 2);
-
-
-                if (prix_old_HP == null && prix_old_HC == null)
-                    old = false;
-
-
-                var watt_HP = data.HP_data[this.point.index];
-                var watt_HC = data.HC_data[this.point.index];
-                var watt_old_HP = data.HP_data_old[this.point.index];
-                var watt_old_HC = data.HC_data_old[this.point.index];
-                var libelle_tooltip = this.x.replace(/<[^>]*>/g, " au ");
-
-                var colorhp = '#AA4643';
-                var colorhc = '#4572A7';
-
-                var tooltipv2 = '<table class="tg">';
-                tooltipv2 += '<tr><th class="tg-031e bold" colspan="7">' + libelle_tooltip + '</div>' + ' ' + this.series.name + '  ' + Highcharts.numberFormat(this.y, 2) + tooltip_text2 + '</th></tr>';
-                tooltipv2 += '<tr><th class="tg-031e" rowspan="2"></th><th class="tg-031e bold tg-s6z2" ' + (data.tarif_type == "HCHP" && type_ecq != 'water' && type_ecq != 'oil' && type_ecq != 'gaz' ? 'colspan="3" ' : ' ') + ' >Année</th><th class="tg-031e tg-s6z2 bold" ' + (data.tarif_type == "HCHP" && type_ecq != 'water' && type_ecq != 'oil' && type_ecq != 'gaz' ? 'colspan="3" ' : ' ') + '>Année-1</th></tr>';
-                tooltipv2 += '<tr>';
-                tooltipv2 += '<td class="tg-s6z2 bold backredcolor">' + title + '</td><td class="' + display + ' tg-s6z2 bold backbluecolor">HC</td><td class="' + display + ' tg-s6z2 backgreycolor bold">TOTAL</td><td class="tg-s6z2 bold backredcolor">' + title + '</td><td class="' + display + ' tg-s6z2 bold backbluecolor">HC</td><td class="' + display + ' tg-s6z2 backgreycolor bold">TOTAL</td>';
-                tooltipv2 += '</tr>';
-                tooltipv2 += '<tr>';
-                tooltipv2 += '<td class="bold tg-031e backgreycolor">Prix</td>';
-                tooltipv2 += '<td class="tg-031e backredcolor">' + Highcharts.numberFormat(prix_HP, 2) + Devise + '</td>';
-                tooltipv2 += '<td class="' + display + ' tg-031e backbluecolor">' + Highcharts.numberFormat(prix_HC, 2) + Devise + '</td>';
-                tooltipv2 += '<td class="' + display + ' tg-031e backgreycolor bold">' + Highcharts.numberFormat((prix_HP + prix_HC), 2) + Devise + '</td>';
-                tooltipv2 += '<td class="tg-031e backredcolor">' + Highcharts.numberFormat(prix_old_HP, 2) + Devise + '</td>';
-                tooltipv2 += '<td class="' + display + ' tg-031e backbluecolor">' + Highcharts.numberFormat(prix_old_HC, 2) + Devise + '</td>';
-                tooltipv2 += '<td class="' + display + ' tg-031e backgreycolor bold">' + Highcharts.numberFormat((prix_old_HP + prix_old_HC), 2) + Devise + '</td>';
-                tooltipv2 += '</tr>';
-                tooltipv2 += '<tr>';
-
-                var diff_pxhp = Highcharts.numberFormat(prix_HP - prix_old_HP, 2) + Devise;
-                var diff_pxhc = Highcharts.numberFormat(prix_HC - prix_old_HC, 2) + Devise;
-                var diff_px = Highcharts.numberFormat(((prix_HP + prix_HC) - (prix_old_HP + prix_old_HC)), 2) + Devise;
-
-                var old_diff_pxhp = Highcharts.numberFormat(prix_old_HP - prix_HP, 2) + Devise;
-                var old_diff_pxhc = Highcharts.numberFormat(prix_old_HC - prix_HC, 2) + Devise;
-                var old_diff_px = Highcharts.numberFormat(((prix_old_HP + prix_old_HC) - (prix_HP + prix_HC)), 2) + Devise;
-
-                tooltipv2 += '<td class="bold tg-031e backgreycolor">Diff</td>';
-                tooltipv2 += '<td class="tg-031e backredcolor">' + diff_pxhp + '</td>';
-                tooltipv2 += '<td class="' + display + ' tg-031e backbluecolor">' + diff_pxhc + '</td>';
-                tooltipv2 += '<td class="' + display + ' tg-031e backgreycolor bold">' + diff_px + '</td>';
-                tooltipv2 += '<td class="tg-031e backredcolor">' + old_diff_pxhp + '</td>';
-                tooltipv2 += '<td class="' + display + ' tg-031e backbluecolor">' + old_diff_pxhc + '</td>';
-                tooltipv2 += '<td class="' + display + ' tg-031e backgreycolor bold">' + old_diff_px + '</td>';
-                tooltipv2 += '</tr>';
-                tooltipv2 += '<tr>';
-                tooltipv2 += '<td class="bold tg-031e backgreycolor">Conso</td>';
-                tooltipv2 += '<td class="tg-031e backredcolor">' + Highcharts.numberFormat((watt_HP), 2) + (type_ecq == 'electricity' || type_ecq == 'electprod' ? 'kWh' : 'M3') + '</td>';
-                tooltipv2 += '<td class="' + display + ' tg-031e backbluecolor">' + Highcharts.numberFormat((watt_HC), 2) + (type_ecq == 'electricity' || type_ecq == 'electprod' ? 'kWh' : 'M3') + '</td>';
-                tooltipv2 += '<td class="' + display + ' tg-031e backgreycolor bold">' + Highcharts.numberFormat((watt_HP + watt_HC), 2) + (type_ecq == 'electricity' || type_ecq == 'electprod' ? 'kWh' : 'M3') + '</td>';
-                tooltipv2 += '<td class="tg-031e backredcolor">' + Highcharts.numberFormat((watt_old_HP), 2) + (type_ecq == 'electricity' || type_ecq == 'electprod' ? 'kWh' : 'M3') + '</td>';
-                tooltipv2 += '<td class="' + display + ' tg-031e backbluecolor">' + Highcharts.numberFormat((watt_old_HC), 2) + (type_ecq == 'electricity' || type_ecq == 'electprod' ? 'kWh' : 'M3') + '</td>';
-                tooltipv2 += '<td class="' + display + ' tg-031e backgreycolor bold">' + Highcharts.numberFormat((watt_old_HP + watt_old_HC), 2) + (type_ecq == 'electricity' || type_ecq == 'electprod' ? 'kWh' : 'M3') + '</td>';
-                tooltipv2 += '</tr>';
-                tooltipv2 += '<tr>';
-
-                var diff_wthp = Highcharts.numberFormat(watt_HP - watt_old_HP, 2) + (type_ecq == 'electricity' || type_ecq == 'electprod' ? 'kWh' : 'M3');
-                var diff_wthc = Highcharts.numberFormat(watt_HC - watt_old_HC, 2) + (type_ecq == 'electricity' || type_ecq == 'electprod' ? 'kWh' : 'M3');
-                var diff_wt = Highcharts.numberFormat(((watt_HP + watt_HC) - (watt_old_HP + watt_old_HC)), 2) + (type_ecq == 'electricity' || type_ecq == 'electprod' ? 'kWh' : 'M3');
-
-                var old_diff_wthp = Highcharts.numberFormat(watt_old_HP - watt_HP, 2) + (type_ecq == 'electricity' || type_ecq == 'electprod' ? 'kWh' : 'M3');
-                var old_diff_wthc = Highcharts.numberFormat(watt_old_HC - watt_HC, 2) + (type_ecq == 'electricity' || type_ecq == 'electprod' ? 'kWh' : 'M3');
-                var old_diff_wt = Highcharts.numberFormat(((watt_old_HP + watt_old_HC) - (watt_HP + watt_HC)), 2) + (type_ecq == 'electricity' || type_ecq == 'electprod' ? 'kWh' : 'M3');
-
-                tooltipv2 += '<td class="bold tg-031e backgreycolor">Diff</td>';
-                tooltipv2 += '<td class="tg-031e backredcolor">' + diff_wthp + '</td>';
-                tooltipv2 += '<td class="' + display + ' tg-031e backbluecolor">' + diff_wthc + '</td>';
-                tooltipv2 += '<td class="' + display + ' tg-031e backgreycolor bold">' + diff_wt + '</td>';
-                tooltipv2 += '<td class="tg-031e backredcolor">' + old_diff_wthp + '</td>';
-                tooltipv2 += '<td class="' + display + ' tg-031e backbluecolor ">' + old_diff_wthc + '</td>';
-                tooltipv2 += '<td class="' + display + ' tg-031e backgreycolor bold">' + old_diff_wt + '</td>';
-                tooltipv2 += '</tr>';
-                tooltipv2 += '<tr>';
-                tooltipv2 += '<td class="bold tg-031e backgreycolor">Abonnement</td>';
-                tooltipv2 += '<td class="tg-031e backgreycolor bold" ' + (data.tarif_type == "HCHP" && type_ecq != 'water' && type_ecq != 'oil' && type_ecq != 'gaz' ? 'colspan="2" ' : ' ') + ' >' + Devise + '</td>';
-                tooltipv2 += '<td class="' + display + ' tg-031e backgreycolor bold">' + Highcharts.numberFormat((prix_HP + prix_HC), 2) + Devise + '</td>';
-                tooltipv2 += '<td class="tg-031e backgreycolor bold" ' + (data.tarif_type == "HCHP" && type_ecq != 'water' && type_ecq != 'oil' && type_ecq != 'gaz' ? 'colspan="2" ' : ' ') + ' >' + Devise + '</td>';
-                tooltipv2 += '<td class="' + display + ' tg-031e backgreycolor bold">' + Highcharts.numberFormat((prix_old_HP + prix_old_HC), 2) + Devise + '</td>';
-                tooltipv2 += ' </tr>';
-                if (data.tarif_type != "HCHP" || type_ecq == 'water' || type_ecq == 'oil' || type_ecq == 'gaz') {
-                    tooltipv2 += '<tr>';
-                    tooltipv2 += '<td class="bold tg-031e backgreycolor ">Total</td>';
-                    tooltipv2 += '<td class="bold tg-031e backgreycolor" >' + Highcharts.numberFormat((prix_HP), 2) + Devise + '</td>';
-                    tooltipv2 += '<td class="bold tg-031e backgreycolor" >' + Highcharts.numberFormat((prix_old_HP), 2) + Devise + '</td>';
-                    tooltipv2 += ' </tr>';
-                }
-
-
-                tooltipv2 += '</table>';
-
-                if (conteneur == 'YearTaxe' || old == false) {
-                    return '<span style="color:' + this.series.color + '">' + this.series.name + '</span>: <b>' + this.y + tooltip_text2 + '</b><br/>';
-                } else {
-                    return tooltipv2;
-
-                }
-
+                return '<span style="color:' + this.series.color + '">' + this.series.name + '</span>: <b>' + this.y + tooltip_text2 + '</b><br/>';
             }
         },
         /*regroupe les colonnes sur 1 */
@@ -807,21 +537,19 @@ function show_graph(data, conteneur, legend, mystyle) {
                 id: 'serie_hp',
                 name: HP_name,
                 data: HP_data,
-                color: ((type_ecq == "electricity" || type_ecq == "electprod") ? '#AA4643' : ((type_ecq == "gaz") ? '#ead61c' : ((type_ecq == "oil") ? '#9d622b' : '#4572A7'))),
+                color: '#AA4643',
                 stack: 'current',
                 index: 60,
                 dataLabels: {
-                    enabled: ((data.tarif_type == "HCHP" || (data.tarif_type != "HCHP" && (type_ecq == "electricity" || type_ecq == "electprod"))) ? true : false),
-                    color: (!data.enabled_old || conteneur == 'YearTaxe' || (type_ecq != "electricity" && type_ecq != "electprod") || data.tarif_type != "HCHP" ? "var(--txt-color)" : '#AA4643'),
+                    enabled: true,
+                    color: "var(--txt-color)",
                     shadow: false,
-                    rotation: (!data.enabled_old || conteneur == 'YearTaxe' || (type_ecq != "electricity" && type_ecq != "electprod") || data.tarif_type != "HCHP" ? 0 : -90),
-                    y: (!data.enabled_old || conteneur == 'YearTaxe' || (type_ecq != "electricity" && type_ecq != "electprod") || data.tarif_type != "HCHP" ? 0 : -25),
                     formatter: function() {
                         return parseFloat(this.y) + title_text2;
                     },
                     style: {
                         //textOutline: false,
-                        fontSize: (type_ecq == "electricity" || type_ecq == "electprod" ? '8px !important' : '10px !important'),
+                        fontSize: '8px !important',
                         font: 'bold 8px Verdana, sans-serif !important'
                     }
                 },
@@ -833,17 +561,16 @@ function show_graph(data, conteneur, legend, mystyle) {
                 id: 'serie_hc',
                 name: HC_name,
                 data: HC_data,
-                visible: ((data.tarif_type == "HCHP" && (type_ecq == "electricity" || type_ecq == "electprod")) ? true : false),
+                visible: true,
                 index: 50,
                 stack: 'current',
                 color: '#4572A7',
                 dataLabels: {
                     enabled: true,
-                    color: (!data.enabled_old || conteneur == 'YearTaxe' || type_ecq != "electricity" || type_ecq != "electprod" ? "var(--txt-color)" : '#4572A7'),
+                    color: "var(--txt-color)",
                     //rotation: -90,
                     //align: 'right',
-                    rotation: (!data.enabled_old || conteneur == 'YearTaxe' ? 0 : -90),
-                    y: (!data.enabled_old || conteneur == 'YearTaxe' ? 0 : -25),
+
                     formatter: function() {
                         return parseFloat(this.y) + title_text2;
                     },
@@ -874,6 +601,7 @@ function verifParam() {
             action: 'VerifParam'
         },
         dataType: 'json',
+        global: false,
         error: function(request, status, error) {
             handleAjaxError(request, status, error, $('#div_VerifParam'));
         },
@@ -898,6 +626,7 @@ function loadingDash(id_equipement, datesynchro) {
             id_ecq: id_equipement,
             action: 'loadingDash',
         },
+        global: false,
         dataType: 'json',
         error: function(request, status, error) {
             handleAjaxError(request, status, error, $('#div_DashboardAlert'));
@@ -908,7 +637,6 @@ function loadingDash(id_equipement, datesynchro) {
 
             } else {
                 if (data.result.nb_trame > 0) {
-                    //console.log(data.result)
                     initDashBoard(data.result.trame_du_jour, data.result.trame_hier, data.result.isous, data.result.max_current_trame, data.result.min_current_trame, datesynchro);
                 } else {
                     console.info('Aucune valeur du jour trouvée verifier les équipements');
@@ -923,17 +651,10 @@ function initDashBoard(trame_du_jour, trame_hier, isous, max, min, datesynchro) 
 
     deferred = $.Deferred();
     /*Affichage tablo conso PUIS Affichage Graphique Jours Semaine Mois*/
-    TabConso()
-
+    Tableau_Conso()
     showDashGraph()
-
-
-
-
-
-
-    /*affichage données detail dans le menu*/
-    Tabdetail(trame_du_jour, true);
+        /*affichage données detail dans le menu*/
+    MAJ_menu(trame_du_jour, true);
 
     /*la puissance_totale n est pas renseigné */
 
@@ -949,26 +670,22 @@ function initDashBoard(trame_du_jour, trame_hier, isous, max, min, datesynchro) 
     }
 
     /*Affichage tableau variations*/
-    TabVariation(trame_du_jour, true);
+    //TabVariation(trame_du_jour, true);
 
     /*Affichage de la gauge*/
 
     Gauge(trame_du_jour, true, isous);
 
-    $('.datesynchro').html(datesynchro);
+    //$('.datesynchro').html(datesynchro);
 
 
     $('.navinfo').show();
-    $('#widgetgauge').show();
-    $('#Temp7jBox').show();
-    $('#Temp4sBox').show();
-    $('#Temp12mBox').show();
-    $('#TempaBox').show();
+
     $('.bt_tab').show();
 
     /*Affichage du graph du jour*/
     showCurrentTrame(trame_du_jour, trame_hier, max, min);
-
+    loadingPie($('#Eco_legrand_ecq').val())
 
     /*Affichage Graphique Jours Semaine Mois */
     //showDashGraph(style);
@@ -978,14 +695,12 @@ function initDashBoard(trame_du_jour, trame_hier, isous, max, min, datesynchro) 
     return true;
 }
 
-function TabConso() {
+function Tableau_Conso() {
 
-    console.log('Chargement du tableau Conso.');
-    //console.log($('#Eco_legrand_ecq').val());
     $.ajax({
         type: 'POST',
         url: 'plugins/Eco_legrand/core/ajax/Eco_legrand.ajax.php',
-        global: true,
+        global: false,
         data: {
             id_ecq: $('#Eco_legrand_ecq').val(),
             action: 'TabConso'
@@ -997,7 +712,6 @@ function TabConso() {
         },
         success: function(data) {
 
-            //console.log(data);
 
             if (data.state != 'ok') {
                 $('#div_DashboardAlert').showAlert({ message: data.result, level: 'danger' });
@@ -1009,27 +723,25 @@ function TabConso() {
 
 
 
-                //$('#title_tb2').text(title_tb2);
+                $('#title_tb2').text(title_tb2);
 
                 Devise = ' €'
-                if (data.result.day_conso !== false) {
+                if (data.result.conso_jour !== false) {
                     /****************/
                     /*JOUR Euro*/
                     /****************/
-                    $('#day_hp').html(data.result.day_conso.total_hp_ttc + Devise);
-                    $('#day_hc').html(data.result.day_conso.total_hc_ttc + Devise);
-                    var day_total = data.result.day_conso.total_ttc;
-                    $('#day_total').html(day_total.toFixed(2) + Devise);
+                    $('#day_hp').html(data.result.conso_jour.total_hp_ttc + Devise);
+                    $('#day_hc').html(data.result.conso_jour.total_hc_ttc + Devise);
+                    $('#day_total').html(data.result.conso_jour.total_ttc.toFixed(2) + Devise);
 
                     /****************/
                     /*JOUR Watt*/
                     /****************/
-                    var day_totalw = (data.result.day_conso.hp + data.result.day_conso.hc);
 
 
-                    $('#day_hpw').html(data.result.day_conso.hp.toFixed(2) + unity);
-                    $('#day_hcw').html(data.result.day_conso.hc.toFixed(2) + unity);
-                    $('#day_totalw').text(day_totalw.toFixed(2) + unity);
+                    $('#day_hpw').html(data.result.conso_jour.hp.toFixed(2) + unity);
+                    $('#day_hcw').html(data.result.conso_jour.hc.toFixed(2) + unity);
+                    $('#day_totalw').text((data.result.conso_jour.hp + data.result.conso_jour.hc).toFixed(2) + unity);
 
                 } else {
                     $('#day_hp').html('Indispo.');
@@ -1040,23 +752,20 @@ function TabConso() {
                     $('#day_totalw').html('Indispo.');
                 }
 
-                if (data.result.yesterday_conso !== false) {
+                if (data.result.conso_hier !== false) {
                     /****************/
                     /*HIER Euro*/
                     /****************/
-                    $('#yesterday_hp').html(data.result.yesterday_conso.total_hp_ttc + Devise);
-                    $('#yesterday_hc').html(data.result.yesterday_conso.total_hc_ttc + Devise);
-                    var yesterday_total = data.result.yesterday_conso.total_ttc;
-                    $('#yesterday_total').html(yesterday_total.toFixed(2) + Devise);
+                    $('#yesterday_hp').html(data.result.conso_hier.total_hp_ttc + Devise);
+                    $('#yesterday_hc').html(data.result.conso_hier.total_hc_ttc + Devise);
+                    $('#yesterday_total').html(data.result.conso_hier.total_ttc.toFixed(2) + Devise);
 
                     /****************/
                     /*HIER Watt*/
                     /****************/
-                    var yesterday_totalw = (data.result.yesterday_conso.hp + data.result.yesterday_conso.hc);
-
-                    $('#yesterday_hpw').html(data.result.yesterday_conso.hp + unity);
-                    $('#yesterday_hcw').html(data.result.yesterday_conso.hc + unity);
-                    $('#yesterday_totalw').text(yesterday_totalw.toFixed(2) + unity);
+                    $('#yesterday_hpw').html(data.result.conso_hier.hp + unity);
+                    $('#yesterday_hcw').html(data.result.conso_hier.hc + unity);
+                    $('#yesterday_totalw').text((data.result.conso_hier.hp + data.result.conso_hier.hc).toFixed(2) + unity);
 
 
                 } else {
@@ -1068,23 +777,21 @@ function TabConso() {
                     $('#yesterday_totalw').html('Indispo.');
                 }
 
-                if (data.result.week_conso !== false) {
+                if (data.result.conso_semaine !== false) {
                     /****************/
                     /*SEMAINE Euro*/
                     /****************/
-                    $('#week_hp').html(data.result.week_conso.total_hp_ttc + Devise);
-                    $('#week_hc').html(data.result.week_conso.total_hc_ttc + Devise);
-                    var week_total = data.result.week_conso.total_ttc;
-                    $('#week_total').html(week_total.toFixed(2) + Devise);
+                    $('#week_hp').html(data.result.conso_semaine.total_hp_ttc + Devise);
+                    $('#week_hc').html(data.result.conso_semaine.total_hc_ttc + Devise);
+
+                    $('#week_total').html(data.result.conso_semaine.total_ttc.toFixed(2) + Devise);
 
                     /****************/
                     /*SEMAINE Watt*/
                     /****************/
-                    var week_totalw = (data.result.week_conso.hp + data.result.week_conso.hc);
-
-                    $('#week_hpw').html(data.result.week_conso.hp + unity);
-                    $('#week_hcw').html(data.result.week_conso.hc + unity);
-                    $('#week_totalw').text(week_totalw.toFixed(2) + unity);
+                    $('#week_hpw').html(data.result.conso_semaine.hp + unity);
+                    $('#week_hcw').html(data.result.conso_semaine.hc + unity);
+                    $('#week_totalw').text((data.result.conso_semaine.hp + data.result.conso_semaine.hc).toFixed(2) + unity);
 
                 } else {
                     $('#week_hp').html('Indispo.');
@@ -1094,23 +801,21 @@ function TabConso() {
                     $('#week_hcw').html('Indispo.');
                     $('#week_totalw').html('Indispo.');
                 }
-                if (data.result.month_conso !== false) {
+                if (data.result.conso_mois !== false) {
                     /****************/
                     /*MOIS Euro*/
                     /****************/
-                    $('#month_hp').html(data.result.month_conso.total_hp_ttc + Devise);
-                    $('#month_hc').html(data.result.month_conso.total_hc_ttc + Devise);
-                    var month_total = data.result.month_conso.total_ttc;
-                    $('#month_total').html(month_total.toFixed(2) + Devise);
+                    $('#month_hp').html(data.result.conso_mois.total_hp_ttc + Devise);
+                    $('#month_hc').html(data.result.conso_mois.total_hc_ttc + Devise);
+                    $('#month_total').html(data.result.conso_mois.total_ttc.toFixed(2) + Devise);
 
                     /****************/
                     /*MOIS Watt*/
                     /****************/
-                    var month_totalw = (data.result.month_conso.hp + data.result.month_conso.hc);
 
-                    $('#month_hpw').html(data.result.month_conso.hp + unity);
-                    $('#month_hcw').html(data.result.month_conso.hc + unity);
-                    $('#month_totalw').text(month_totalw.toFixed(2) + unity);
+                    $('#month_hpw').html(data.result.conso_mois.hp + unity);
+                    $('#month_hcw').html(data.result.conso_mois.hc + unity);
+                    $('#month_totalw').text((data.result.conso_mois.hp + data.result.conso_mois.hc).toFixed(2) + unity);
 
                 } else {
                     $('#month_hp').html('Indispo.');
@@ -1120,23 +825,19 @@ function TabConso() {
                     $('#month_hcw').html('Indispo.');
                     $('#month_totalw').html('Indispo.');
                 }
-                if (data.result.year_conso !== false) {
+                if (data.result.conso_année !== false) {
                     /****************/
                     /*ANNEE Euro*/
                     /****************/
-                    $('#year_hp').html(data.result.year_conso.total_hp_ttc + Devise);
-                    $('#year_hc').html(data.result.year_conso.total_hc_ttc + Devise);
-                    var year_total = data.result.year_conso.total_ttc;
-                    $('#year_total').html(year_total.toFixed(2) + Devise);
+                    $('#year_hp').html(data.result.conso_année.total_hp_ttc + Devise);
+                    $('#year_hc').html(data.result.conso_année.total_hc_ttc + Devise);
+                    $('#year_total').html(data.result.conso_année.total_ttc.toFixed(2) + Devise);
                     /****************/
                     /*ANNEE Watt*/
                     /****************/
-                    var year_totalw = (data.result.year_conso.hp + data.result.year_conso.hc);
-
-                    $('#year_hpw').html(data.result.year_conso.hp.toFixed(2) + unity);
-                    $('#year_hcw').html(data.result.year_conso.hc.toFixed(2) + unity);
-                    $('#year_totalw').text(year_totalw.toFixed(2) + unity);
-
+                    $('#year_hpw').html(data.result.conso_année.hp.toFixed(2) + unity);
+                    $('#year_hcw').html(data.result.conso_année.hc.toFixed(2) + unity);
+                    $('#year_totalw').text((data.result.conso_année.hp + data.result.conso_année.hc).toFixed(2) + unity);
 
                     $('.datefact').attr('title', data.result.title);
                     $('.datefactyearold').attr('title', data.result.titleold);
@@ -1151,7 +852,7 @@ function TabConso() {
                     $('#year_totalw').html('Indispo.');
                 }
 
-                $('.tts').html('HP TTC');
+                $('.tts').html('HP');
                 $('.tts2').html('HP');
                 var refreshdate = getDateRefresh();
                 $('.date_refresh').html(refreshdate);
@@ -1163,9 +864,7 @@ function TabConso() {
     return deferred.promise();
 }
 
-function Tabdetail(data, init) {
-
-    console.info('Chargement des informations menu.');
+function MAJ_menu(data, init) {
 
     if (init)
         data = data[0];
@@ -1222,100 +921,10 @@ function getDateRefresh() {
     return pad(jour) + "/" + pad(mois) + "/" + annee + " " + pad(heure) + ":" + pad(minute) + ":" + pad(seconde);
 }
 
-function TabVariation(data, init) {
-    console.info('Chargement du tableau des variations.');
-    var diff = 0;
-    var image = '<i class="icon-hand-down"></i>';
-
-    if (init) {
-        var DataElement = data;
-        //console.debug(DataElement);
-        var old_val = '-';
-        var old_heure = '';
-        var old_ptec = '';
-        $("#tab_info").html('');
-        $("#tab_info").append('<input type="hidden" value="" name="old_watt_input" id="old_watt_input">');
-        $.each(DataElement, function(key, value) {
-            diff = 0;
-            if (old_val != '-') {
-                diff = parseInt(old_val) - parseInt(value.puissance_totale);
-                if (parseInt(diff) > 0) { //positif
-                    diff = '+' + diff + ' W';
-                    image = '<i class="icon-hand-up"></i>';
-                } else if (diff == 0) {
-                    image = "";
-                    var diff = '';
-                } else { //negatif
-                    diff = diff + ' W';
-                    image = '<i class="icon-hand-down"></i>';
-                }
-            } else {
-                image = "";
-                diff = '';
-                $('#old_watt_input').val(parseInt(value.puissance_totale));
-            }
-
-            var nb = $('#tab_info tr').length;
-
-            if (old_ptec == "HC")
-                var tclass = ' class="bluecolor" ';
-            else
-                var tclass = ' class="redcolor" ';
-            //console.debug(value.heure + ' '+ value.puissance_totale);
-            if (nb <= 9 && diff != '' && diff != '-') { //Si pas de variation on n affiche rien
-                $("#tab_info").append(
-                    '<tr  ' + tclass + '>' +
-                    '<td ' + tclass + ' >' + old_heure + ' </td>' +
-                    '<td ' + tclass + ' >' + parseInt(old_val) + ' W' + '</td>' +
-                    '<td ' + tclass + ' > ' + image + diff + ' </td>' +
-                    '<td  ' + tclass + '>' + old_ptec + '</td> ' +
-                    '</tr>');
-            }
-
-            //highlight
-            old_val = value.puissance_totale;
-            old_heure = value.heure;
-            old_ptec = value.ptec;
-
-        });
-    } else {
-        image = '<i class="icon-hand-down"></i>';
-        diff = parseInt(data.puissance_totale) - parseInt($('#old_watt_input').val());
-
-        if (parseInt(diff) > 0) {
-            diff = '+' + diff + ' W';
-            image = '<i class="icon-hand-up"></i>';
-        } else if (diff == 0) {
-            image = "-";
-            diff = '-';
-        } else {
-            diff = diff + ' W';
-            image = '<i class="icon-hand-down"></i>';
-        }
-
-        var nb = $('#tab_info tr').length;
-        if (nb > 9 && diff != '' && diff != '-') {
-            $('#tab_info tr').last().remove();
-        }
-
-        if (data.ptec == "HC")
-            var tclass = ' class="bluecolor" ';
-        else
-            var tclass = ' class="redcolor" ';
-        if (diff != '' && diff != '-') {
-            $("#tab_info").prepend('<tr><td ' + tclass + '>' + data.heure + '</td><td  ' + tclass + '>' + data.puissance_totale + ' W' + '</td><td ' + tclass + '>' + image + '  ' + diff + '</td><td  ' + tclass + ' >' + data.ptec + '</td></tr>');
-        }
-        $('#old_watt_input').val(parseInt(data.puissance_totale));
-    }
-
-    var refreshdate = getDateRefresh();
-    $('.date_isrefresh').html(refreshdate);
-}
 
 function Gauge(data, init, isous) {
 
 
-    console.log('Chargement de la gauge.');
     power = isous * 230;
 
 
@@ -1326,7 +935,6 @@ function Gauge(data, init, isous) {
     if (timezonebis == null) {
         var timezonebis = "Europe/Brussels";
     }
-    //console.log(timezonebis + "| Gauge");
     GaugeTrame = new Highcharts.Chart({
             chart: {
                 renderTo: 'gauge',
@@ -1449,12 +1057,12 @@ function Gauge(data, init, isous) {
                             clearInterval(timergauge);
                         } else {
                             if (typeof chart.series === 'undefined') {
-                                console.info('cette gauge n\'existe plus on supprime.');
                                 clearInterval(timergauge);
                                 return;
                             }
                             var point = chart.series[0].points[0],
                                 watt;
+                            //MAJ graphiq trame actuelle
                             $.ajax({
                                 type: 'POST',
                                 global: false,
@@ -1470,29 +1078,32 @@ function Gauge(data, init, isous) {
                                     handleAjaxError(request, status, error, $('#div_DashboardAlert'));
                                 },
                                 success: function(data_init) {
-                                    //console.debug(data);
                                     if (data_init.state != 'ok') {
                                         $('#div_DashboardAlert').showAlert({ message: data_init.result, level: 'danger' });
                                         return;
                                     } else {
                                         var data = data_init.result;
-                                        console.log(data.puissance_totale)
                                         watt = data.puissance_totale;
 
                                         /*msie a jour du  detail a coté de la gauge*/
-                                        Tabdetail(data_init.result, false);
-                                        console.info('Mise a jour de la gauge : ' + parseInt(watt));
+                                        MAJ_menu(data_init.result, false);
                                         point.update(parseInt(watt)); /*Mise a jour de la gauge*/
 
-                                        TabVariation(data_init.result, false); /*Mise a jour du tableau des conso*/
 
                                         /*Mise a jour du graphique du jour*/
                                         var serie_selected = 'CurrentSerie';
                                         series = ChartCurrentTrame.get(serie_selected);
 
-
+                                        //loadingDash(data.eqLogicID, "")
                                         var color_byHP = "#AA4643";
                                         var color_byHC = "#4572A7";
+
+                                        var date = new Date(data.timestamp * 1000);
+
+                                        if (date.getHours() == 0 & date.getMinutes() == 0 & series.points.length > 50) {
+                                            loadingDash(data.eqLogicID, "")
+                                            return
+                                        }
 
                                         series.addPoint([data.timestamp * 1000, parseInt(data.puissance_totale)]);
                                         //création de nouvelles zones pour le maintient des bonnes couleurs lors de la mise à jour de données
@@ -1526,21 +1137,54 @@ function Gauge(data, init, isous) {
                                         var serie_selected_temp = 'Temp';
                                         series_temp = ChartCurrentTrame.get(serie_selected_temp);
                                         series_temp.addPoint([data.timestamp * 1000, parseFloat(data.temperature)]);
-
-
                                         /*Mise a jour de la date de la derniere trame teleinfo dans panel_outil*/
                                         $('#trame_date').html(data.date);
                                         $('.date_isrefresh').html(data.date);
+                                        $.ajax({
+                                            type: 'POST',
+                                            url: 'plugins/Eco_legrand/core/ajax/Eco_legrand.ajax.php',
+                                            data: {
+                                                action: 'loadingPie',
+                                                id_ecq: data.eqLogicID,
+                                                type: "jour",
+                                            },
+                                            global: false,
+                                            // dataType: 'json',
+                                            error: function(request, status, error) {
+                                                handleAjaxError(request, status, error, $('#div_DashboardAlert'));
+                                            },
+                                            success: function(data) {
+                                                if (data.state != 'ok') {
+                                                    $('#div_DashboardAlert').showAlert({ message: data.result, level: 'danger' });
+                                                } else {
+                                                    series = pieStatDAY.get('StatDAY');
+                                                    if (series.points[0].percentage.toFixed(2) != data.result.data[0].toFixed(2) || series.points[1].percentage.toFixed(2) != data.result.data[1].toFixed(2)) {
+                                                        series.points[0].tooltip_data = data.result.tooltip_data[0]
+                                                        series.points[1].tooltip_data = data.result.tooltip_data[1]
+                                                        series.points[0].update(data.result.data[0])
+                                                        series.points[1].update(data.result.data[1])
+                                                            //MAJ tableau des données
+                                                        Tableau_Conso()
+                                                    }
 
+
+
+                                                }
+                                            }
+
+                                        });
 
                                     }
                                 }
                             });
+                            //MAJ camemberts
+
+
                         }
 
 
                     },
-                    refreshTime * 1000);
+                    60000);
                 var point = chart.series[0].points[0],
                     watt;
                 point.update(parseInt(watt));
@@ -1552,12 +1196,9 @@ function Gauge(data, init, isous) {
 }
 
 function showCurrentTrame(data_init, yesterday_trame, max, min) {
-    //var debug = true;
-    console.info('Chargement du graphique du jour.');
 
 
 
-    //console.debug();
     var dataHier = [];
     var lastvalue = null;
 
@@ -1628,7 +1269,6 @@ function showCurrentTrame(data_init, yesterday_trame, max, min) {
     if (timezonebis == null) {
         var timezonebis = "Europe/Brussels";
     }
-    //console.log(timezonebis + " CurrentBar");
 
     ChartCurrentTrame = new Highcharts.StockChart({
         chart: {
@@ -1846,147 +1486,124 @@ function showCurrentTrame(data_init, yesterday_trame, max, min) {
 
 function showDashGraph() {
 
-    var ecq = $('#Eco_legrand_ecq').val();
 
-    console.info('Chargement des graphiques stat.');
     var debug = false;
     $.ajax({
         type: 'POST',
         url: 'plugins/Eco_legrand/core/ajax/Eco_legrand.ajax.php',
         data: {
             action: 'get_date_actuelle',
-            id_ecq: ecq
+            id_ecq: $('#Eco_legrand_ecq').val()
         },
         dataType: 'json',
+        global: false,
         error: function(request, status, error) {
             handleAjaxError(request, status, error, $('#div_DashboardAlert'));
         },
         success: function(datares) {
-            //console.debug(datares);
             if (datares.state != 'ok') {
                 $('#div_DashboardAlert').showAlert({ message: datares.result, level: 'danger' });
 
             } else {
-                console.info('Hebdomadaire.');
                 $.ajax({
                     type: 'POST',
-                    url: 'plugins/Eco_legrand/core/ajax/graph.ajax.php?graphique=7jours',
+                    url: 'plugins/Eco_legrand/core/ajax/Eco_legrand.ajax.php',
                     data: {
-                        id_ecq: ecq,
+                        action: "Graphique",
+                        id_ecq: $('#Eco_legrand_ecq').val(),
                         debut: datares.result.day.debut,
                         fin: datares.result.day.fin,
-                        old: true,
                         libelle: 'Consommation de la semaine par jours',
-                        graph_mode: 0, //0 Watt ou 1 prix
-                        graph_type: "jours",
-                        type_graphHP: 'column',
-                        type_graphHC: 'column',
-                        type_graphHP_OLD: 'spline',
-                        type_graphHC_OLD: 'spline'
+                        graph_type: "jours"
                     },
+                    global: false,
                     dataType: 'json',
                     error: function(request, status, error) {
                         handleAjaxError(request, status, error, $('#div_DashboardAlert'));
                     },
                     success: function(data) {
 
-                        //console.debug(data);
                         if (data.state != 'ok') {
                             $('#div_DashboardAlert').showAlert({ message: data.result, level: 'danger' });
 
                         } else {
 
-                            new Highcharts.Chart(show_graph(data.result, 'Day', 'none'));
+                            new Highcharts.Chart(show_graph(data.result, 'Day'));
                             /*data,id,id_legend*/
-                            new Highcharts.Chart(show_graph_temp(data.result, 'TempDay', 'none'));
+                            new Highcharts.Chart(show_graph_temp(data.result, 'TempDay'));
                             /*température*/
 
 
                             data.result.affichage = 1;
-                            new Highcharts.Chart(show_graph(data.result, 'DayEuro', 'none'));
-                            /*data,id,id_legend*/
+                            new Highcharts.Chart(show_graph(data.result, 'DayEuro'));
 
                         }
                     }
                 });
-                //return;
-                console.info('Mensuel.');
+
+
                 $.ajax({
                     type: 'POST',
-                    url: 'plugins/Eco_legrand/core/ajax/graph.ajax.php?graphique=4semaines',
+                    url: 'plugins/Eco_legrand/core/ajax/Eco_legrand.ajax.php',
                     data: {
-                        id_ecq: ecq,
+                        action: "Graphique",
+                        id_ecq: $('#Eco_legrand_ecq').val(),
                         debut: datares.result.week.debut,
                         fin: datares.result.week.fin,
                         old: true,
                         libelle: 'Consommation du mois par semaine',
-                        graph_mode: 0, //0 Watt ou 1 prix
                         graph_type: "semaines",
-                        type_graphHP: 'column',
-                        type_graphHC: 'column',
-                        type_graphHP_OLD: 'spline',
-                        type_graphHC_OLD: 'spline'
                     },
+                    global: false,
                     dataType: 'json',
                     error: function(request, status, error) {
                         handleAjaxError(request, status, error, $('#div_DashboardAlert'));
                     },
                     success: function(data) {
-                        //console.debug(data);
                         if (data.state != 'ok') {
                             $('#div_DashboardAlert').showAlert({ message: data.result, level: 'danger' });
 
                         } else {
-                            //console.debug(data.result);
-                            new Highcharts.Chart(show_graph(data.result, 'Month', 'none'));
-                            /*data,id,id_legend*/
-                            new Highcharts.Chart(show_graph_temp(data.result, 'TempMonth', 'none'));
+                            new Highcharts.Chart(show_graph(data.result, 'Month'));
+                            new Highcharts.Chart(show_graph_temp(data.result, 'TempMonth'));
                             /*température*/
 
                             data.result.affichage = 1;
-                            new Highcharts.Chart(show_graph(data.result, 'MonthEuro', 'none'));
-                            /*data,id,id_legend*/
+                            new Highcharts.Chart(show_graph(data.result, 'MonthEuro'));
                         }
                     }
                 });
-                console.info('Annuel.');
                 $.ajax({
                     type: 'POST',
-                    url: 'plugins/Eco_legrand/core/ajax/graph.ajax.php?graphique=12Month',
+                    url: 'plugins/Eco_legrand/core/ajax/Eco_legrand.ajax.php',
                     data: {
-                        id_ecq: ecq,
+                        action: "Graphique",
+                        id_ecq: $('#Eco_legrand_ecq').val(),
                         debut: datares.result.year.debut_graph,
                         fin: datares.result.month.fin,
                         old: true,
                         libelle: 'Consommation par mois sur 1 an',
-                        graph_mode: 0, //0 Watt ou 1 prix
                         graph_type: "mois",
-                        type_graphHP: 'column',
-                        type_graphHC: 'column',
-                        type_graphHP_OLD: 'spline',
-                        type_graphHC_OLD: 'spline',
                     },
+                    global: false,
                     dataType: 'json',
                     error: function(request, status, error) {
                         handleAjaxError(request, status, error, $('#div_DashboardAlert'));
                     },
                     success: function(data) {
-                        //console.debug(data);
                         if (data.state != 'ok') {
                             $('#div_DashboardAlert').showAlert({ message: data.result, level: 'danger' });
 
                         } else {
 
-                            new Highcharts.Chart(show_graph(data.result, 'Year', 'none'));
+                            new Highcharts.Chart(show_graph(data.result, 'Year'));
                             /*Graphique year conso*/
-                            new Highcharts.Chart(show_graph_temp(data.result, 'TempYear', 'none'));
+                            new Highcharts.Chart(show_graph_temp(data.result, 'TempYear'));
                             /*Graphique year température*/
 
 
                             data.result.affichage = 1;
-                            new Highcharts.Chart(show_graph(data.result, 'YearEuro', 'none'));
-                            data.result.enabled_old = false;
-                            new Highcharts.Chart(show_graph(data.result, 'YearTaxe', 'none'));
+                            new Highcharts.Chart(show_graph(data.result, 'YearEuro'));
 
                         }
                     }
@@ -1994,41 +1611,37 @@ function showDashGraph() {
 
 
 
-                console.info('Pluriannuel.');
                 $.ajax({
                     type: 'POST',
-                    url: 'plugins/Eco_legrand/core/ajax/graph.ajax.php?graphique=pluriannuel',
+                    url: 'plugins/Eco_legrand/core/ajax/Eco_legrand.ajax.php',
                     data: {
-                        id_ecq: ecq,
+                        id_ecq: $('#Eco_legrand_ecq').val(),
+                        action: "Graphique",
                         debut: '2000-01-01', //datares.result.year.debut_graph,
                         fin: datares.result.month.fin,
                         old: true,
                         libelle: 'Consommation par année',
-                        graph_mode: 0, //0 Watt ou 1 prix
                         graph_type: "year",
-                        type_graphHP: 'column',
-                        type_graphHC: 'column',
-                        type_graphHP_OLD: 'spline',
-                        type_graphHC_OLD: 'spline',
+
                     },
+                    global: false,
                     dataType: 'json',
                     error: function(request, status, error) {
                         handleAjaxError(request, status, error, $('#div_DashboardAlert'));
                     },
                     success: function(data) {
-                        //console.debug(data);
                         if (data.state != 'ok') {
                             $('#div_DashboardAlert').showAlert({ message: data.result, level: 'danger' });
 
                         } else {
 
-                            new Highcharts.Chart(show_graph(data.result, 'pluri', 'none'));
+                            new Highcharts.Chart(show_graph(data.result, 'pluri'));
                             /*Graphique year conso*/
-                            new Highcharts.Chart(show_graph_temp(data.result, 'pluriTemp', 'none'));
+                            new Highcharts.Chart(show_graph_temp(data.result, 'pluriTemp'));
                             /*Graphique year température*/
 
                             data.result.affichage = 1;
-                            new Highcharts.Chart(show_graph(data.result, 'pluriEuro', 'none'));
+                            new Highcharts.Chart(show_graph(data.result, 'pluriEuro'));
 
                         }
                     }
@@ -2038,4 +1651,196 @@ function showDashGraph() {
     });
 
 
+}
+
+function loadingPie(id_equipement) {
+
+    $.ajax({
+        type: 'POST',
+        url: 'plugins/Eco_legrand/core/ajax/Eco_legrand.ajax.php',
+        data: {
+            action: 'loadingPie',
+            id_ecq: id_equipement
+        },
+        global: true,
+        dataType: 'json',
+        error: function(request, status, error) {
+            handleAjaxError(request, status, error, $('#div_DashboardAlert'));
+        },
+        success: function(data) {
+
+            if (data.state != 'ok') {
+                $('#div_DashboardAlert').showAlert({ message: data.result, level: 'danger' });
+            } else {
+
+                if (timezonebis == null) {
+                    var timezonebis = "Europe/Brussels";
+                }
+
+
+                var tooltip = {
+                    useHTML: true,
+                    share: true,
+                    formatter: function() {
+                        var html_detail = '<b>' + this.key + ' :</b> ' + this.y.toFixed(2) + '%';
+                        html_detail += '<br><b> ' + this.point.tooltip_data
+                        return html_detail;
+                    }
+                }
+                var chart = {
+                    type: "pie",
+                    renderTo: "",
+                    time: {
+                        timezone: timezonebis,
+                        useUTC: false
+                    },
+
+                    ignoreHiddenSeries: true
+
+                }
+
+                var plotOptions = {
+                    pie: {
+                        allowPointSelect: true,
+                        cursor: 'pointer',
+                        dataLabels: {
+                            enabled: true,
+                            format: '<b>{point.name}</b>: {point.percentage:.1f} %',
+                            style: {
+                                textOutline: false,
+                                color: "var (--txt - color) !important" // (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
+                            }
+                        }
+                    }
+                }
+                chart.renderTo = StatDAY
+                var ser = [{
+                    name: 'Consommation',
+                    id: chart.renderTo.id,
+                    data: get_categories(data.result.jour),
+                    visible: true,
+                    size: '80%',
+                    dataLabels: {
+                        enabled: false,
+                        formatter: function() {
+                            return this.y > 1 ? '<b>' + this.point.name + ':</b> ' + this.y + '%' : null;
+                        }
+                    }
+                }]
+                if (data.result.jour) {
+                    pieStatDAY = new Highcharts.Chart({
+                        chart: chart,
+                        title: {
+                            text: ''
+                        },
+
+                        credits: {
+                            enabled: false
+                        },
+                        plotOptions: plotOptions,
+                        tooltip: tooltip,
+                        series: ser
+
+                    })
+                }
+
+                if (data.result.hier) {
+
+                    chart.renderTo = StatYESTERDAY
+                    ser[0].data = get_categories(data.result.hier)
+                    pieStatYESTERDAY = new Highcharts.Chart({
+                        chart: chart,
+                        title: {
+                            text: ''
+                        },
+
+                        credits: {
+                            enabled: false
+                        },
+                        plotOptions: plotOptions,
+                        tooltip: tooltip,
+                        series: ser
+
+                    })
+                }
+                if (data.result.semaine) {
+                    chart.renderTo = StatWEEK
+
+                    ser[0].data = get_categories(data.result.semaine)
+                    pieStatWEEK = new Highcharts.Chart({
+                        chart: chart,
+                        title: {
+                            text: ''
+                        },
+
+                        credits: {
+                            enabled: false
+                        },
+                        plotOptions: plotOptions,
+                        tooltip: tooltip,
+                        series: ser
+
+                    })
+                }
+                if (data.result.mois) {
+                    chart.renderTo = Stat
+
+                    ser[0].data = get_categories(data.result.mois)
+                    pieStatMonth = new Highcharts.Chart({
+                        chart: chart,
+                        title: {
+                            text: ''
+                        },
+
+                        credits: {
+                            enabled: false
+                        },
+                        plotOptions: plotOptions,
+                        tooltip: tooltip,
+                        series: ser
+
+                    })
+                }
+                if (data.result.annee) {
+                    chart.renderTo = StatYEAR
+
+                    ser[0].data = get_categories(data.result.annee)
+                    pieStatYEAR = new Highcharts.Chart({
+                        chart: chart,
+                        title: {
+                            text: ''
+                        },
+
+                        credits: {
+                            enabled: false
+                        },
+                        plotOptions: plotOptions,
+                        tooltip: tooltip,
+                        series: ser
+
+                    })
+                }
+
+            }
+        }
+
+    });
+    return true;
+}
+
+function get_categories(data) {
+    categorieData = [];
+    $(data.data).each(function(index, value) {
+        brightness = 0.2 - (index / data.length) / 5;
+
+
+        categorieData.push({
+            name: data.categorie[index],
+            y: parseInt(value),
+            tooltip_data: data.tooltip_data[index],
+            color: Highcharts.Color(data.color[index]).brighten(brightness).get()
+        });
+    });
+
+    return (categorieData)
 }

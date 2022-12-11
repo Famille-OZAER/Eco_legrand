@@ -11,12 +11,12 @@
     $type_abo = '';
     foreach ($eq as $eqLogic) {
         if ($eqLogic->getConfiguration('type') != 'eau' && $eqLogic->getConfiguration('type') != 'gaz' &&  $eqLogic->getIsEnable() == 1)  {
-            $type_abo = ($type_abo == 'HCHP' ? 'HCHP' :Eco_legrand::getAbo($eqLogic->getId()));
+            $type_abo = ($type_abo == 'HCHP' ? 'HCHP' :Eco_legrand::get_type_abo($eqLogic->getId()));
             //break;
         }
     }
 
-    //$type_abo = (count($eq)==0 ? 'HCHP' : Eco_legrand::getAbo($eq[0]->getId()) );
+    //$type_abo = (count($eq)==0 ? 'HCHP' : Eco_legrand::get_type_abo($eq[0]->getId()) );
 
     $display = ($type_abo=='HC' ? '' : 'displaynone');
     $title = ($type_abo=='HC' ? 'HP:' : '');
@@ -36,6 +36,7 @@
     <div class="row row-overflow">
         <form class="prixformulaire form-horizontal">
             <fieldset>
+        
                 <div class="form-group">
                     <label class="col-sm-5 control-label">{{Date de début:}}</label>
                     <div class="col-lg-6">
@@ -84,7 +85,17 @@
     <?php $display =  $prix->gettype()  == 'eau' ? 'displaynone' : '';?>
 
     <div id="saisiehc" class="<?php echo $display ?> form-group">
-    <label id="labelhc" class="col-sm-5 control-label"><?php echo ($prix->gettype()  == 'electricité'  ? '{{Prix unitaire HT HC:}}' : ($prix->gettype()  == 'gaz' ? 'Coefficient m3/kWh' : 'Confirmer le prix au M3')); ?> </label>
+    <label id="labelhc" class="col-sm-5 control-label">
+        <?php
+        if($prix->gettype() =='electricité'){
+            echo ('{{Prix unitaire HT HC:}}');
+        }else if($prix->gettype() =='gaz'){
+            echo ( 'Coefficient m3/kWh');
+        }else{
+            echo('Confirmer le prix au M3');
+        }
+        ?> 
+    </label>
     <div class="col-lg-6">
     <div class="input-group">
     <input type="text" id="hc"  value="<?php echo $prix->hc ?>" data-l1key="hc" class="prixAttr form-control pull-right" autocomplete="off">
@@ -95,7 +106,7 @@
 
     <div class="form-actions">
     <div class="col-lg-9 control-label">
-    <input id="id_prix" hidden value="<?php echo $prix->getId() ?>"  class="prixAttr"  data-l1key="id" />
+    <input id="id_prix"  value="<?php echo $prix->getId() ?>"  class="prixAttr"  data-l1key="id" />
     <a style="display:block;"  class="btn btn-success PrixAction" data-action="ajoutprix"><i class="fa fa-plus-circle"></i> {{Enregistrer}}</a>
     </div>
     </div>

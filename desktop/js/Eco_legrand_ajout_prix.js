@@ -9,7 +9,6 @@ $('#type_elec').click(function() {
 });
 
 $('#type_eau').click(function() {
-
     $('#type_elec').removeClass("btn-success").addClass("btn-danger");
     $('#type_gaz').removeClass("btn-success").addClass("btn-danger");
     $('#type_eau').addClass("btn-success").removeClass("btn-danger");
@@ -42,7 +41,7 @@ $('.PrixAction[data-action=ajoutprix]').on('click', function() {
         data: {
             action: 'Ajout_MAJPrix',
             event: json_encode(donnee),
-            id: $('.eqLogicAttr[data-l1key=id]').value()
+            eqlogicid: $('.eqLogicAttr[data-l1key=id]').value()
         },
         dataType: 'json',
         error: function(request, status, error) {

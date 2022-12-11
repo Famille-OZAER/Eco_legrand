@@ -13,19 +13,38 @@ if($deamon_statut['state'] == 'nok'){
     Eco_legrand::deamon_start();
 }
 			//Eco_legrand::CheckOptionIsValid();
-$cron = cron::byClassAndFunction('conso', 'StartDeamon');
+$cron = cron::byClassAndFunction('Eco_legrand', 'cron_minute');
 
-if (is_object($cron)) {
-	sendVarToJS('refreshTime', $cron->getDeamonSleepTime());
+if (!is_object($cron)) {
+    $cron = new cron();
+    $cron->setClass('Eco_legrand');
+    $cron->setFunction('cron_minute');
+    $cron->setSchedule('* * * * *');   
+    $cron->save();
+    $cron->start();
+}
+$cron = cron::byClassAndFunction('Eco_legrand', 'cron_heure');
+
+if (!is_object($cron)) {
+	$cron = new cron();
+    $cron->setClass('Eco_legrand');
+    $cron->setFunction('cron_jour');
+    $cron->setSchedule('00 00 * * *');
+    $cron->save();
+    //$cron->start();
 }
 include_file('3rdparty', 'css/bootstrap-select', 'css', 'Eco_legrand');
 include_file('3rdparty', 'css/jquery.datetimepicker', 'css', 'Eco_legrand');
 include_file('3rdparty', 'css/datatable', 'css', 'Eco_legrand');
-include_file('desktop', 'ionicons', 'css', 'conso');
+//include_file('desktop', 'css/font-awesome', 'css', 'Eco_legrand');
+//include_file('desktop', 'css/ionicons', 'css', 'Eco_legrand');
+
+
+
 //include_file('desktop', 'panel', 'css', 'Eco_legrand');
 /*Theme*/
 include_file('desktop', 'style', 'css', 'Eco_legrand');
-include_file('desktop/css/theme', 'font-awesome', 'css', 'conso');
+
 //sendVarToJS('date_abo', config::byKey('date_abo', 'Eco_legrand', '01-01'));
 //sendVarToJS('versiontheme', "v4");
 //sendVarToJS('stylecss', 'cssdefault');
@@ -67,7 +86,7 @@ if (!$eqlogic_actif) {
 	//die();
 }
 
-$btnreturn = config::byKey('btn_return', 'Eco_legrand', false);
+$btnreturn = config::byKey('btn_retour', 'Eco_legrand', false);
 $datesynchro =  date("d-m-Y H:i:s");
 //sendVarToJS('ismobile', false);
 sendVarToJS('eqType', 'Eco_legrand');
@@ -132,7 +151,7 @@ sendVarToJS('type', $type);*/
                             ?>
                         </select>
 					</li>
-					<li class="cursor bt_dashboard"><i class="icon kiko-electricity"></i><span>Electricité</span></li>
+					<li class="cursor bt_elec"><i class="icon kiko-electricity"></i><span>Electricité</span></li>
                     <li class="cursor bt_tab"><i class="icon kiko-water-supply "></i><span>Eau</span></li>
                     <li class="cursor bt_tab"><i class="icon kiko-gas "></i><span>Gaz</span></li>
 					<li class=" bt_synthese "><i class="icon-list" aria-hidden="true"></i><span>Synthése</span></li>
@@ -140,12 +159,12 @@ sendVarToJS('type', $type);*/
 					<li class="navinfo">
 						<div id="tab_detail" class="inner">
 							<div class="infoblock first">
-								<i title="Période" class="tooltips iconeptec shortcut-icon icon-bookmark-empty">
+								<i title="Période" class="tooltips iconeptec shortcut-icon far fa-bookmark">
 									<span id="Eco_legrand_ptec"></span>
 									</i>
 							</div>
 							<div class="infoblock middle">
-								<i title="Intensité instantanée totale" class="tooltips iconeptec shortcut-icon icon-bookmark-empty">
+								<i title="Intensité instantanée totale" class="tooltips iconeptec shortcut-icon far fa-bookmark">
 									<span class="ints1" id="Eco_legrand_ints1"></span>
 									</i>
 							</div>
@@ -158,89 +177,81 @@ sendVarToJS('type', $type);*/
 			</div>
 		</div>
 	</div>
-	<div class="row row-overflow" id="div_conso">
+	<div class="row row-overflow" id="Eco_legrand_elec">
 	    <input type="hidden" value="<?php echo $datesynchro ?>" id="datesynchro">
         <div  class="col-lg-12" id="conso_dashboard" style="height:100%;">
-		    <div id="div_DashboardAlert" style="display: none;"></div>
 
 		        <div class="span6">
                     <!-- ligne 1 -->
-			        <div class="row">
-				        <div class="col-lg-4" id="widget_tableau_prix">
-					        <div class="widget flip" id="tableau_prix">
+			        <div class="row ligne_1">
+				        <div class="col-lg-4" >
+					        <div class="widget flip">
 					            <div class="card">
-                                    <div class="face front">
-                                        <img style="position: absolute;top: 2px;right: 2px;width: 35px; "class="icon_flip" src="plugins/Eco_legrand/desktop/img/euro.png" title="Voir le coût">
-                                        <div class="widget-header">
-                                            <i class="icon-money"></i>
-                                            <h3>Consommation en KWh</h3>
-                                            <span class="datesynchro" style="position: absolute; right: 35px;"></span>
+                                    <img style="position: absolute;top: 2px;right: 2px;width: 35px; " class="icon_flip front" src="plugins/Eco_legrand/desktop/img/euro.png" title="Voir le coût">
+                                    <img style="position: absolute;top: 2px;right: 2px;width: 35px;display:none; " class="icon_flip back" src="plugins/Eco_legrand/desktop/img/elec.png" title="Voir la consommation">
+						            <div class="widget-header">
+                                            <i class="far fa-money-bill-alt"></i>
+                                            <h3 class ="titre front">Consommation en KWh</h3>
+                                            <h3 class ="titre back" style="display:none">Montant en €uros TTC</h3>
+                                           <!-- <span class="datesynchro" style="position: absolute; right: 35px;"></span>-->
                                         </div>
                                         <div style="height:240px;" class="widget-content">
-                                            <table data-role="table" id="table-column-toggle2 "  class="tableauwatt movie-list table table-striped table-bordered ui-responsive">
-                                                <thead>
-                                                    <tr>
-                                                        <th>Périodes</th>
-                                                        <th class="tts2" ></th>
-                                                        <th class="dds ">HC</th>
-                                                        <th class="dds ">Total</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    <tr>
-                                                        <td>Jour</td>
-                                                        <td id="day_hpw" ></td>
-                                                        <td  id="day_hcw" class="dds "></td>
-                                                        <td id="day_totalw" class="dds "></td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>Hier</td>
-                                                        <td id="yesterday_hpw" ></td>
-                                                        <td id="yesterday_hcw" class="dds "></td>
-                                                        <td id="yesterday_totalw" class="dds"></td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>Semaine </td>
-                                                        <td id="week_hpw" ></td>
-                                                        <td  id="week_hcw" class="dds "></td>
-                                                        <td id="week_totalw" class="dds "></td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>Mois </td>
-                                                        <td id="month_hpw" ></td>
-                                                        <td  id="month_hcw" class=" dds "></td>
-                                                        <td id="month_totalw" class="dds "></td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>Année 
-                                                            <i data-toggle="tooltip"  data-placement="right" title="" class="fas fa-info-circle datefact"></i>
-                                                        </td>
-                                                        <td id="year_hpw"></td>
-                                                        <td  id="year_hcw" class=" dds "></td>
-                                                        <td id="year_totalw" class="dds "></td>
-                                                    </tr>
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    </div>
-						            <div class="face back">
-						                <img style="position: absolute;top: 2px;right: 2px;width: 35px; " class="icon_flip" src="plugins/Eco_legrand/desktop/img/elec.png" title="Voir la consommation">
-						                <div class="widget-header">
-							                <i class="icon-money"></i>
-							                <h3>Montant en €uros</h3>
-							                <span class="datesynchro" style="position: absolute; right: 35px;"></span>
-						                </div>
-						                <div style="height:240px;" class="widget-content">
-                                            <div class="col-xs-1 changeType" style="display:none;">
-                                                <button type="button" class="icon-eye-open btn btn-default"></button>
+                                            <div class="face front">
+                                        
+                                        
+                                                <table data-role="table" id="table-column-toggle2 "  class="tableauwatt movie-list table table-striped table-bordered ui-responsive">
+                                                    <thead>
+                                                        <tr>
+                                                            <th style="width:25%;">Périodes</th>
+                                                            <th style="width:25%;" class="tts2">HP</th>
+                                                            <th style="width:25%;" class="dds">HC</th>
+                                                            <th style="width:25%;" class="dds ">Total</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr>
+                                                            <td>Jour</td>
+                                                            <td id="day_hpw" ></td>
+                                                            <td  id="day_hcw" class="dds"></td>
+                                                            <td id="day_totalw" class="dds"></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>Hier</td>
+                                                            <td id="yesterday_hpw" ></td>
+                                                            <td id="yesterday_hcw" class="dds "></td>
+                                                            <td id="yesterday_totalw" class="dds"></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>Semaine </td>
+                                                            <td id="week_hpw" ></td>
+                                                            <td  id="week_hcw" class="dds "></td>
+                                                            <td id="week_totalw" class="dds "></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>Mois </td>
+                                                            <td id="month_hpw" ></td>
+                                                            <td  id="month_hcw" class=" dds "></td>
+                                                            <td id="month_totalw" class="dds "></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>Année 
+                                                                <i data-toggle="tooltip"  data-placement="right" title="" class="fas fa-info-circle datefact"></i>
+                                                            </td>
+                                                            <td id="year_hpw"></td>
+                                                            <td  id="year_hcw" class=" dds "></td>
+                                                            <td id="year_totalw" class="dds "></td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
                                             </div>
+                                            <div class="face back" style="display:none">
                                             <table data-role="table" id="table-column-toggle" class="tableaueuros movie-list table table-striped table-bordered ui-responsive">
                                                 <thead>
                                                     <tr>
-                                                        <th>Périodes</th>
-                                                        <th class="tts" data-placement="top" data-toggle="tooltip" title="Prix HT + TVA!" ></th>
-                                                        <th class=" dds " data-placement="top" data-toggle="tooltip" title="Prix HT + TVA">HC TTC</th>
-                                                        <th data-placement="top" data-toggle="tooltip" title="Prix TTC + Abonnement (Si équipement Total) + TVA + Taxes">Total TTC</th>
+                                                        <th style="width:25%;">Périodes</th>
+                                                        <th style="width:25%;"class="tts">HP</th>
+                                                        <th style="width:25%;"class="dds">HC</th>
+                                                        <th style="width:25%;">Total</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -275,20 +286,23 @@ sendVarToJS('type', $type);*/
                                                     </tr>
                                                 </tbody>
                                             </table>
-						                </div>
-					                </div>
+						               
+					                    </div>
+                                    </div>
+						           
                                     
                                 </div>
                             </div>
                         </div>
+                        
  				
-                        <div class="col-lg-4" id="widget_gauge">
+                        <div class="col-lg-4">
                             <div id="widgetgauge" >
                                 <div class="widget">
                                     <div class="widget-header">
-                                        <i class="icon-bolt"></i>
+                                        <i class="fas fa-bolt"></i>
                                         <h3>Puissance</h3>
-                                        <span class="date_isrefresh"></span>
+                                        <!--<span class="date_isrefresh"></span>-->
                                     </div>
                                     <div style="height:240px;" class="widget-content">
                                         <div class="shortcuts" >
@@ -301,7 +315,7 @@ sendVarToJS('type', $type);*/
                                 </div>
                             </div>
                         </div>
-                        <div class="col-lg-4" id="widget_variation">
+                        <!--<div class="col-lg-4" id="widget_variation">
                             <div class="widget">
                                 <div class="widget-header">
                                     <i class="icon-list-alt"></i>
@@ -316,18 +330,72 @@ sendVarToJS('type', $type);*/
                                     </div>
                                 </div>
                             </div>
+                        </div>-->
+
+                        <div id="widget_statBox">
+                            <div id="statBox" class="col-lg-4">
+                                <div class="widget">
+                                    <div class="widget-header">
+                                        
+                                            <i class="fas fa-chart-pie"></i>
+                                            <h3>Statistique</h3>
+                                            <!--<span class="datesynchro" style="position: absolute; right: 35px;"></span>-->
+                                       
+                                    </div>
+                                    <div  class="widget-content" style="height:240px;">
+                                        <div class="shortcuts" >
+                                            <div id="carousel-example-generic" data-interval="false" class="carousel slide"  >
+                                                <div class="carousel-inner" role="listbox">
+                                                    <div class="item active">
+                                                       <div class="chart" id="StatDAY" style="height:235px;"></div>
+                                                       <div class="carousel-caption defautcss">Aujourd'hui</div>
+                                                    </div>
+                                                    <div class="item">
+                                                       <div class="chart" id="StatYESTERDAY" style="height:235px;"></div>
+                                                       <div class="carousel-caption defautcss">Hier</div>
+                                                    </div>
+                                                    <div class="item">
+                                                       <div class="chart" id="StatWEEK" style="height:235px;"></div>
+                                                       <div class="carousel-caption defautcss">Semaine</div>
+                                                    </div>
+                                                    <div class="item">
+                                                        <div class="chart" id="Stat" style="height:235px;"></div>
+                                                        <div class="carousel-caption defautcss"> Mois</div>
+                                                    </div>
+                                                    <div class="item">
+                                                       <div class="chart" id="StatYEAR" style="height:235px;"></div>
+                                                       <div class="carousel-caption defautcss">Année</div>
+                                                     </div>
+                                                </div>
+                                             
+                                               <!-- <i class="icon-wrench"></i>
+                                             Controls -->
+                                               <a class="left carousel-control" href="#carousel-example-generic" role="button" data-slide="prev">
+                                                 <span class="fas fa-chevron-left defautcss" aria-hidden="true"></span>
+                                                 <span class="sr-only">Previous</span>
+                                               </a>
+                                               <a class="right carousel-control" href="#carousel-example-generic" role="button" data-slide="next">
+                                                 <span class="fas fa-chevron-right defautcss" aria-hidden="true"></span>
+                                                 <span class="sr-only">Next</span>
+                                               </a>
+                                             </div>
+                                        </div>  
+                                            
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 			        </div>
                     <!-- ligne 2 -->
-                    <div class="row">
+                    <div class="row ligne_2">
                         <div id ="widget_currentBox">
-                            <div id="currentBox" class="col-lg-8">
+                            <div id="currentBox" class="col-lg-12">
                                 <div class="widget">
                                     <div class="widget-header">
                                         <div class="col-lg-7" style="display:block">
-                                            <i class="icon-bar-chart"></i>
+                                            <i class="far fa-chart-bar"></i>
                                             <h3>Consommation du jour</h3>
-                                            <span class="date_isrefresh"></span>
+                                            <!--<span class="date_isrefresh"></span>-->
                                         </div>
                                         <div class="col-xs-1 changeType" style="display:none;"><button type="button" class="icon-eye-open btn btn-default"></button></div>
                                         <div class="col-lg-4">
@@ -350,365 +418,200 @@ sendVarToJS('type', $type);*/
                                 </div>
                             </div>
                         </div>
-                        <div id="widget_statBox">
-                            <div id="statBox" class="col-lg-4" style="height:320px">
-                                <div class="widget">
-                                    <div class="widget-header">
-                                        <div class="col-lg-8" style="display:block">
-                                            <i class="icon-bar-chart"></i>
-                                            <h3>Statistique</h3>
-                                            <span class="datesynchro" style="position: absolute; right: 35px;"></span>
-                                        </div>
-                                    </div>
-                                    <div  class="widget-content">
-                                        <div class="shortcuts" >
-                                       
-                                            <?php
-                                                //include('panel_carousel.php');
-                                                    echo '</div>'
-                                            ?>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                        
 
                     </div>
                     <!-- ligne 3 -->
-                    <div class="row">
-                        <div class="col-lg-4" id="widget_Temp7jBox">
-                            <div class="flip widget">
+                    <div class="row ligne_3">
+                        <div class="col-lg-6" >
+                            <div class="widget flip">
                                 <div class="card">
-                                    <div class="face front">
-                                        <img id="Temp7jBox" class="icon_flip" src="plugins/Eco_legrand/desktop/img/temp.png" title="Voir les températures de cette période">
-                                        <div class="widget-header">
-                                            <i class="icon-bar-chart"></i>
-                                            <h3>7 derniers jours</h3>
-                                            <span class="datesynchro" style="position: absolute; right: 35px;"></span>
-                                        </div>
-                                        <div style="height:340px;" class="  widget-content">
+                                    <img style="position: absolute;top: 2px;right: 2px;width: 35px; " class="icon_flip front" src="plugins/Eco_legrand/desktop/img/euro.png" title="Voir la consommation de cette période en €uros">
+                                    <img style="position: absolute;top: 2px;right: 2px;width: 35px;display:none; " class="icon_flip back1" src="plugins/Eco_legrand/desktop/img/temp.png" title="Voir les températures de cette période">
+                                    <img style="position: absolute;top: 2px;right: 2px;width: 35px;display:none; " class="icon_flip back2" src="plugins/Eco_legrand/desktop/img/elec.png" title="Voir la consommation de cette période en Kwh">
+                                    <div class="widget-header">
+                                        <i class="far fa-chart-bar"></i>
+                                        <h3 class ="titre front">Consommation des 7 derniers jours</h3>
+                                        <h3 class ="titre back1" style="display:none">Montant TTC des 7 derniers jours</h3>
+                                        <h3 class ="titre back2" style="display:none">Température des 7 derniers jours</h3>
+                                        
+                                        <!-- <span class="datesynchro" style="position: absolute; right: 35px;"></span>-->
+                                    </div>
+                                    <div style="height:340px;" class="widget-content">
+                                        <div class="face front">
                                             <div class=" shortcuts" >
                                                 <div class=" box-body no-padding">
                                                     <div class="chart" id="Day" style="height:300px;"></div>
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
-                                    <div class="face back">
-                                        <img class="icon_flip" src="plugins/Eco_legrand/desktop/img/elec.png" title="Voir la consommation de cette période">
-                                        <div class="widget-header">
-                                            <i class="icon-bar-chart"></i>
-                                            <h3>Température 7 derniers jours</h3>
-                                            <span class="datesynchro"></span>
+                                        <div class="face back1" style="display:none">
+                                            <div class=" shortcuts" >
+                                                <div class=" box-body no-padding">
+                                                    <div class="chart" id="DayEuro" style="height:300px;"></div>
+                                                </div>
+                                            </div>
                                         </div>
-                                        <div style="height:340px;" class="widget-content">
+                                        <div class="face back2" style="display:none">
                                             <div class=" shortcuts" >
                                                 <div class=" box-body no-padding">
                                                     <div class="chart" id="TempDay" style="height:300px;"></div>
                                                 </div>
                                             </div>
                                         </div>
+                                        
                                     </div>
                                 </div>
                             </div>
                         </div>
-
-                        <div class="col-lg-4" id="widget_Temp4sBox">
-                            <div class="flip widget">
+                        <div class="col-lg-6" >
+                            <div class="widget flip">
                                 <div class="card">
-                                    <div class="face front">
-                                        <img id="Temp4sBox" class="icon_flip" src="plugins/Eco_legrand/desktop/img/temp.png" title="Voir les températures de cette période">
-                                        <div class="widget-header">
-                                            <i class="icon-bar-chart"></i>
-                                            <h3>4 dernières semaines</h3>
-                                            <span class="datesynchro" style="position: absolute; right: 35px;"></span>
-                                        </div>
-                                        <div style="height:340px;" class="  widget-content">
+                                    <img style="position: absolute;top: 2px;right: 2px;width: 35px; " class="icon_flip front" src="plugins/Eco_legrand/desktop/img/euro.png" title="Voir la consommation de cette période en €uros">
+                                    <img style="position: absolute;top: 2px;right: 2px;width: 35px;display:none; " class="icon_flip back1" src="plugins/Eco_legrand/desktop/img/temp.png" title="Voir les températures de cette période">
+                                    <img style="position: absolute;top: 2px;right: 2px;width: 35px;display:none; " class="icon_flip back2" src="plugins/Eco_legrand/desktop/img/elec.png" title="Voir la consommation de cette période en Kwh">
+                                    <div class="widget-header">
+                                        <i class="far fa-chart-bar"></i>
+                                        <h3 class ="titre front">Consommation des 4 dernières semaines</h3>
+                                        <h3 class ="titre back1" style="display:none">Montant TTC des 4 dernières semaines</h3>
+                                        <h3 class ="titre back2" style="display:none">Température des 4 dernières semaines</h3>
+                                        
+                                        <!-- <span class="datesynchro" style="position: absolute; right: 35px;"></span>-->
+                                    </div>
+                                    <div style="height:340px;" class="widget-content">
+                                        <div class="face front">
                                             <div class=" shortcuts" >
                                                 <div class=" box-body no-padding">
                                                     <div class="chart" id="Month" style="height:300px;"></div>
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
-                                    <div class="face back">
-                                        <img class="icon_flip" src="plugins/Eco_legrand/desktop/img/elec.png" title="Voir la consommation de cette période">
-                                        <div class="widget-header">
-                                            <i class="icon-bar-chart"></i>
-                                            <h3>Température 4 dernières semaines</h3>
-                                            <span class="datesynchro" style="position: absolute; right: 35px;"></span>
+                                        <div class="face back1" style="display:none">
+                                            <div class=" shortcuts" >
+                                                <div class=" box-body no-padding">
+                                                    <div class="chart" id="MonthEuro" style="height:300px;"></div>
+                                                </div>
+                                            </div>
                                         </div>
-                                        <div style="height:340px;" class="  widget-content">
+                                        <div class="face back2" style="display:none">
                                             <div class=" shortcuts" >
                                                 <div class=" box-body no-padding">
                                                     <div class="chart" id="TempMonth" style="height:300px;"></div>
                                                 </div>
                                             </div>
                                         </div>
+                                        
                                     </div>
                                 </div>
                             </div>
                         </div>
-
-                        <div class="col-lg-4" id="widget_Temp12mBox">
-                            <div class="flip widget">
+                        
+                       
+                    </div>
+                    <!-- ligne 4 -->           
+                    <div class="row ligne_4">
+                        <div class="col-lg-6" >
+                            <div class="widget flip">
                                 <div class="card">
-                                    <div class="face front">
-                                        <img id="Temp12mBox" class="icon_flip" src="plugins/Eco_legrand/desktop/img/temp.png" title="Voir les températures de cette période">
-                                        <div class="widget-header">
-                                            <i class="icon-bar-chart"></i>
-                                            <h3>12 derniers mois</h3>
-                                            <span class="datesynchro" style="position: absolute; right: 35px;"></span>
-                                        </div>
-                                        <div style="height:340px;" class="  widget-content">
+                                    <img style="position: absolute;top: 2px;right: 2px;width: 35px; " class="icon_flip front" src="plugins/Eco_legrand/desktop/img/euro.png" title="Voir la consommation de cette période en €uros">
+                                    <img style="position: absolute;top: 2px;right: 2px;width: 35px;display:none; " class="icon_flip back1" src="plugins/Eco_legrand/desktop/img/temp.png" title="Voir les températures de cette période">
+                                    <img style="position: absolute;top: 2px;right: 2px;width: 35px;display:none; " class="icon_flip back2" src="plugins/Eco_legrand/desktop/img/elec.png" title="Voir la consommation de cette période en Kwh">
+                                    <div class="widget-header">
+                                        <i class="far fa-chart-bar"></i>
+                                        <h3 class ="titre front">Consommation des 12 derniers mois</h3>
+                                        <h3 class ="titre back1" style="display:none">Montant TTC des 12 derniers mois</h3>
+                                        <h3 class ="titre back2" style="display:none">Température des 12 derniers mois</h3>
+                                        
+                                        <!-- <span class="datesynchro" style="position: absolute; right: 35px;"></span>-->
+                                    </div>
+                                    <div style="height:340px;" class="widget-content">
+                                        <div class="face front">
                                             <div class=" shortcuts" >
                                                 <div class=" box-body no-padding">
                                                     <div class="chart" id="Year" style="height:300px;"></div>
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
-                                    <div class="face back">
-                                        <img class="icon_flip" src="plugins/Eco_legrand/desktop/img/elec.png" title="Voir la consommation de cette période">
-                                        <div class="widget-header">
-                                            <i class="icon-bar-chart"></i>
-                                            <h3>Température 12 derniers mois</h3>
-                                            <span class="datesynchro" style="position: absolute; right: 35px;"></span>
+                                        <div class="face back1" style="display:none">
+                                            <div class=" shortcuts" >
+                                                <div class=" box-body no-padding">
+                                                    <div class="chart" id="YearEuro" style="height:300px;"></div>
+                                                </div>
+                                            </div>
                                         </div>
-                                        <div style="height:340px;" class="  widget-content">
+                                        <div class="face back2" style="display:none">
                                             <div class=" shortcuts" >
                                                 <div class=" box-body no-padding">
                                                     <div class="chart" id="TempYear" style="height:300px;"></div>
                                                 </div>
                                             </div>
                                         </div>
+                                        
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    <!-- ligne 4 -->
-                    <div class="row">
-                        <div class=" col-lg-4" id="widget_DJU7jBox">
-                            <div class="flip widget">
+                    <div class="col-lg-6" >
+                            <div class="widget flip">
                                 <div class="card">
-                                    <div class="face front">
-                                       <!-- <img id="DJU7jBox" class="icon_flip" src="plugins/conso/desktop/css/theme/img/dju.png" title="Voir les DJU  de cette période">-->
-                                        <div class="widget-header">
-                                            <i class="icon-bar-chart"></i>
-                                            <h3>7 derniers jours en €uros (HT)</h3>
-                                            <span class="datesynchro"></span>
-                                        </div>
-                                        <div style="height:340px;" class="widget-content">
-                                            <div class="shortcuts" >
-                                                <div class="box-body no-padding">
-                                                    <div class="chart" id="DayEuro" style="height:300px;"></div>
-                                                </div>
-                                            </div>
-                                        </div>
+                                    <img style="position: absolute;top: 2px;right: 2px;width: 35px; " class="icon_flip front" src="plugins/Eco_legrand/desktop/img/euro.png" title="Voir la consommation de cette période en €uros">
+                                    <img style="position: absolute;top: 2px;right: 2px;width: 35px;display:none; " class="icon_flip back1" src="plugins/Eco_legrand/desktop/img/temp.png" title="Voir les températures de cette période">
+                                    <img style="position: absolute;top: 2px;right: 2px;width: 35px;display:none; " class="icon_flip back2" src="plugins/Eco_legrand/desktop/img/elec.png" title="Voir la consommation de cette période en Kwh">
+                                    <div class="widget-header">
+                                        <i class="far fa-chart-bar"></i>
+                                        <h3 class ="titre front">Consommation pluriannuelle</h3>
+                                        <h3 class ="titre back1" style="display:none">Montant Pluriannuel en €uros</h3>
+                                        <h3 class ="titre back2" style="display:none">Température pluriannuelle</h3>
+                                        
+                                        <!-- <span class="datesynchro" style="position: absolute; right: 35px;"></span>-->
                                     </div>
-                                    <!--<div class="face back">
-                                        <img class="icon_flip" src="plugins/conso/desktop/css/theme/img/euro.png" title="Voir  la consommation de cette période">
-                                        <div class="widget-header">
-                                            <i class="icon-bar-chart"></i>
-                                            <h3>DJU des 7 derniers jours</h3>
-                                            <span class="datesynchro"></span>
-                                        </div>
-                                        <div style="height:340px;" class="  widget-content">
+                                    <div style="height:340px;" class="widget-content">
+                                        <div class="face front">
                                             <div class=" shortcuts" >
                                                 <div class=" box-body no-padding">
-                                                    <div class="chart" id="DayDJU" style="height:300px;"></div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>-->
-                                </div>
-                            </div>
-                        </div>
-                        <div class=" col-lg-4" id="widget_DJU4sBox">
-                            <div class="flip widget">
-                                <div class="card">
-                                    <div class="face front">
-                                            <!--<img id="DJU4sBox" class="icon_flip" src="plugins/conso/desktop/css/theme/img/dju.png" title="Voir les DJU de cette période ">-->
-                                            <div class="widget-header">
-                                                <i class="icon-bar-chart"></i>
-                                                <h3>4 dernières semaines en €uros (HT)</h3>
-                                                <span class="datesynchro"></span>
-                                            </div>
-                                            <div style="height:340px;" class="widget-content">
-                                                <div class="shortcuts" >
-                                                    <div class="box-body no-padding">
-                                                            <div class="chart" id="MonthEuro" style="height:300px;"></div>
-                                                    </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <!--<div class="face back">
-                                        <img class="icon_flip" src="plugins/conso/desktop/css/theme/img/euro.png" title="Voir la consommation de cette période">
-                                        <div class="widget-header">
-                                            <i class="icon-bar-chart"></i>
-                                            <h3>DJU des 4 dernières semaines</h3>
-                                            <span class="datesynchro"></span>
-                                        </div>
-                                        <div style="height:340px;" class="  widget-content">
-                                            <div class=" shortcuts" >
-                                                <div class=" box-body no-padding">
-                                                    <div class="chart" id="MonthDJU" style="height:300px;"></div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>-->
-                                </div>
-                            </div>
-                        </div>
-                        <div class=" col-lg-4" id="widget_DJU12mBox">
-                            <div class="flip widget">
-                                <div class="card">
-                                    <div class="face front">
-                                       <!-- <img id="DJU12mBox" class="icon_flip" src="plugins/Eco_legrand/desktop/img/dju.png" title="Voir les DJU de cette période">-->
-                                        <div class="widget-header">
-                                            <i class="icon-bar-chart"></i>
-                                            <h3>12 derniers mois en €uros (HT)</h3>
-                                            <span class="datesynchro" style="position: absolute; right: 35px;"></span>
-                                        </div>
-                                        <div style="height:340px;" class="widget-content">
-                                            <div class="shortcuts" >
-                                                <div class="box-body no-padding">
-                                                    <div class="chart" id="YearEuro" style="height:300px;"></div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <!--<div class="face back">
-                                        <img class="icon_flip" src="plugins/Eco_legrand/desktop/img//euro.png" title="Voir la consommation de cette période">
-                                        <div class="widget-header">
-                                            <i class="icon-bar-chart"></i>
-                                            <h3>DJU des 12 derniers mois</h3>
-                                            <span class="datesynchro" style="position: absolute; right: 35px;"></span>
-                                        </div>
-                                        <div style="height:340px;" class="  widget-content">
-                                            <div class=" shortcuts" >
-                                                <div class=" box-body no-padding">
-                                                    <div class="chart" id="YearDJU" style="height:300px;"></div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>-->
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- ligne 5 -->
-                    <div class="row">
-                        <div class="col-lg-6" id="widget_YearTaxe">
-                            <div class="widget">
-                                <div class="widget-header">
-                                    <i class="icon-bar-chart"></i>
-                                    <h3>12 derniers mois TTC</h3>
-                                    <span class="datesynchro" style="position: absolute; right: 35px;"></span>
-                                </div>
-                                <div style="height:340px;" class="widget-content">
-                                    <div class="shortcuts" >
-                                        <div class="box-body no-padding">
-                                            <div class="chart" id="YearTaxe" style="height:300px;"></div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- ligne 6 -->
-                    <div class="row">
-                        <div class="col-lg-6" id="widget_PluriYear">
-                            <div class="flip widget">
-                                <div class="card">
-                                    <div class="face front">
-                                        <img id="Temp12mBox" class="icon_flip" src="plugins/Eco_legrand/desktop/img/temp.png" title="Voir les températures de cette période">
-                                        <div class="widget-header">
-                                            <i class="icon-bar-chart"></i>
-                                            <h3>Pluriannuel en KWh</h3>
-                                            <span class="datesynchro" style="position: absolute; right: 35px;"></span>
-                                        </div>
-                                        <div style="height:340px;" class="widget-content">
-                                            <div class="shortcuts" >
-                                                <div class="box-body no-padding">
                                                     <div class="chart" id="pluri" style="height:300px;"></div>
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
-                                    <div class="face back">
-                                        <img class="icon_flip" src="plugins/Eco_legrand/desktop/img/elec.png" title="Voir la consommation de cette période">
-                                        <div class="widget-header">
-                                            <i class="icon-bar-chart"></i>
-                                            <h3>Température pluriannuelles</h3>
-                                            <span class="datesynchro" style="position: absolute; right: 35px;"></span>
+                                        <div class="face back1" style="display:none">
+                                            <div class=" shortcuts" >
+                                                <div class=" box-body no-padding">
+                                                    <div class="chart" id="pluriEuro" style="height:300px;"></div>
+                                                </div>
+                                            </div>
                                         </div>
-                                        <div style="height:340px;" class="  widget-content">
+                                        <div class="face back2" style="display:none">
                                             <div class=" shortcuts" >
                                                 <div class=" box-body no-padding">
                                                     <div class="chart" id="pluriTemp" style="height:300px;"></div>
                                                 </div>
                                             </div>
                                         </div>
+                                        
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <div class="col-lg-6" id="widget_PluriYearEuro">
-                            <div class="flip widget">
-                                <div class="card">
-                                    <div class="face front">
-                                        <!--<img id="DJUaBox" class="icon_flip" src="plugins/Eco_legrand/desktop/img/dju.png" title="Voir les DJU de cette période">-->
-                                        <div class="widget-header">
-                                            <i class="icon-bar-chart"></i>
-                                            <h3>Pluriannuel en €uros (HT)</h3>
-                                            <span class="datesynchro" style="position: absolute; right: 35px;"></span>
-                                        </div>
-                                        <div style="height:340px;" class="widget-content">
-                                            <div class="shortcuts" >
-                                                <div class="box-body no-padding">
-                                                    <div class="chart" id="pluriEuro" style="height:300px;"></div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <!--<div class="face back">
-                                        <img class="icon_flip" src="plugins/Eco_legrand/desktop/img/euro.png" title="Voir la consommation de cette période">
-                                        <div class="widget-header">
-                                            <i class="icon-bar-chart"></i>
-                                            <h3>DJU pluriannuels</h3>
-                                            <span class="datesynchro" style="position: absolute; right: 35px;"></span>
-                                        </div>
-                                        <div style="height:340px;" class="  widget-content">
-                                            <div class=" shortcuts" >
-                                                <div class=" box-body no-padding">
-                                                    <div class="chart" id="pluriDJU" style="height:300px;"></div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>-->
-                                </div>
-                            </div>
-                        </div>
+                       
                     </div>
 		</div>
 	</div>
 		
 
         <div  class="col-lg-12" id="Eco_legrand_tab" style="padding-right:25px;border-left: solid 1px #EEE; padding-left: 25px;display:none;">
-            <div id="div_tabAlert" style="display: none;"></div>
+            
         </div>
 
         
 
         <div  class="col-lg-12" id="conso_graph" style="padding-right:25px;border-left: solid 1px #EEE; padding-left: 25px;display:none;">
-            <div id="div_GraphAlert" style="display: none;"></div>
+            
         </div>
         <div  class="col-lg-12" id="conso_graph_cat" style="padding-right:25px;border-left: solid 1px #EEE; padding-left: 25px;display:none;">
-            <div id="div_GraphAlert" style="display: none;"></div>
+           
         </div>
         <div  class="col-lg-12" id="conso_synthese" style="padding-right:25px;border-left: solid 1px #EEE; padding-left: 25px;display:none;">
-            <div id="div_TableAlert" style="display: none;"></div>
+            
         </div>
 
         <?php
@@ -716,8 +619,8 @@ sendVarToJS('type', $type);*/
 	</div>
 
 <?php
-include_file('3rdparty', 'bootstrap-select/dist/js/bootstrap-select', 'js', 'conso');
-include_file('3rdparty', 'bootstrap-select/dist/js/bootstrap-select.min', 'js', 'conso');
+include_file('3rdparty', 'js/bootstrap-select', 'js', 'Eco_legrand');
+//include_file('3rdparty', 'js/bootstrap-select.min', 'js', 'Eco_legrand');
 //include_file('3rdparty', 'datetimepicker/jquery.datetimepicker', 'js', 'Eco_legrand');
 //include_file('3rdparty', 'jquery.fileTree/jquery.easing.1.3', 'js');
 //include_file('3rdparty', 'jquery.fileTree/jqueryFileTree', 'js');
@@ -727,7 +630,6 @@ include_file('3rdparty', 'bootstrap-select/dist/js/bootstrap-select.min', 'js', 
 //include_file('desktop', 'bib_graph', 'js', 'Eco_legrand');
 //include_file('desktop', 'panel_temperature', 'js', 'Eco_legrand');
 //include_file('desktop', 'panel_dashboard', 'js', 'Eco_legrand');
-//include_file('desktop', 'pie', 'js', 'Eco_legrand');
 include_file('desktop', 'panel', 'js', 'Eco_legrand');
 //include_file('desktop', 'panel_price', 'js', 'Eco_legrand');
 //include_file('desktop', 'panel_periode', 'js', 'Eco_legrand');

@@ -47,12 +47,13 @@ class Eco_legrand_prix{
     }
     public static function dateFr($date) {
         $dt = DateTime::createFromFormat('Y-m-d', $date);
-        return $dt->format('d/m/yy');
+        return $dt->format('d/m/Y');
         //return strftime('%d/%m/%Y', strtotime($date));
     }
  
     public function save() {//ok
         if ($this->hc == 0) {$this->hc = $this->hp; }
+        $this->id =0;
         $this->hp =  number_format((float)$this->hp,5,'.','');
         $this->hc = number_format((float)$this->hc,5,'.','');
         $this->date_debut = self::convert_date_to_sql_date($this->date_debut);

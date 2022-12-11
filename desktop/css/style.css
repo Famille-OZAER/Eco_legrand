@@ -49,7 +49,7 @@
 }
 
 .iconeptec {
-    font-size: 64px;
+    font-size: 60px;
     position: relative;
     /* color: #D5D5D5;*/
 }
@@ -261,8 +261,8 @@ tspan {
     border-radius: 6px 0 6px 6px;
 }
 
-#carousel-example-generic .icon-chevron-left,
-#carousel-example-generic .icon-chevron-right {
+#carousel-example-generic .fa-chevron-left,
+#carousel-example-generic .fa-chevron-right {
     position: absolute;
     top: 50%;
     z-index: 5;
@@ -273,7 +273,7 @@ tspan {
     color: rgb(var(--txt-color))
 }
 
-#carousel-example-generic .icon-chevron-right {
+#carousel-example-generic .fa-chevron-right {
     right: 40px;
 }
 
@@ -1439,8 +1439,8 @@ body {
     /*text-shadow: 1px 1px 2px rgba(255,255,255,.5);*/
 }
 
-.widget-header [class^="icon-"],
-.widget-header [class*=" icon-"] {
+.widget-header [class^="fa-"],
+.widget-header [class*=" fa-"] {
     display: inline-block;
     margin-left: 13px;
     margin-right: -2px;
@@ -1456,6 +1456,13 @@ body {
     -moz-border-radius: 5px;
     -webkit-border-radius: 5px;
     border-radius: 5px;
+    border-top: none;
+    -webkit-border-top-left-radius: 0;
+    -webkit-border-top-right-radius: 0;
+    -moz-border-radius-topleft: 0;
+    -moz-border-radius-topright: 0;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
 }
 
 .widget-header+.widget-content {

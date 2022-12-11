@@ -380,6 +380,7 @@ $('body').on('click', '.tester_ajout_teleinfo', function() {
                 $('#div_alert').showAlert({ message: data.result, level: 'danger' });
                 return;
             }
+            console.log(data.result)
         }
     });
 });
