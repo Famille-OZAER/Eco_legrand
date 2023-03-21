@@ -104,7 +104,7 @@ class Eco_legrand extends eqLogic {
         
         
         if ($devResult === false) {
-          self::add_log( 'error', 'problème de connexion ' . $devAddr);
+        
         } else {
           $devResbis = utf8_encode($devResult);
           $corrected = preg_replace('/\s+/', '', $devResbis);
@@ -120,8 +120,12 @@ class Eco_legrand extends eqLogic {
               $eqLogic->checkAndUpdateCmd($name, str_replace('..','',$value),$date);
             }else if ($name === 'PTEC'){
               $eqLogic->checkCmdOk('teleinfo','string', 'Période Tarifaire en cours',trim($name), '<i class="fas fa-random"></i>',"");
-              $eqLogic->checkAndUpdateCmd($name, str_replace('..','',$value),$date);
+              $ptec=Eco_legrandCmd::byEqLogicIdAndLogicalId($eqLogic->getId(),'ptec');
+              if($ptec->execCmd() != str_replace('..','',$value)){
+                self::add_log("debug",$date . ":" .str_replace('..','',$value));
+              }
               $Eco_legrand_teleinfo->set_value("ptec",str_replace('..','',$value));
+              $eqLogic->checkAndUpdateCmd($name, str_replace('..','',$value),$date);
             } else {
               if ($nom_fichier  == "ti.json"){
                 if ($value != 0){
@@ -184,7 +188,7 @@ class Eco_legrand extends eqLogic {
                 $eqLogic->checkCmdOk('csv','numeric', "Consommation Autre journalière" ,'conso_autre_jour','<i class="fas fa-bolt"></i>',"kW");
               
                 $eqLogic->checkAndUpdateCmd('inst_circuit' . $i, $value,$date);
-                $Eco_legrand_teleinfo->set_value('inst_circuit' . $i ,$value);
+                
               
                 $i=$i+1;
 
@@ -200,9 +204,7 @@ class Eco_legrand extends eqLogic {
       }elseif(substr($nom_fichier , -3) == 'csv' || substr($nom_fichier , -3) == 'old'){
         $devResult = fopen($devAddr, "r");
 
-        //self::add_log( 'info', $eqLogic->getName() . " " . $devAddr);
-
-        //self::add_log( 'info', $eqLogic->getId() . " " .$eqLogic->getName());
+      
         /*
         jour	mois	annee	heure	minute	energie_tele_info	prix_tele_info	energie_circuit1	prix_circuit1	energie_cirucit2	prix_circuit2	energie_circuit3	prix_circuit3	energie_circuit4	prix_circuit4	energie_circuit5	prix_circuit5	volume_entree1	volume_entree2	tarif	energie_entree1	energie_entree2	prix_entree1	prix_entree2
         17	   8	  15	   20	   2	     0.000	         0.000	          0.000	             0.000	      0.000	            0.000	         0.000	           0.000	       0.000	          0.000	        0.000	              0.000	          0.000	            0.000	     0	   0.000	          0.000	         0.000	        0.000
@@ -210,9 +212,7 @@ class Eco_legrand extends eqLogic {
         */
 
         if ($devResult === false) {
-          if(substr($nom_fichier, -3) == 'csv'){
-            //self::add_log( 'error', 'problème de connexion ' . $devAddr);
-          }
+         
         } else {
           $Eco_legrandCmd_conso_totale = Eco_legrandCmd::byEqLogicIdAndLogicalId($eqLogic->getId(),'conso_totale_'.$jour_heure);
           $valeur_precedente_conso_totale=$Eco_legrandCmd_conso_totale->getConfiguration('lastvalue');
@@ -242,81 +242,106 @@ class Eco_legrand extends eqLogic {
             }
             
 
-            //self::add_log('info', $eqLogic->getName() . " " . implode(",",$data));
+            
             $valeur=round($data[5],2);
             if($valeur > $valeur_precedente_conso_totale){
               if ($valeur_precedente_conso_totale == 0 ){
                 $valeur_precedente_conso_totale = $valeur;
               }
               $valeur=round($data[5],2);
-              self::add_log('debug', 'ajout valeur ' . $Eco_legrandCmd_conso_totale->getName() . ":" . $date . "=>". round($valeur - $valeur_precedente_conso_totale,2));
+              //self::add_log('debug', 'ajout valeur ' . $Eco_legrandCmd_conso_totale->getName() . ":" . $date . "=>". round($valeur - $valeur_precedente_conso_totale,2));
               $eqLogic->checkAndUpdateCmd('conso_totale_'.$jour_heure,round($valeur - $valeur_precedente_conso_totale,2),$date);
+              $Eco_legrand_teleinfo->set_value('index_total_circuits' ,$valeur*1000);
               $valeur_precedente_conso_totale = $valeur;
+            }else{
+              $Eco_legrand_teleinfo->set_value('index_total_circuits' ,$valeur_precedente_conso_totale*1000);
             }
            
-            $Eco_legrand_teleinfo->set_value('index_total_circuits' ,$valeur*1000);
+          
+
+
+
+
+
+
+
+
+
 
             $valeur=round($data[7],2);
             if($valeur > $valeur_precedente_conso_circuit1){
               if ($valeur_precedente_conso_circuit1 == 0 ){
                 $valeur_precedente_conso_circuit1 = $valeur;
               }
-              self::add_log('debug', 'ajout valeur ' . $Eco_legrandCmd_conso_circuit1->getName().":" . $date . "=>". round($valeur- $valeur_precedente_conso_circuit1,2));
+              //self::add_log('debug', 'ajout valeur ' . $Eco_legrandCmd_conso_circuit1->getName().":" . $date . "=>". round($valeur- $valeur_precedente_conso_circuit1,2));
               $eqLogic->checkAndUpdateCmd('conso_circuit1_'.$jour_heure,round($valeur- $valeur_precedente_conso_circuit1,2),$date);
+              $Eco_legrand_teleinfo->set_value('index_circuit1' ,$valeur*1000);
               $valeur_precedente_conso_circuit1 = $valeur;
+            }else{
+              $Eco_legrand_teleinfo->set_value('index_circuit1' ,$valeur_precedente_conso_circuit1*1000);
             }
-            $Eco_legrand_teleinfo->set_value('index_circuit1' ,$valeur*1000);
+          
 
             $valeur=round($data[9],2);
             if ($valeur > $valeur_precedente_conso_circuit2){
               if ($valeur_precedente_conso_circuit2 == 0 ){
                 $valeur_precedente_conso_circuit2 = $valeur;
               }
-              self::add_log( 'debug', 'ajout valeur ' . $Eco_legrandCmd_conso_circuit2->getName().":" . $date . "=>". round($valeur - $valeur_precedente_conso_circuit2,2));
+              //self::add_log( 'debug', 'ajout valeur ' . $Eco_legrandCmd_conso_circuit2->getName().":" . $date . "=>". round($valeur - $valeur_precedente_conso_circuit2,2));
               $eqLogic->checkAndUpdateCmd('conso_circuit2_'.$jour_heure,round($valeur - $valeur_precedente_conso_circuit2,2),$date);
+              $Eco_legrand_teleinfo->set_value('index_circuit2' ,$valeur*1000);
               $valeur_precedente_conso_circuit2 = $valeur;
+            }else{
+              $Eco_legrand_teleinfo->set_value('index_circuit2' ,$valeur_precedente_conso_circuit2*1000);
             }
-            $Eco_legrand_teleinfo->set_value('index_circuit2' ,$valeur*1000);
+           
 
             $valeur=round($data[11],2);
             if($valeur > $valeur_precedente_conso_circuit3){
               if ($valeur_precedente_conso_circuit3 == 0 ){
                 $valeur_precedente_conso_circuit3 = $valeur;
               }
-              self::add_log( 'debug', 'ajout valeur ' . $Eco_legrandCmd_conso_circuit3->getName().":" . $date . "=>". round($valeur - $valeur_precedente_conso_circuit3,2));
+              //self::add_log( 'debug', 'ajout valeur ' . $Eco_legrandCmd_conso_circuit3->getName().":" . $date . "=>". round($valeur - $valeur_precedente_conso_circuit3,2));
               $eqLogic->checkAndUpdateCmd('conso_circuit3_'.$jour_heure,round($valeur - $valeur_precedente_conso_circuit3,2),$date);
+              $Eco_legrand_teleinfo->set_value('index_circuit3' ,$valeur*1000);
               $valeur_precedente_conso_circuit3 = $valeur;
+            }else{
+              $Eco_legrand_teleinfo->set_value('index_circuit3' ,$valeur_precedente_conso_circuit3*1000);
             }
-            $Eco_legrand_teleinfo->set_value('index_circuit3' ,$valeur*1000);
 
             $valeur=round($data[13],2);
             if($valeur > $valeur_precedente_conso_circuit4){
               if ($valeur_precedente_conso_circuit4 == 0 ){
                 $valeur_precedente_conso_circuit4 = $valeur;
               }
-              self::add_log( 'debug', 'ajout valeur ' . $Eco_legrandCmd_conso_circuit4->getName().":" . $date . "=>". round($valeur - $valeur_precedente_conso_circuit4,2));
+              //self::add_log( 'debug', 'ajout valeur ' . $Eco_legrandCmd_conso_circuit4->getName().":" . $date . "=>". round($valeur - $valeur_precedente_conso_circuit4,2));
               $eqLogic->checkAndUpdateCmd('conso_circuit4_'.$jour_heure,round($valeur - $valeur_precedente_conso_circuit4,2),$date);
+              $Eco_legrand_teleinfo->set_value('index_circuit4' ,$valeur*1000);
               $valeur_precedente_conso_circuit4 = $valeur;
+            }else{
+              $Eco_legrand_teleinfo->set_value('index_circuit4' ,$valeur_precedente_conso_circuit4*1000);
             }
-            $Eco_legrand_teleinfo->set_value('index_circuit4' ,$valeur*1000);
 
             $valeur=round($data[15],2);
             if($valeur > $valeur_precedente_conso_circuit5){
               if ($valeur_precedente_conso_circuit5 == 0 ){
                 $valeur_precedente_conso_circuit5 = $valeur;
               }
-              self::add_log( 'debug', 'ajout valeur ' . $Eco_legrandCmd_conso_circuit5->getName().":" . $date . "=>". round($valeur - $valeur_precedente_conso_circuit5,2));
+              //self::add_log( 'debug', 'ajout valeur ' . $Eco_legrandCmd_conso_circuit5->getName().":" . $date . "=>". round($valeur - $valeur_precedente_conso_circuit5,2));
               $eqLogic->checkAndUpdateCmd('conso_circuit5_'.$jour_heure,round($valeur - $valeur_precedente_conso_circuit5,2),$date);
+              $Eco_legrand_teleinfo->set_value('index_circuit5' ,$valeur*1000);
               $valeur_precedente_conso_circuit5 = $valeur;
+            }else{
+              $Eco_legrand_teleinfo->set_value('index_circuit5' ,$valeur_precedente_conso_circuit5*1000);
             }
-            $Eco_legrand_teleinfo->set_value('index_circuit5' ,$valeur*1000);
+            
 
             $valeur=round($data[5]-$data[7]- $data[9]-$data[11]-$data[13]-$data[15],2);
             if($valeur > $valeur_precedente_conso_autre){
               if ($valeur_precedente_conso_autre == 0 ){
                 $valeur_precedente_conso_autre = $valeur;
               }
-              self::add_log( 'debug', 'ajout valeur ' . $Eco_legrandCmd_conso_autre->getName().":" . $date . "=>". round($valeur - $valeur_precedente_conso_autre,2));
+              //self::add_log( 'debug', 'ajout valeur ' . $Eco_legrandCmd_conso_autre->getName().":" . $date . "=>". round($valeur - $valeur_precedente_conso_autre,2));
               $eqLogic->checkAndUpdateCmd('conso_autre_'.$jour_heure,round($valeur - $valeur_precedente_conso_autre,2),$date);
               $valeur_precedente_conso_autre = $valeur;
             }
@@ -400,53 +425,50 @@ class Eco_legrand extends eqLogic {
     }
   }
 	public static function cron_minute(){
-		//self::add_log( 'debug', 'Synchronisation  du Jour.');
 		Eco_legrand_teleinfo::crontabJour();
-		//	conso_teleinfo::crontabSemaine();
 	}
 
 	public static function cron_jour(){
-		//self::add_log('debug', 'Synchronisation de tous les jours');
 		Eco_legrand_teleinfo::crontabAllJour(true);
 	}
   static function getDateAbo($eqLogicId){
 
-		/*ABONNEMENT FACTURE*/
-		$date = new DateTime();
+    /*ABONNEMENT FACTURE*/
+    $date = new DateTime();
     $eqLogic=eqLogic::byId($eqLogicId);
     $c=$eqLogic->getConfiguration("date_abo","01/01");
-    $d=explode("/",$c)[1] . "-" .explode("/",$c)[0];
-   // self::add_log( 'debug',$d);
+    $d_annee=explode("/",$c)[1] . "-" .explode("/",$c)[0];
+    $d_mois=explode("/",$c)[0];
+    $date_debut_mois=$date->format('Y-m-' . $d_mois);
+    $date_fin_mois = date("Y-m-d", strtotime('+1 month -1 day', strtotime($date_debut_mois)));
+    
+    $date_debut_annee = $date->format('Y-' . $d_annee);
+    //$date_debut_graph = date("Y-m-d", strtotime('-11 month', strtotime($date->format('Y-m-' . '01'))));
+    $date_fin_annee = date("Y-m-d", strtotime('+1 year -1 day', strtotime($date_debut_annee)));
+    $date_maintenant = date(Y).'-'.date(m).'-'.date(j);
 
+    if(strtotime($date_debut_annee) > strtotime($date_maintenant)){
 
-		//$d = config::byKey('date_abo', 'conso', '01-01');
-		$date_abo_year = config::byKey('date_abo_year', 'conso', 'Y');
-		$date_debut = $date->format('Y-' . $d);
-		$date_debut_graph = date("Y-m-d", strtotime('-11 month', strtotime($date->format('Y-m-' . '01'))));
-		$date_fin = date("Y-m-d", strtotime('+1 year -1 day', strtotime($date->format('Y-' . $d))));
+      $date_debut_annee = date("Y-m-d", strtotime('-1 year', strtotime($date->format('Y-' . $d_annee))));
+      $date_fin_annee = date("Y-m-d", strtotime('+1 year -1 day', strtotime($date_debut_annee)));
+    }
 
-		if ($date_abo_year != 'Y') {//annee en cours -1
-			if ($date_abo_year < 0) {
-				$date_debut = date("Y-m-d", strtotime('-1 year', strtotime($date->format('Y-' . $d))));
-				$date_fin = $date->format('Y-' . $d);
-			}
-		}
-
-
-		$date_debut_old = date("Y-m-d", strtotime('-1 year', strtotime($date->format($date_debut))));
-		$date_fin_old = date("Y-m-d", strtotime('-1 year', strtotime($date->format($date_fin))));
+   	//$date_debut_old = date("Y-m-d", strtotime('-1 year', strtotime($date->format($date_debut))));
+	//$date_fin_old = date("Y-m-d", strtotime('-1 year', strtotime($date->format($date_fin))));
 
 
 	
-		return  array(
-			
-			'date_debut_fact' => $date_debut, /*debut de l'abonnement (onglet outils)*/
-			'date_fin_fact' => $date_fin,/*fin de l'abonnement (onglet outils)*/
-			'date_debut_graph' => $date_debut_graph,
-		  'date_debut_fact_old' => $date_debut_old, /*debut de l'abonnement prevision année -1 (onglet outils)*/
-			'date_fin_fact_old' => $date_fin_old/*fin de l'abonnement prevision année -1  (onglet outils)*/
+    return  array(
 
-		);
+      'date_debut_fact' => $date_debut_annee, /*debut de l'abonnement (onglet outils)*/
+      'date_fin_fact' => $date_fin_annee,/*fin de l'abonnement (onglet outils)*/
+      'date_debut_mois' => $date_debut_mois, /*debut de l'abonnement (onglet outils)*/
+      'date_fin_mois' => $date_fin_mois,/*fin de l'abonnement (onglet outils)*/
+      //'date_debut_graph' => $date_debut_graph,
+      //'date_debut_fact_old' => $date_debut_old, /*debut de l'abonnement prevision année -1 (onglet outils)*/
+      //'date_fin_fact_old' => $date_fin_old/*fin de l'abonnement prevision année -1  (onglet outils)*/
+
+    );
 
 	}
 
@@ -480,8 +502,7 @@ class Eco_legrand extends eqLogic {
 		$sql = "SELECT COUNT(*) AS nb FROM  Eco_legrand_prix WHERE IFNULL(`type`,'') = ''";
 		$result = DB::Prepare($sql, array(), DB::FETCH_TYPE_ROW);
 		if ($result['nb'] > 0) {
-			self::add_log( 'error', 'Configuration Prix  -> Merci de mettre a jour le type dans le prix ( Editer puis re-sauvegarder les prix ) ');
-			$txt .= '<li>Configuration Prix  -> Merci de mettre a jour le type dans le prix ( Editer puis re-sauvegarder les prix ) </li>';
+				$txt .= '<li>Configuration Prix  -> Merci de mettre a jour le type dans le prix ( Editer puis re-sauvegarder les prix ) </li>';
 		}
 				
 		$sql = "SELECT COUNT(*) AS nb FROM  Eco_legrand_jour WHERE IFNULL(eqlogicID,0) = 0 ";
@@ -497,7 +518,6 @@ class Eco_legrand extends eqLogic {
 		$sql = "SELECT COUNT(*) AS nb FROM  Eco_legrand_prix WHERE current_date() between date_debut and date_fin ";
 		$result = DB::Prepare($sql, array(), DB::FETCH_TYPE_ROW);
 		if ($result['nb'] < 1) {
-			self::add_log( 'error', 'Configuration Prix  -> Aucun prix n\'est configuré sur la periode en cours . Merci de renseigner un prix dans onglet Configuration Prix');
 			$txt .= '<li>Configuration Prix  -> Aucun prix n\'est configuré sur la periode en cours . Merci de renseigner un prix dans onglet Configuration Prix </li>';
 		}
 
@@ -526,7 +546,6 @@ class Eco_legrand extends eqLogic {
 		self::deamon_stop();
 		self::deamon_info();
 		$cmd = 'sudo /usr/bin/php ' . realpath(dirname(__FILE__) . '/../..') . '/resources/Eco_legrand.php start';
-		//self::add_log('info', 'Lancement démon Eco_legrand : ' . $cmd);
 		exec($cmd . ' >> ' . log::getPathToLog('Eco_legrand') . ' 2>&1 &');
 		return true;
 	}

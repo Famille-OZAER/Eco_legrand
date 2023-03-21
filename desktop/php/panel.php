@@ -8,7 +8,7 @@ if (!isConnect()) {
 
 $deamon_statut =  Eco_legrand::deamon_info();
 if($deamon_statut['state'] == 'nok'){
-    Eco_legrand::add_log( 'debug', 'Chargement du Panel - Deamon non lancée - Redemarre le Deamon');
+    //Eco_legrand::add_log( 'debug', 'Chargement du Panel - Deamon non lancée - Redemarre le Deamon');
     Eco_legrand::deamon_stop();
     Eco_legrand::deamon_start();
 }
@@ -228,7 +228,9 @@ sendVarToJS('type', $type);*/
                                                             <td id="week_totalw" class="dds "></td>
                                                         </tr>
                                                         <tr>
-                                                            <td>Mois </td>
+                                                            <td>Mois 
+                              									<i data-toggle="tooltip"  data-placement="right" title="" class="fas fa-info-circle datefactmois"></i>
+                              								</td>
                                                             <td id="month_hpw" ></td>
                                                             <td  id="month_hcw" class=" dds "></td>
                                                             <td id="month_totalw" class="dds "></td>

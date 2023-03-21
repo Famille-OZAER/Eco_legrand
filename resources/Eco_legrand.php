@@ -41,14 +41,14 @@ function recupData($id){
   $pid_file = jeedom::getTmpFolder('Eco_legrand') . '/Eco_legrand_'.$id.'.pid';
   $pid=getmypid();
   file_put_contents($pid_file,$pid);
-  Eco_legrand::add_log( 'info',$pid);
+  //Eco_legrand::add_log( 'info',$pid);
   $eqLogic=eqLogic::byId($id);
   $Dernière_execution_function_démon = $eqLogic->getConfiguration("Dernière execution functions du démon","01/01/2000 00:00");
   $dernier_démon_minute = date('i', $Dernière_execution_function_démon);
   $dernier_démon_heure = date('H', $Dernière_execution_function_démon);
   $dernier_démon_jour = date('D', $Dernière_execution_function_démon);
   $importation_en_cours = $eqLogic->getConfiguration("Importation en cours",0);
-  Eco_legrand::add_log( 'info',$pid);
+  //Eco_legrand::add_log( 'info',$pid);
   while(1==1){
 
     $démon_minute = date("i");

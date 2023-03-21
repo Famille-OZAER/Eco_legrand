@@ -226,6 +226,10 @@ $('.dtimepickerTime').datetimepicker({
     timepicker: true,
     step: 5
 });
+$('.datetimepicker').datepicker({
+    'format': 'yyyy-m-d',
+    'autoclose': true
+}).datepicker("setDate", "0");
 
 
 
@@ -816,7 +820,7 @@ function Tableau_Conso() {
                     $('#month_hpw').html(data.result.conso_mois.hp + unity);
                     $('#month_hcw').html(data.result.conso_mois.hc + unity);
                     $('#month_totalw').text((data.result.conso_mois.hp + data.result.conso_mois.hc).toFixed(2) + unity);
-
+ 					$('.datefactmois').attr('title', data.result.title_mois);
                 } else {
                     $('#month_hp').html('Indispo.');
                     $('#month_hc').html('Indispo.');
@@ -824,6 +828,7 @@ function Tableau_Conso() {
                     $('#month_hpw').html('Indispo.');
                     $('#month_hcw').html('Indispo.');
                     $('#month_totalw').html('Indispo.');
+                  $('.datefactmois').attr('title', data.result.title_mois);
                 }
                 if (data.result.conso_année !== false) {
                     /****************/
@@ -839,8 +844,8 @@ function Tableau_Conso() {
                     $('#year_hcw').html(data.result.conso_année.hc.toFixed(2) + unity);
                     $('#year_totalw').text((data.result.conso_année.hp + data.result.conso_année.hc).toFixed(2) + unity);
 
-                    $('.datefact').attr('title', data.result.title);
-                    $('.datefactyearold').attr('title', data.result.titleold);
+                    $('.datefact').attr('title', data.result.title_année);
+                    //$('.datefactyearold').attr('title', data.result.titleold);
 
 
                 } else {
@@ -1430,54 +1435,6 @@ function showCurrentTrame(data_init, yesterday_trame, max, min) {
                 },
                 visible: false,
                 yAxis: 0
-            },
-            {
-                type: 'flags',
-                name: 'Min',
-                yAxis: 1,
-                data: [{
-                    x: min.timestamp * 1000,
-                    title: 'Min ' + min.puissance_totale + ' Watt / ' + min.int_instant + ' A',
-                    text: 'Puissance minimale (Watt)'
-                }],
-                onSeries: 'CurrentSerie',
-                shape: 'squarepin',
-                color: '#7CBA0B',
-                fillColor: '#7CBA0B',
-                style: { // text style
-                    color: 'white'
-                },
-
-                states: {
-                    hover: {
-                        fillColor: '#7CBA0B',
-                    }
-                }
-            },
-            {
-                type: 'flags',
-                name: 'Max',
-                yAxis: 1,
-                data: [{
-                    x: max.timestamp * 1000,
-                    title: 'Max ' + max.puissance_totale + ' Watt / ' + max.int_instant + ' A',
-                    text: 'Puissance Maximale atteinte'
-
-                }],
-                onSeries: 'CurrentSerie',
-                shape: 'squarepin',
-                color: '#EEAD51',
-                fillColor: '#EEAD51',
-
-                style: { // text style
-                    fillColor: 'white'
-                },
-
-                states: {
-                    hover: {
-                        fillColor: '#EEAD51',
-                    }
-                }
             }
         ]
     });
@@ -1714,19 +1671,36 @@ function loadingPie(id_equipement) {
                     }
                 }
                 chart.renderTo = StatDAY
+                console.log(data.result)
                 var ser = [{
-                    name: 'Consommation',
-                    id: chart.renderTo.id,
-                    data: get_categories(data.result.jour),
-                    visible: true,
-                    size: '80%',
-                    dataLabels: {
-                        enabled: false,
-                        formatter: function() {
-                            return this.y > 1 ? '<b>' + this.point.name + ':</b> ' + this.y + '%' : null;
+                        name: 'Consommation',
+                        id: chart.renderTo.id,
+                        data: get_categories(data.result.jour),
+                        visible: true,
+                        size: '80%',
+                        dataLabels: {
+                            enabled: false,
+                            formatter: function() {
+                                return this.y > 1 ? '<b>' + this.point.name + ':</b> ' + this.y + '%' : null;
+                            }
+                        }
+                    },
+                    {
+                        name: 'Consommation par tores',
+                        /*desactive le tooltips*/
+                        data: get_categories(data.result.jour_tores),
+                        visible: true,
+                        size: '80%',
+                        innerSize: '70%',
+                        dataLabels: {
+                            enabled: false,
+                            formatter: function() {
+                                // display only if larger than 1
+                                return this.y > 1 ? '<b>' + this.point.name + ':</b> ' + this.y + '%' : null;
+                            }
                         }
                     }
-                }]
+                ]
                 if (data.result.jour) {
                     pieStatDAY = new Highcharts.Chart({
                         chart: chart,
@@ -1832,13 +1806,25 @@ function get_categories(data) {
     categorieData = [];
     $(data.data).each(function(index, value) {
         brightness = 0.2 - (index / data.length) / 5;
-
-
+        /*color: {
+            linearGradient: { x1: 0, x2: 0, y1: 0, y2: 1 },
+            stops: [
+                [0, '#003399'],
+                [1, '#3366AA']
+            ]
+        }*/
+        //color: Highcharts.Color(data.color[index]).brighten(brightness).get()
         categorieData.push({
             name: data.categorie[index],
-            y: parseInt(value),
+            y: Math.round(value*100)/100,
             tooltip_data: data.tooltip_data[index],
-            color: Highcharts.Color(data.color[index]).brighten(brightness).get()
+            color: {
+                linearGradient: { x1: 0, x2: 0, y1: 0, y2: 1 },
+                stops: [
+                    [0, data.color[index]],
+                    [1, data.color[index]]
+                ]
+            }
         });
     });
 

@@ -67,7 +67,8 @@ try {
             }
         ajax::success($prix);
     }
-    if (init('action') == 'Ajout_MAJPrix') {
+  
+ 	if (init('action') == 'Ajout_MAJPrix') {
         $prixSave = json_decode(init('event'), true);
         $prix = null;
         if ($prixSave['id']!="") {
@@ -100,13 +101,14 @@ try {
 		$tab_data['conso_année'] = $conso_année;
 		
 		$d = Eco_legrand::getDateAbo(init('id_ecq'));
-		$tab_data['title'] = 'Du '.$d['date_debut_fact'].' au '.$d['date_fin_fact'].' : vous pouvez changer cette date dans la configurtion de l\'équipement ';
-		$tab_data['titleold'] = 'Du '.$d['date_debut_fact_old'].' au '.$d['date_fin_fact_old'].' :  vous pouvez changer cette date dans la configurtion de l\'équipement ';
-
+		$tab_data['title_année'] = 'Du '.$d['date_debut_fact'].' au '.$d['date_fin_fact'].' : vous pouvez changer cette date dans la configurtion de l\'équipement ';
+		$tab_data['title_mois'] = 'Du '.$d['date_debut_mois'].' au '.$d['date_fin_mois'].' : vous pouvez changer cette date dans la configurtion de l\'équipement ';
+		
 		 ajax::success($tab_data);
 
 	}
-    if (init('action') == 'loadingDash' && init('id_ecq')) {
+   
+  	if (init('action') == 'loadingDash' && init('id_ecq')) {
 		
 		$date_debut = init('date_debut',false);
 		$date_fin = init('date_fin',false);
@@ -214,6 +216,7 @@ try {
 
 		ajax::success($tab_data);
 }
+  
 	if (init('action') == 'Trame_actuelle' && init('id_ecq')) {
 		//ajax::success();
 		//log::add('conso_debug', 'debug', 'Action CurrentTrame '.init('yesterday',false));
@@ -235,6 +238,7 @@ try {
 		
 		ajax::success($data);
 	}
+  
 	if (init('action') == 'Graphique' && init('id_ecq')) {
 		
 		$xlabel = 'du '. init('debut') .' au '.init('fin');
@@ -250,7 +254,7 @@ try {
 		$type_graphHP_OLD =  'spline';
 		$type_graphHC_OLD = 'spline';
 		
-		$result = Eco_legrand_teleinfo::get_calcul_prix($pdate_debut,$pdate_fin,$type_graph,false,false,false,false,init('id_ecq'));
+		$result = Eco_legrand_teleinfo::get_calcul_prix($pdate_debut,$pdate_fin,$type_graph,init('id_ecq'));
 
 		$num_rows = is_array($result) && count($result) ;
 
@@ -271,7 +275,7 @@ try {
 			$kwhhp_old = array();
 			$kwhhc_old = array();
 			//log::add('conso', 'debug', 'year_old date deb:'.$pdate_debut.' date fin:'.$pdate_fin);
-			$result_old = Eco_legrand_teleinfo::get_calcul_prix($pdate_debut,$pdate_fin,$type_graph,true,false,false,false,init('id_ecq'));/*Année derniere*/
+			$result_old = Eco_legrand_teleinfo::get_calcul_prix($pdate_debut,$pdate_fin,$type_graph,init('id_ecq'),true);/*Année derniere*/
 			$num_rows_old = is_array($result_old) && count($result_old) ;
 			if($num_rows_old>0 && $result_old[0]['rec_date'] != 0){
 					$data_year_old = true;
@@ -456,16 +460,20 @@ try {
 
 		ajax::success($data);
 	}
+  
 	if (init('action') == 'VerifParam') {
 		$result = Eco_legrand::CheckOptionIsValid();
         ajax::success($result);
     }
+  
 	if (init('action') == 'Synchroniser_teleinfo' && init('id_ecq')) {
+		ajax::success(Eco_legrand_teleinfo::get_conso_tores_hp_hc(init('id_ecq')));
 		//$result = Eco_legrand::CheckOptionIsValid();
-		$erreurs = Eco_legrand_teleinfo::get_erreur(init('id_ecq'));
+		//$erreurs = Eco_legrand_teleinfo::get_erreur(init('id_ecq'));
 		
-        ajax::success($erreurs);
+        //ajax::success($erreurs);
     }
+  
 	if (init('action') == 'loadingPie') {
 		$res = Eco_legrand_teleinfo::GetPie(init('id_ecq',false),init('type',false));
 		ajax::success($res);
@@ -477,4 +485,3 @@ try {
     ajax::error(displayExeption($e), $e->getCode());
 }
 ?>
- 
