@@ -328,12 +328,12 @@ class Eco_legrand extends eqLogic {
               self::add_log( 'debug', 'ajout valeur ' . $Eco_legrandCmd_conso_circuit5->getName().":" . $date . "=>". round($valeur - $valeur_precedente_conso_circuit5,2));
               $eqLogic->checkAndUpdateCmd('conso_circuit5_'.$jour_heure,round($valeur - $valeur_precedente_conso_circuit5,2),$date);
               $Eco_legrand_teleinfo->set_value('index_circuit5' ,$valeur*1000);
-              self::add_log( 'debug', 'ajout valeur index_circuit5: ' . $date . "=>". $valeur*1000);
+              self::add_log( 'debug', '1ajout valeur index_circuit5: ' . $date . "=>". $valeur*1000);
             
               $valeur_precedente_conso_circuit5 = $valeur;
             }else{
               $Eco_legrand_teleinfo->set_value('index_circuit5' ,$valeur_precedente_conso_circuit5*1000);
-              self::add_log( 'debug', 'ajout valeur index_circuit5: ' . $date . "=>". $valeur*1000);
+              self::add_log( 'debug', '2ajout valeur index_circuit5: ' . $date . "=>". $valeur*1000);
             }
             
 
