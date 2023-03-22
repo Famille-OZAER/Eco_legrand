@@ -405,8 +405,7 @@ function show_graph_temp(data, conteneur) {
 function show_graph(data, conteneur) {
     var HC_name = data.HC_name;
     var HP_name = data.HP_name;
-
-    if (data.affichage == 0 || data.affichage == "0") { /*Affichage des KWH*/
+    if (!conteneur.includes("Euro")) { /*Affichage des KWH*/
 
         var HP_data = data.HP_data;
         var HC_data = data.HC_data;
@@ -734,8 +733,8 @@ function Tableau_Conso() {
                     /****************/
                     /*JOUR Euro*/
                     /****************/
-                    $('#day_hp').html(data.result.conso_jour.total_hp_ttc + Devise);
-                    $('#day_hc').html(data.result.conso_jour.total_hc_ttc + Devise);
+                    $('#day_hp').html(data.result.conso_jour.total_hp_ttc.toFixed(2) + Devise);
+                    $('#day_hc').html(data.result.conso_jour.total_hc_ttc.toFixed(2) + Devise);
                     $('#day_total').html(data.result.conso_jour.total_ttc.toFixed(2) + Devise);
 
                     /****************/
@@ -760,15 +759,15 @@ function Tableau_Conso() {
                     /****************/
                     /*HIER Euro*/
                     /****************/
-                    $('#yesterday_hp').html(data.result.conso_hier.total_hp_ttc + Devise);
-                    $('#yesterday_hc').html(data.result.conso_hier.total_hc_ttc + Devise);
+                    $('#yesterday_hp').html(data.result.conso_hier.total_hp_ttc.toFixed(2) + Devise);
+                    $('#yesterday_hc').html(data.result.conso_hier.total_hc_ttc.toFixed(2) + Devise);
                     $('#yesterday_total').html(data.result.conso_hier.total_ttc.toFixed(2) + Devise);
 
                     /****************/
                     /*HIER Watt*/
                     /****************/
-                    $('#yesterday_hpw').html(data.result.conso_hier.hp + unity);
-                    $('#yesterday_hcw').html(data.result.conso_hier.hc + unity);
+                    $('#yesterday_hpw').html(data.result.conso_hier.hp.toFixed(2) + unity);
+                    $('#yesterday_hcw').html(data.result.conso_hier.hc.toFixed(2) + unity);
                     $('#yesterday_totalw').text((data.result.conso_hier.hp + data.result.conso_hier.hc).toFixed(2) + unity);
 
 
@@ -785,16 +784,16 @@ function Tableau_Conso() {
                     /****************/
                     /*SEMAINE Euro*/
                     /****************/
-                    $('#week_hp').html(data.result.conso_semaine.total_hp_ttc + Devise);
-                    $('#week_hc').html(data.result.conso_semaine.total_hc_ttc + Devise);
+                    $('#week_hp').html(data.result.conso_semaine.total_hp_ttc.toFixed(2) + Devise);
+                    $('#week_hc').html(data.result.conso_semaine.total_hc_ttc.toFixed(2) + Devise);
 
                     $('#week_total').html(data.result.conso_semaine.total_ttc.toFixed(2) + Devise);
 
                     /****************/
                     /*SEMAINE Watt*/
                     /****************/
-                    $('#week_hpw').html(data.result.conso_semaine.hp + unity);
-                    $('#week_hcw').html(data.result.conso_semaine.hc + unity);
+                    $('#week_hpw').html(data.result.conso_semaine.hp.toFixed(2) + unity);
+                    $('#week_hcw').html(data.result.conso_semaine.hc.toFixed(2) + unity);
                     $('#week_totalw').text((data.result.conso_semaine.hp + data.result.conso_semaine.hc).toFixed(2) + unity);
 
                 } else {
@@ -809,18 +808,18 @@ function Tableau_Conso() {
                     /****************/
                     /*MOIS Euro*/
                     /****************/
-                    $('#month_hp').html(data.result.conso_mois.total_hp_ttc + Devise);
-                    $('#month_hc').html(data.result.conso_mois.total_hc_ttc + Devise);
+                    $('#month_hp').html(data.result.conso_mois.total_hp_ttc.toFixed(2) + Devise);
+                    $('#month_hc').html(data.result.conso_mois.total_hc_ttc.toFixed(2) + Devise);
                     $('#month_total').html(data.result.conso_mois.total_ttc.toFixed(2) + Devise);
 
                     /****************/
                     /*MOIS Watt*/
                     /****************/
 
-                    $('#month_hpw').html(data.result.conso_mois.hp + unity);
-                    $('#month_hcw').html(data.result.conso_mois.hc + unity);
+                    $('#month_hpw').html(data.result.conso_mois.hp.toFixed(2) + unity);
+                    $('#month_hcw').html(data.result.conso_mois.hc.toFixed(2) + unity);
                     $('#month_totalw').text((data.result.conso_mois.hp + data.result.conso_mois.hc).toFixed(2) + unity);
- 					$('.datefactmois').attr('title', data.result.title_mois);
+                    $('.datefactmois').attr('title', data.result.title_mois);
                 } else {
                     $('#month_hp').html('Indispo.');
                     $('#month_hc').html('Indispo.');
@@ -828,14 +827,14 @@ function Tableau_Conso() {
                     $('#month_hpw').html('Indispo.');
                     $('#month_hcw').html('Indispo.');
                     $('#month_totalw').html('Indispo.');
-                  $('.datefactmois').attr('title', data.result.title_mois);
+                    $('.datefactmois').attr('title', data.result.title_mois);
                 }
                 if (data.result.conso_année !== false) {
                     /****************/
                     /*ANNEE Euro*/
                     /****************/
-                    $('#year_hp').html(data.result.conso_année.total_hp_ttc + Devise);
-                    $('#year_hc').html(data.result.conso_année.total_hc_ttc + Devise);
+                    $('#year_hp').html(data.result.conso_année.total_hp_ttc.toFixed(2) + Devise);
+                    $('#year_hc').html(data.result.conso_année.total_hc_ttc.toFixed(2) + Devise);
                     $('#year_total').html(data.result.conso_année.total_ttc.toFixed(2) + Devise);
                     /****************/
                     /*ANNEE Watt*/
@@ -1428,12 +1427,12 @@ function showCurrentTrame(data_init, yesterday_trame, max, min) {
                 id: 'Temp',
                 data: dataTemp,
                 dashStyle: 'dash',
-                color: '#006635',
+                color: '#04db28',
                 tooltip: {
                     valueSuffix: ' °C',
                     valueDecimals: 2,
                 },
-                visible: false,
+                visible: true,
                 yAxis: 0
             }
         ]
@@ -1486,12 +1485,7 @@ function showDashGraph() {
                         } else {
 
                             new Highcharts.Chart(show_graph(data.result, 'Day'));
-                            /*data,id,id_legend*/
                             new Highcharts.Chart(show_graph_temp(data.result, 'TempDay'));
-                            /*température*/
-
-
-                            data.result.affichage = 1;
                             new Highcharts.Chart(show_graph(data.result, 'DayEuro'));
 
                         }
@@ -1523,9 +1517,6 @@ function showDashGraph() {
                         } else {
                             new Highcharts.Chart(show_graph(data.result, 'Month'));
                             new Highcharts.Chart(show_graph_temp(data.result, 'TempMonth'));
-                            /*température*/
-
-                            data.result.affichage = 1;
                             new Highcharts.Chart(show_graph(data.result, 'MonthEuro'));
                         }
                     }
@@ -1536,7 +1527,7 @@ function showDashGraph() {
                     data: {
                         action: "Graphique",
                         id_ecq: $('#Eco_legrand_ecq').val(),
-                        debut: datares.result.year.debut_graph,
+                        debut: datares.result.year.debut,
                         fin: datares.result.month.fin,
                         old: true,
                         libelle: 'Consommation par mois sur 1 an',
@@ -1558,8 +1549,6 @@ function showDashGraph() {
                             new Highcharts.Chart(show_graph_temp(data.result, 'TempYear'));
                             /*Graphique year température*/
 
-
-                            data.result.affichage = 1;
                             new Highcharts.Chart(show_graph(data.result, 'YearEuro'));
 
                         }
@@ -1597,7 +1586,6 @@ function showDashGraph() {
                             new Highcharts.Chart(show_graph_temp(data.result, 'pluriTemp'));
                             /*Graphique year température*/
 
-                            data.result.affichage = 1;
                             new Highcharts.Chart(show_graph(data.result, 'pluriEuro'));
 
                         }
@@ -1722,6 +1710,8 @@ function loadingPie(id_equipement) {
 
                     chart.renderTo = StatYESTERDAY
                     ser[0].data = get_categories(data.result.hier)
+                    ser[1].data = get_categories(data.result.hier)
+                    ser[1].visible = false
                     pieStatYESTERDAY = new Highcharts.Chart({
                         chart: chart,
                         title: {
@@ -1741,6 +1731,8 @@ function loadingPie(id_equipement) {
                     chart.renderTo = StatWEEK
 
                     ser[0].data = get_categories(data.result.semaine)
+                    ser[1].data = get_categories(data.result.semaine)
+                    ser[1].visible = false
                     pieStatWEEK = new Highcharts.Chart({
                         chart: chart,
                         title: {
@@ -1760,6 +1752,8 @@ function loadingPie(id_equipement) {
                     chart.renderTo = Stat
 
                     ser[0].data = get_categories(data.result.mois)
+                    ser[1].data = get_categories(data.result.mois)
+                    ser[1].visible = false
                     pieStatMonth = new Highcharts.Chart({
                         chart: chart,
                         title: {
@@ -1779,6 +1773,8 @@ function loadingPie(id_equipement) {
                     chart.renderTo = StatYEAR
 
                     ser[0].data = get_categories(data.result.annee)
+                    ser[1].data = get_categories(data.result.annee)
+                    ser[1].visible = false
                     pieStatYEAR = new Highcharts.Chart({
                         chart: chart,
                         title: {
@@ -1816,7 +1812,7 @@ function get_categories(data) {
         //color: Highcharts.Color(data.color[index]).brighten(brightness).get()
         categorieData.push({
             name: data.categorie[index],
-            y: Math.round(value*100)/100,
+            y: Math.round(value * 100) / 100,
             tooltip_data: data.tooltip_data[index],
             color: {
                 linearGradient: { x1: 0, x2: 0, y1: 0, y2: 1 },

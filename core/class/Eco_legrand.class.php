@@ -240,9 +240,7 @@ class Eco_legrand extends eqLogic {
             }else{
               $date =  $annee . '-' . $mois . '-' . $jour .' ' . $heure .':00:00';
             }
-            
-
-            
+                        
             $valeur=round($data[5],2);
             if($valeur > $valeur_precedente_conso_totale){
               if ($valeur_precedente_conso_totale == 0 ){
@@ -327,12 +325,15 @@ class Eco_legrand extends eqLogic {
               if ($valeur_precedente_conso_circuit5 == 0 ){
                 $valeur_precedente_conso_circuit5 = $valeur;
               }
-              //self::add_log( 'debug', 'ajout valeur ' . $Eco_legrandCmd_conso_circuit5->getName().":" . $date . "=>". round($valeur - $valeur_precedente_conso_circuit5,2));
+              self::add_log( 'debug', 'ajout valeur ' . $Eco_legrandCmd_conso_circuit5->getName().":" . $date . "=>". round($valeur - $valeur_precedente_conso_circuit5,2));
               $eqLogic->checkAndUpdateCmd('conso_circuit5_'.$jour_heure,round($valeur - $valeur_precedente_conso_circuit5,2),$date);
               $Eco_legrand_teleinfo->set_value('index_circuit5' ,$valeur*1000);
+              self::add_log( 'debug', 'ajout valeur index_circuit5: ' . $date . "=>". $valeur*1000);
+            
               $valeur_precedente_conso_circuit5 = $valeur;
             }else{
               $Eco_legrand_teleinfo->set_value('index_circuit5' ,$valeur_precedente_conso_circuit5*1000);
+              self::add_log( 'debug', 'ajout valeur index_circuit5: ' . $date . "=>". $valeur*1000);
             }
             
 
@@ -445,16 +446,20 @@ class Eco_legrand extends eqLogic {
     $date_debut_annee = $date->format('Y-' . $d_annee);
     //$date_debut_graph = date("Y-m-d", strtotime('-11 month', strtotime($date->format('Y-m-' . '01'))));
     $date_fin_annee = date("Y-m-d", strtotime('+1 year -1 day', strtotime($date_debut_annee)));
-    $date_maintenant = date(Y).'-'.date(m).'-'.date(j);
+    $date_maintenant = date("Y").'-'.date("m").'-'.date("j");
 
     if(strtotime($date_debut_annee) > strtotime($date_maintenant)){
 
       $date_debut_annee = date("Y-m-d", strtotime('-1 year', strtotime($date->format('Y-' . $d_annee))));
       $date_fin_annee = date("Y-m-d", strtotime('+1 year -1 day', strtotime($date_debut_annee)));
     }
+    if(strtotime($date_debut_mois) > strtotime($date_maintenant)){
 
+      $date_debut_mois = date("Y-m-d", strtotime('-1 month', strtotime($date->format('Y-m-' . $d_mois))));
+      $date_fin_mois = date("Y-m-d", strtotime('+1 month -1 day', strtotime($date_debut_mois)));
+    }
    	//$date_debut_old = date("Y-m-d", strtotime('-1 year', strtotime($date->format($date_debut))));
-	//$date_fin_old = date("Y-m-d", strtotime('-1 year', strtotime($date->format($date_fin))));
+	  //$date_fin_old = date("Y-m-d", strtotime('-1 year', strtotime($date->format($date_fin))));
 
 
 	

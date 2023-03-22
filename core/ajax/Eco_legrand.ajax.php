@@ -205,7 +205,6 @@ try {
 		$d = Eco_legrand::getDateAbo(init('id_ecq'));
 
 		$data_year['debut'] = $d['date_debut_fact'];
-		$data_year['debut_graph'] = $d['date_debut_graph'];
 		$data_year['fin'] = $d['date_fin_fact'];
 		$tab_data['year'] = $data_year;
 
@@ -215,7 +214,7 @@ try {
 		$tab_data['year_old'] = $data_year_old;
 
 		ajax::success($tab_data);
-}
+	}
   
 	if (init('action') == 'Trame_actuelle' && init('id_ecq')) {
 		//ajax::success();
@@ -254,8 +253,8 @@ try {
 		$type_graphHP_OLD =  'spline';
 		$type_graphHC_OLD = 'spline';
 		
-		$result = Eco_legrand_teleinfo::get_calcul_prix($pdate_debut,$pdate_fin,$type_graph,init('id_ecq'));
-
+		$result = Eco_legrand_teleinfo::get_calcul_prix($pdate_debut,$pdate_fin,$type_graph,init('id_ecq'),false,true);
+		
 		$num_rows = is_array($result) && count($result) ;
 
 		if($num_rows==0){
