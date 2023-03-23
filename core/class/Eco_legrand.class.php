@@ -188,7 +188,7 @@ class Eco_legrand extends eqLogic {
                 $eqLogic->checkCmdOk('csv','numeric', "Consommation Autre journalière" ,'conso_autre_jour','<i class="fas fa-bolt"></i>',"kW");
               
                 $eqLogic->checkAndUpdateCmd('inst_circuit' . $i, $value,$date);
-                
+                $Eco_legrand_teleinfo->set_value('puissance_circuit' . $i,$value);
               
                 $i=$i+1;
 
@@ -203,7 +203,7 @@ class Eco_legrand extends eqLogic {
         
       }elseif(substr($nom_fichier , -3) == 'csv' || substr($nom_fichier , -3) == 'old'){
         $devResult = fopen($devAddr, "r");
-
+        //self::add_log( 'debug','nom_fichier: ' . $devAddr);
       
         /*
         jour	mois	annee	heure	minute	energie_tele_info	prix_tele_info	energie_circuit1	prix_circuit1	energie_cirucit2	prix_circuit2	energie_circuit3	prix_circuit3	energie_circuit4	prix_circuit4	energie_circuit5	prix_circuit5	volume_entree1	volume_entree2	tarif	energie_entree1	energie_entree2	prix_entree1	prix_entree2
@@ -235,6 +235,7 @@ class Eco_legrand extends eqLogic {
             $mois = $data[1];
             $annee = $data[2];
             $heure = $data[3];
+            
             if(substr($nom_fichier,0,4) == 'log1'){
               $date = date('Y-m-d H:i:s', strtotime($annee . '-' . $mois . '-' . $jour .' ' . $heure .':00:00'. ' + 1 hours'));
             }else{
@@ -333,7 +334,9 @@ class Eco_legrand extends eqLogic {
               $valeur_precedente_conso_circuit5 = $valeur;
             }else{
               $Eco_legrand_teleinfo->set_value('index_circuit5' ,$valeur_precedente_conso_circuit5*1000);
-              self::add_log( 'debug', '2ajout valeur index_circuit5: ' . $date . "=>". $valeur*1000);
+        
+              
+              //self::add_log( 'debug', '2ajout valeur index_circuit5: ' . $date . "=>". $valeur*1000 . 'ancienne valeur: ' . $valeur_precedente_conso_circuit5*1000);
             }
             
 
@@ -478,8 +481,7 @@ class Eco_legrand extends eqLogic {
 	}
 
   public static function get_type_abo($id){
-    
-    $eqLogics = eqLogic::byId($id);
+ 
     $cmd_type_abo=Eco_legrandCmd::byEqLogicIdAndLogicalId($id,"OPTARIF");
     if (is_object($cmd_type_abo)){
       $type_abo=$cmd_type_abo->execCmd();
@@ -491,14 +493,13 @@ class Eco_legrand extends eqLogic {
   
   public static function get_intensite_max($id){
     
-    $eqLogics = eqLogic::byId($id);
-    $cmd_type_abo=Eco_legrandCmd::byEqLogicIdAndLogicalId($id,"ISOUC");
+    $cmd_ISOUC_=Eco_legrandCmd::byEqLogicIdAndLogicalId($id,"ISOUC");
     if (is_object($cmd_type_abo)){
-      $type_abo=$cmd_type_abo->execCmd();
+      $ISOUC=$cmd_ISOUC_->execCmd();
     }
 		
 
-		return $type_abo;
+		return $ISOUC;
 	}
   
   static function CheckOptionIsValid(){
@@ -567,21 +568,23 @@ class Eco_legrand extends eqLogic {
   public static function install_sql(){
  
     $sql  = "CREATE TABLE IF NOT EXISTS `Eco_legrand_jour` (
-      `timestamp` bigint(10) DEFAULT NULL,
-      `date` date NOT NULL ,
-      `conso_totale_hp` float DEFAULT '0',
-      `conso_totale_hc` float DEFAULT '0',
-      `index_total_max_hp` bigint(9) NOT NULL DEFAULT '0',
-      `index_total_min_hp` bigint(9) NOT NULL DEFAULT '0',
-      `index_total_max_hc` bigint(9) NOT NULL DEFAULT '0',
-      `index_total_min_hc` bigint(9) NOT NULL DEFAULT '0',
-      `Eqlogic_ID` int(11) NOT NULL DEFAULT '0',
-      `temperature_max` float DEFAULT NULL,
-      `temperature_min` float DEFAULT NULL,
-      `temperature_moy` float DEFAULT NULL,
-      `eqlogicID` int(11) NOT NULL DEFAULT '0',
+          `eqlogicID` int(11) NOT NULL DEFAULT 0,
+          `timestamp` bigint(10) DEFAULT NULL,
+          `date` date NOT NULL,
+          `conso_totale_hp` float NOT NULL DEFAULT 0,
+          `conso_totale_hc` float NOT NULL DEFAULT 0,
+          `conso_circuit1` float NOT NULL DEFAULT 0,
+          `conso_circuit2` float NOT NULL DEFAULT 0,
+          `conso_circuit3` float NOT NULL DEFAULT 0,
+          `conso_circuit4` float NOT NULL DEFAULT 0,
+          `conso_circuit5` float NOT NULL DEFAULT 0,
+          `conso_autre` float NOT NULL DEFAULT 0,
+          `temperature_max` float DEFAULT NULL,
+          `temperature_min` float DEFAULT NULL,
+          `temperature_moy` float DEFAULT NULL,
       PRIMARY KEY (`date`,`eqlogicID`));";
     DB::Prepare($sql, array(), DB::FETCH_TYPE_ROW, PDO::FETCH_CLASS, __CLASS__);
+   
     $sql="CREATE TABLE IF NOT EXISTS `Eco_legrand_prix` (
       `id` int(11) NOT NULL AUTO_INCREMENT,
       `hc` float DEFAULT NULL,
@@ -592,37 +595,7 @@ class Eco_legrand extends eqLogic {
       `eqlogicID` int(11) NOT NULL DEFAULT '0',
       PRIMARY KEY (`id`));";
     DB::Prepare($sql, array(), DB::FETCH_TYPE_ROW, PDO::FETCH_CLASS, __CLASS__);
-      /*$sql="CREATE TABLE IF NOT EXISTS `Eco_legrand_teleinfo` (
-        `timestamp` bigint(10) NOT NULL DEFAULT '0',
-        `date` date NOT NULL ,
-        `time` time NOT NULL DEFAULT '00:00:00',
-        `index_hp` bigint(9) NOT NULL DEFAULT '0',
-        `index_hc` bigint(9) NOT NULL DEFAULT '0',
-        `ptec` varchar(2)  NOT NULL,
-        `intensité_instantanée` tinyint(3) NOT NULL DEFAULT '0',
-        `puissance_totale` int(5) NOT NULL DEFAULT '0',
-        `index_circuit1` int(5) NOT NULL DEFAULT '0',
-        `inst_circuit1` int(5) NOT NULL DEFAULT '0',
-        `index_circuit2` int(5) NOT NULL DEFAULT '0',
-        `inst_circuit2` int(5) NOT NULL DEFAULT '0',
-        `index_circuit3` int(5) NOT NULL DEFAULT '0',
-        `inst_circuit3` int(5) NOT NULL DEFAULT '0',
-        `index_circuit4` int(5) NOT NULL DEFAULT '0',
-        `inst_circuit4` int(5) NOT NULL DEFAULT '0',
-        `index_circuit5` int(5) NOT NULL DEFAULT '0',
-        `inst_circuit5` int(5) NOT NULL DEFAULT '0',
-        `index_pulse1` int(5) NOT NULL DEFAULT '0',
-        `inst_pulse1` int(5) NOT NULL DEFAULT '0',
-        `index_pulse2` int(5) NOT NULL DEFAULT '0',
-        `inst_pulse2` int(5) NOT NULL DEFAULT '0',
-        `Eqlogic_ID` int(11) NOT NULL DEFAULT '0',
-        `temperature` float DEFAULT NULL,
-        PRIMARY KEY (`timestamp`,`Eqlogic_ID`),
-        UNIQUE KEY `timestamp` (`timestamp`),
-        KEY `date` (`date`),
-        KEY `date_time` (`date`,`time`),
-        KEY `time` (`time`),
-        KEY `index_hc` (`index_hc`));";*/
+      
       $sql="CREATE TABLE IF NOT EXISTS `Eco_legrand_teleinfo` (
         `timestamp` bigint(10) NOT NULL DEFAULT '0',
         `date` date NOT NULL ,
@@ -632,6 +605,11 @@ class Eco_legrand extends eqLogic {
         `ptec` varchar(2)  NOT NULL,
         `int_instant` tinyint(3) NOT NULL DEFAULT '0',
         `puissance_totale` int(5) NOT NULL DEFAULT '0',
+        `puissance_circuit1` int(5) NOT NULL DEFAULT '0',
+        `puissance_circuit2` int(5) NOT NULL DEFAULT '0',
+        `puissance_circuit3` int(5) NOT NULL DEFAULT '0',
+        `puissance_circuit4` int(5) NOT NULL DEFAULT '0',
+        `puissance_circuit5` int(5) NOT NULL DEFAULT '0',
         `index_total_circuits` bigint(9) NOT NULL DEFAULT '0',
         `index_circuit1` bigint(9) NOT NULL DEFAULT '0',
         `index_circuit2` bigint(9) NOT NULL DEFAULT '0',

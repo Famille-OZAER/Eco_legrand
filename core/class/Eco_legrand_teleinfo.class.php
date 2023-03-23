@@ -18,11 +18,12 @@ class Eco_legrand_teleinfo
 		public $index_circuit3;
 		public $index_circuit4;
 		public $index_circuit5;
-		//public $inst_circuit1;
-		//public $inst_circuit2;
-		//public $inst_circuit3;
-		//public $inst_circuit4;
-		//public $inst_circuit5;
+
+		public $puissance_circuit1;
+		public $puissance_circuit2;
+		public $puissance_circuit3;
+		public $puissance_circuit4;
+		public $puissance_circuit5;
 		//public $index_pulse1;
 		//public $index_pulse2;
 		//public $inst_pulse1;
@@ -132,20 +133,20 @@ class Eco_legrand_teleinfo
 			case "index_circuit5":
 				return $this->index_circuit5 = $data;
 				break;
-			case "inst_circuit1":
-				return $this->inst_circuit1 = $data;
+			case "puissance_circuit1":
+				return $this->puissance_circuit1 = $data;
 				break;
-			case "inst_circuit2":
-				return $this->inst_circuit2 = $data;
+			case "puissance_circuit2":
+				return $this->puissance_circuit2 = $data;
 				break;
-			case "inst_circuit3":
-				return $this->inst_circuit3 = $data;
+			case "puissance_circuit3":
+				return $this->puissance_circuit3 = $data;
 				break;
-			case "inst_circuit4":
-				return $this->inst_circuit4 = $data;
+			case "puissance_circuit4":
+				return $this->puissance_circuit4 = $data;
 				break;
-			case "inst_circuit5":
-				return $this->inst_circuit5 = $data;
+			case "puissance_circuit5":
+				return $this->puissance_circuit5 = $data;
 				break;
 			case "index_pulse1":
 				return $this->index_pulse1 = $data;
@@ -180,100 +181,35 @@ class Eco_legrand_teleinfo
 
 	public static function crontabAllJour(){
 		self::crontabJour(true);
-
 		return;
 	}
 	
 	public static function crontabJour($tous_les_jours=false){
 		foreach (EqLogic::byType('Eco_legrand') as $eqLogic) {
+			$eqLogicID=$eqLogic->getId();
+			$aujourdhui=date('Y-m-d', strtotime(' + 0 days'));
 			$date=date('Y-m-d', strtotime(' + 0 days'));
-			$sql="select min(date) as date from Eco_legrand_teleinfo";
+			$sql="SELECT min(`date`) as `date` from Eco_legrand_teleinfo WHERE eqLogicID=" .$eqLogicID;
 			$result=DB::Prepare($sql, array(), DB::FETCH_TYPE_ROW);
 			$date_min=0;
 			if($result){
 				$date_min=$result["date"];;
 			}
-			$eqLogicID=$eqLogic->getId();
-			$périodes=self::get_périodes_hc_hp($eqLogic->getId());	
+			
+			
 			while ($date_min < $date):
-				
-				
-				$conso_circuit1_hp=0;
-				$conso_circuit2_hp=0;
-				$conso_circuit3_hp=0;
-				$conso_circuit4_hp=0;
-				$conso_circuit5_hp=0;
-				$conso_circuit_autre_hp=0;
-				$conso_circuit1_hc=0;
-				$conso_circuit2_hc=0;
-				$conso_circuit3_hc=0;
-				$conso_circuit4_hc=0;
-				$conso_circuit5_hc=0;
-				$conso_circuit_autre_hc=0;
-				$conso_totale_hc=0;
-				$conso_totale_hp=0;
-				foreach ($périodes as $période) {
-					
-					$sql="SELECT (max(index_circuit1) -min(index_circuit1))/1000 as conso_circuit1
-					,(max(index_circuit2) -min(index_circuit2))/1000 as conso_circuit2
-					,(max(index_circuit3) -min(index_circuit3))/1000 as conso_circuit3
-					,(max(index_circuit4) -min(index_circuit4))/1000 as conso_circuit4
-					,(max(index_circuit5) -min(index_circuit5))/1000 as conso_circuit5
-					,(max(index_hp) - min(index_hp))/1000 +
-					(max(index_hc) - min(index_hc))/1000 - 
-					(max(index_circuit1) -min(index_circuit1))/1000 - 
-					(max(index_circuit2) -min(index_circuit2))/1000 -
-					(max(index_circuit3) -min(index_circuit3))/1000 -
-					(max(index_circuit4) -min(index_circuit4))/1000 -
-					(max(index_circuit5) -min(index_circuit5))/1000 
-					as conso_autre 
-					,((MAX(`index_hp`) - MIN(`index_hp`)) / 1000)  AS `conso_totale_hp`,
-					((MAX(`index_hc`) - MIN(`index_hc`)) / 1000)  AS `conso_totale_hc`
-					FROM `Eco_legrand_teleinfo` where date='".$date ."'  and heure>='".$période["début"]."' and heure < '".$période["fin"] . "' AND eqLogicID = ".$eqLogicID." ORDER BY `heure` DESC";
-					Eco_legrand::add_log("debug",$période["début"] . "=>" . $période["fin"]);
-					Eco_legrand::add_log("debug",$sql);
-					$result=DB::Prepare($sql, array(), DB::FETCH_TYPE_ALL);
-					
-					if($result){
-						$result=$result[0];
-						if($période["ptec"]=="HC"){
-							$conso_circuit1_hc += $result["conso_circuit1"];
-							$conso_circuit2_hc += $result["conso_circuit2"];
-							$conso_circuit3_hc += $result["conso_circuit3"];
-							$conso_circuit4_hc += $result["conso_circuit4"];
-							$conso_circuit5_hc += $result["conso_circuit5"];
-							$conso_circuit_autre_hc += $result["conso_autre"];
-						}else{
-							$conso_circuit1_hp += $result["conso_circuit1"];
-							$conso_circuit2_hp += $result["conso_circuit2"];
-							$conso_circuit3_hp += $result["conso_circuit3"];
-							$conso_circuit4_hp += $result["conso_circuit4"];
-							$conso_circuit5_hp += $result["conso_circuit5"];
-							$conso_circuit_autre_hp += $result["conso_autre"];
 							
-							Eco_legrand::add_log("debug", $result["conso_autre"]);
-						}
-					}
-								
-				}
-				Eco_legrand::add_log("debug", $conso_circuit1_hp + $conso_circuit2_hp +$conso_circuit3_hp+$conso_circuit4_hp+$conso_circuit5_hp+$conso_circuit_autre_hp);
 				$sql = "REPLACE INTO Eco_legrand_jour ";
 				$sql .= "(`timestamp`,";
 				$sql .= "`date`,";
 				$sql .= "`conso_totale_hp`,";
 				$sql .= "`conso_totale_hc`,";
-				$sql .= "`conso_circuit1_hp`,";
-				$sql .= "`conso_circuit2_hp`,";
-				$sql .= "`conso_circuit1_hc`,";
-				$sql .= "`conso_circuit2_hc`,";
-				$sql .= "`conso_circuit3_hp`,";
-				$sql .= "`conso_circuit3_hc`,";
-				$sql .= "`conso_circuit4_hp`,";
-				$sql .= "`conso_circuit4_hc`,";
-				$sql .= "`conso_circuit5_hp`,";
-				$sql .= "`conso_circuit5_hc`,";
-				$sql .= "`conso_circuit_autre_hp`,";
-				$sql .= "`conso_circuit_autre_hc`,";
+				$sql .= "`conso_circuit1`,";
+				$sql .= "`conso_circuit2`,";
+				$sql .= "`conso_circuit3`,";
+				$sql .= "`conso_circuit4`,";
+				$sql .= "`conso_circuit5`,";
+				$sql .= "`conso_autre`,";
 				$sql .= "`eqLogicID`,";
 				$sql .= "`temperature_min`,";
 				$sql .= "`temperature_max`,";
@@ -283,36 +219,118 @@ class Eco_legrand_teleinfo
 				$sql .= "`Eco_legrand_teleinfo`.`date` AS `date`,";
 				$sql .= "((MAX(`index_hp`) - MIN(`index_hp`)) / 1000)  AS `conso_totale_hp`,";
 				$sql .= "((MAX(`index_hc`) - MIN(`index_hc`)) / 1000)  AS `conso_totale_hc`,";
-				$sql .= $conso_circuit1_hp.",";
-				$sql .= $conso_circuit2_hp.",";
-				$sql .= $conso_circuit1_hc.",";
-				$sql .= $conso_circuit2_hc.",";
-				$sql .= $conso_circuit3_hp.",";
-				$sql .= $conso_circuit3_hc.",";
-				$sql .= $conso_circuit4_hp.",";
-				$sql .= $conso_circuit4_hc.",";
-				$sql .= $conso_circuit5_hp.",";
-				$sql .= $conso_circuit5_hc.",";
-				$sql .= $conso_circuit_autre_hp.",";
-				$sql .= $conso_circuit_autre_hc.",";
+				$sql .= "((MAX(`index_circuit1`) - MIN(`index_circuit1`)) / 1000)  AS `conso_circuit1`,";
+				$sql .= "((MAX(`index_circuit2`) - MIN(`index_circuit2`)) / 1000)  AS `conso_circuit2`,";
+				$sql .= "((MAX(`index_circuit3`) - MIN(`index_circuit3`)) / 1000)  AS `conso_circuit3`,";
+				$sql .= "((MAX(`index_circuit4`) - MIN(`index_circuit4`)) / 1000)  AS `conso_circuit4`,";
+				$sql .= "((MAX(`index_circuit5`) - MIN(`index_circuit5`)) / 1000)  AS `conso_circuit5`,";
+				$sql .= "((MAX(`index_hp`) - MIN(`index_hp`)) / 1000) + ((MAX(`index_hc`) - MIN(`index_hc`)) / 1000) -((MAX(`index_circuit1`) - MIN(`index_circuit1`)) / 1000)-((MAX(`index_circuit2`) - MIN(`index_circuit2`)) / 1000)-((MAX(`index_circuit3`) - MIN(`index_circuit3`)) / 1000)-((MAX(`index_circuit4`) - MIN(`index_circuit4`)) / 1000)-((MAX(`index_circuit5`) - MIN(`index_circuit5`)) / 1000) AS autre,";
 				$sql .= $eqLogicID .",";
 				$sql .= "FORMAT(MIN(NULLIF(temperature,0)),2) AS `temperature_min`,";
 				$sql .= "FORMAT(MAX(temperature),2) AS `temperature_max`,";
 				$sql .= "FORMAT(AVG(NULLIF(temperature,0)),2) AS `temperature_moy`";
 				$sql .= "FROM `Eco_legrand_teleinfo`";
-
 				$sql .= " where date ='" . $date . "'";
-
-				$sql .= " GROUP BY date";
+				$sql .= " GROUP BY date";		
+				//Eco_legrand::add_log("debug",$sql);
 				DB::Prepare($sql, array(), DB::FETCH_TYPE_ROW);
 				
 				if($tous_les_jours){
 					$date=date('Y-m-d', strtotime($date . '- 1 days'));
-					
+				}elseif($date == $aujourdhui){
+					$date=date('Y-m-d', strtotime($date . '- 1 days'));
+				}else{
+					break;
 				}
-				break;
+			
 			endwhile;
-		
+
+			$dernière_trame="";
+			$sql="SELECT MAX(`timestamp`) AS `timestamp` FROM Eco_legrand_trame WHERE `eqLogicID`=" .$eqLogicID;
+			$result = DB::Prepare($sql, array(), DB::FETCH_TYPE_ROW);
+
+			if(!is_null($result["timestamp"])){
+				$dernière_trame=$result["timestamp"];
+				$sql="SELECT * FROM Eco_legrand_teleinfo WHERE `timestamp` >= " . $result["timestamp"] . " AND `eqLogicID`=" .$eqLogicID;
+			}else{
+				$sql="SELECT * FROM Eco_legrand_teleinfo WHERE `eqLogicID`=" .$eqLogicID;
+			}
+			$Index_hp=0;
+			$Index_hc=0;
+			$Index_circuit1=0;
+			$Index_circuit2=0;
+			$Index_circuit3=0;
+			$Index_circuit4=0;
+			$Index_circuit5=0;
+			$Conso_totale=0;
+			$Conso_circuit1=0;
+			$Conso_circuit2=0;
+			$Conso_circuit3=0;
+			$Conso_circuit4=0;
+			$Conso_circuit5=0;
+			$Conso_autre=0;
+			
+			Eco_legrand::add_log("debug",$sql);
+			$lignes=DB::Prepare($sql, array(), DB::FETCH_TYPE_ALL);
+			$i=0;
+			foreach($lignes as $ligne){
+				$i=$i+1;
+				if ($i == 100){
+					return "";
+				}
+				if ($Index_circuit1 > 0){
+					$Conso_circuit1=$ligne["index_circuit1"] - $Index_circuit1;
+					$Conso_circuit2=$ligne["index_circuit2"] - $Index_circuit2;
+					$Conso_circuit3=$ligne["index_circuit3"] - $Index_circuit3;
+					$Conso_circuit4=$ligne["index_circuit4"] - $Index_circuit4;
+					$Conso_circuit5=$ligne["index_circuit5"] - $Index_circuit5;
+					$Conso_totale=$ligne["index_hp"]-$Index_hp + $ligne["index_hc"]-$Index_hc;
+				}
+				$sql = "REPLACE INTO Eco_legrand_trame ";
+				$sql .= "(`timestamp`,";
+				$sql .= "`date`,";
+				$sql .= "`heure`,";
+				$sql .= "`ptec`,";
+				$sql .= "`int_instant`,";
+				$sql .= "`conso_totale`,";
+				$sql .= "`conso_circuit1`,";
+				$sql .= "`conso_circuit2`,";
+				$sql .= "`conso_circuit3`,";
+				$sql .= "`conso_circuit4`,";
+				$sql .= "`conso_circuit5`,";
+				$sql .= "`conso_autre`,";
+				$sql .= "`eqLogicID`,";
+				$sql .= "`temperature`)";
+				$sql .= "SELECT  ";
+				$sql .= "'" . $ligne["timestamp"] ."',";
+				$sql .= "'" .$ligne["date"] ."' ,";
+				$sql .= "'" .$ligne["heure"] ."' ,";
+				$sql .= "'" .$ligne["ptec"] ."' ,";
+				$sql .= "'" .$ligne["int_instant"] ."' ,";
+				$sql .= $Conso_totale ." ,";
+				$sql .= $Conso_circuit1 ." ,";
+				$sql .= $Conso_circuit2 ." ,";
+				$sql .= $Conso_circuit3 ." ,";
+				$sql .= $Conso_circuit4 ." ,";
+				$sql .= $Conso_circuit5 ." ,";
+				$sql .= $Conso_circuit5 ." ,";
+				$sql .= $eqLogicID .",";
+				$sql .= $ligne["temperature"] ." ";
+				//$sql .= "FROM `Eco_legrand_teleinfo`";
+				Eco_legrand::add_log("debug",$sql);
+				DB::Prepare($sql, array(), DB::FETCH_TYPE_ROW);
+				
+				
+				$Index_circuit1=$ligne["index_circuit1"];
+				$Index_circuit2=$ligne["index_circuit2"];
+				$Index_circuit3=$ligne["index_circuit3"];
+				$Index_circuit4=$ligne["index_circuit4"];
+				$Index_circuit5=$ligne["index_circuit5"];
+				$Index_hc=$ligne["index_hc"];
+				$Index_hp=$ligne["index_hp"];
+				
+				
+			}
 		}
 	}
 
@@ -548,40 +566,42 @@ class Eco_legrand_teleinfo
 
 	}
 
-	static public function get_trame_actuelle($limit = false, $yesterday = false, $max = false, $min = false, $date_debut = false, $date_fin = false, $id_ecq = false){
-	
+	static public function get_trame_actuelle($limit = false, $yesterday = false, $date_debut = false, $date_fin = false, $id_ecq = false){
 		$sql = '';
-		
-		
 		if ($yesterday) $sql .= 'select * from (';
 
-		$sql .= 'select timestamp,index_hp,index_hc,ptec,puissance_totale,int_instant,heure,temperature,eqLogicID,DATE_FORMAT(FROM_UNIXTIME(`timestamp`), "%d-%m-%Y %H:%i") as date ';
-
+		//$sql .= 'select timestamp,index_hp,index_hc,index_circuit1,index_circuit2,index_circuit3,index_circuit4,index_circuit5,index_total_circuits,ptec,puissance_totale,int_instant,heure,temperature,eqLogicID,DATE_FORMAT(FROM_UNIXTIME(`timestamp`), "%d-%m-%Y %H:%i") as date ';
+		$sql .= 'select timestamp,ptec,puissance_totale,puissance_circuit1,puissance_circuit2,puissance_circuit3,puissance_circuit4,puissance_circuit5,int_instant,heure,temperature,eqLogicID ';
+		//$sql .= 'select timestamp,ptec,puissance_totale,int_instant,heure,temperature,eqLogicID ';
+		
+		$sql .= ' From Eco_legrand_teleinfo WHERE ';
 		if (!$date_debut) {
-			$sql .= ' From Eco_legrand_teleinfo WHERE ';
-			if (!$yesterday ) $sql .= 'date = current_date() '; else
+			if (!$yesterday ){
+				$sql .= 'date = current_date() ';
+			}else{
 				$sql .= 'date = DATE_SUB(current_date(), INTERVAL 1 DAY)';
+			}				
 		} else {
-			$sql .= ' From Eco_legrand_teleinfo WHERE ';
-
-			if (!$yesterday ) $sql .= 'date between "' . $date_debut . '" AND "' . $date_fin . '"'; else
+			if (!$yesterday ){
+				$sql .= 'date between "' . $date_debut . '" AND "' . $date_fin . '"';
+			}else{
 				$sql .= 'date between DATE_SUB("' . $date_debut . '", INTERVAL 1 DAY) AND DATE_SUB("' . $date_fin . '", INTERVAL 1 DAY)';
-
+			}
 		}
 		$sql .= ' AND eqLogicID = ' . $id_ecq;
+		$sql .= ' order by timestamp desc ';
 
-		if ($max) $sql .= ' order by puissance_totale desc limit 1 '; elseif ($min) $sql .= ' order by puissance_totale asc limit 1 ';
-		else
-			$sql .= ' order by timestamp desc';
-
-
-		$sql .= ($limit && !$max && !$min ? ' limit ' . $limit : ' ');
-
-		if ($yesterday) $sql .= ') as req order by req.timestamp desc';
-		
-		
-		if (!$limit) $row = DB::Prepare($sql, array(), DB::FETCH_TYPE_ALL); else
+		if($limit){
+			$sql .= 'limit ' . $limit;
+		}
+		if ($yesterday){
+			$sql .= ') as req order by req.timestamp desc';
+		} 
+		if (!$limit){
+			$row = DB::Prepare($sql, array(), DB::FETCH_TYPE_ALL);
+		}  else{
 			$row = DB::Prepare($sql, array(), DB::FETCH_TYPE_ROW);
+		}
 
 		return $row;
 
@@ -646,11 +666,11 @@ class Eco_legrand_teleinfo
 		$date = new DateTime();
 		$d = Eco_legrand::getDateAbo($eqLogicID);
 		//$month_conso = self::get_calcul_prix($date->format('Y-m-01'), $date->format('Y-m-t'), "mois",  $eqLogicID); /*Conso du mois en cours  */
-		$month_conso = self::get_calcul_prix($date->format($d['date_debut_mois']), $date->format($d['date_fin_mois']), "mois", $eqLogicID,false,true); /*Conso du mois en cours  */
+		$month_conso = self::get_calcul_prix($date->format($d['date_debut_mois']), $date->format($d['date_fin_mois']), "mois", $eqLogicID); /*Conso du mois en cours  */
       
 		//Eco_legrand::add_log('debug',$month_conso);
 		if ($month_conso !== false) {
-			Eco_legrand::add_log('debug',self::consoResult($month_conso, $eqLogicID));
+			
 			return self::consoResult($month_conso, $eqLogicID);
 		} else {
 			return false;
@@ -697,8 +717,9 @@ class Eco_legrand_teleinfo
 	
 	
 	}
-	public static function get_périodes_hc_hp($eqLogicID){
-		$sql="SELECT heure,ptec FROM `Eco_legrand_teleinfo` WHERE `date`=CURRENT_DATE()-1 AND `heure`>='00:00' AND eqLogicID = ".$eqLogicID." GROUP BY ptec,`date` ORDER BY `date`";
+	public static function get_périodes_hc_hp($eqLogicID,$date){
+
+		$sql="SELECT heure,ptec FROM `Eco_legrand_teleinfo` WHERE `date`='". $date ."' AND `heure`>='00:00' AND eqLogicID = ".$eqLogicID." GROUP BY ptec,`date` ORDER BY `date`";
 		$result=DB::Prepare($sql, array(), DB::FETCH_TYPE_ALL);
 		$périodes=[];
 		while (count($result)==2) {
@@ -708,7 +729,7 @@ class Eco_legrand_teleinfo
 			$période["ptec"]=$result[0]["ptec"];
 			array_push($périodes,$période);
 			$heure=$result[1]["heure"];
-			$sql="SELECT heure,ptec FROM `Eco_legrand_teleinfo` WHERE `date`=CURRENT_DATE()-1 AND `heure`>='".$heure."' AND eqLogicID = ".$eqLogicID." GROUP BY ptec,`date` ORDER BY `date`";
+			$sql="SELECT heure,ptec FROM `Eco_legrand_teleinfo` WHERE `date`='". $date ."' AND `heure`>='".$heure."' AND eqLogicID = ".$eqLogicID." GROUP BY ptec,`date` ORDER BY `date`";
 			$result=DB::Prepare($sql, array(), DB::FETCH_TYPE_ALL);
 		
 		}
@@ -722,100 +743,37 @@ class Eco_legrand_teleinfo
 		return $périodes;
 
 	}
-	public static function get_conso_tores_hp_hc($eqLogicID){
-		$périodes=self::get_périodes_hc_hp($eqLogicID);
-		$conso_circuit1_hp=0;
-		$conso_circuit2_hp=0;
-		$conso_circuit3_hp=0;
-		$conso_circuit4_hp=0;
-		$conso_circuit5_hp=0;
-		$conso_circuit_autre_hp=0;
-		$conso_circuit1_hc=0;
-		$conso_circuit2_hc=0;
-		$conso_circuit3_hc=0;
-		$conso_circuit4_hc=0;
-		$conso_circuit5_hc=0;
-		$conso_circuit_autre_hc=0;
-		$conso_circuit1_total=0;
-		$conso_circuit2_total=0;
-		$conso_circuit3_total=0;
-		$conso_circuit4_total=0;
-		$conso_circuit5_total=0;
-		$conso_circuit_autre_total=0;
-		$conso_circuit_total=0;
-		foreach ($périodes as $période) {
-			Eco_legrand::add_log('debug',$période["début"]);
-			$sql="SELECT (max(index_circuit1) -min(index_circuit1))/1000 as conso_circuit1
-			,(max(index_circuit2) -min(index_circuit2))/1000 as conso_circuit2
-			,(max(index_circuit3) -min(index_circuit3))/1000 as conso_circuit3
-			,(max(index_circuit4) -min(index_circuit4))/1000 as conso_circuit4
-			,(max(index_circuit5) -min(index_circuit5))/1000 as conso_circuit5
-			,(max(index_hp) - min(index_hp))/1000 +
-			(max(index_hc) - min(index_hc))/1000 - 
-			(max(index_circuit1) -min(index_circuit1))/1000 - 
-			(max(index_circuit2) -min(index_circuit2))/1000 -
-			(max(index_circuit3) -min(index_circuit3))/1000 -
-			(max(index_circuit4) -min(index_circuit4))/1000 -
-			(max(index_circuit5) -min(index_circuit5))/1000 
-			as conso_autre
-			,(max(index_hp) -min(index_hp))/1000 +
-			(max(index_hc) -min(index_hc))/1000 as conso_totale
-			FROM `Eco_legrand_teleinfo` where date=CURRENT_DATE()  and heure>='".$période["début"]."' and heure < '".$période["fin"] . "' AND eqLogicID = ".$eqLogicID." ORDER BY `heure` DESC";
-			Eco_legrand::add_log("debug",$sql);
+	public static function get_conso_tores_hp_hc($type,$eqLogicID){
+			if ($type == "jour"){
+				$date_debut=date('Y-m-d', strtotime(' + 0 days'));
+				$date_fin=date('Y-m-d', strtotime(' + 0 days'));
+			}
+			if ($type == "hier"){
+				$date_debut=date('Y-m-d', strtotime(' - 1 days'));
+				$date_fin=date('Y-m-d', strtotime(' - 1 days'));
+			}
+			
+			
+			
+			$sql="SELECT conso_circuit1, conso_circuit2, conso_circuit3, conso_circuit4, conso_circuit5, conso_autre
+			,conso_totale_hp + conso_totale_hc as conso_totale
+			FROM `Eco_legrand_jour` where UNIX_TIMESTAMP(DATE_FORMAT(`date` , '%Y-%m-%d')) BETWEEN UNIX_TIMESTAMP(DATE_FORMAT('" . $date_debut . "', '%Y-%m-%d')) AND UNIX_TIMESTAMP(DATE_FORMAT('" . $date_fin . "', '%Y-%m-%d')) AND eqLogicID = " . $eqLogicID ;
+			//Eco_legrand::add_log("debug",$sql);
 			$result=DB::Prepare($sql, array(), DB::FETCH_TYPE_ALL);
 			
 			if($result){
 				$result=$result[0];
-				if($période["ptec"]=="HC"){
-					$conso_circuit1_hc += $result["conso_circuit1"];
-					$conso_circuit2_hc += $result["conso_circuit2"];
-					$conso_circuit3_hc += $result["conso_circuit3"];
-					$conso_circuit4_hc += $result["conso_circuit4"];
-					$conso_circuit5_hc += $result["conso_circuit5"];
-					$conso_circuit_autre_hc += $result["conso_autre"];
-					
-				}else{
-					$conso_circuit1_hp += $result["conso_circuit1"];
-					$conso_circuit2_hp += $result["conso_circuit2"];
-					$conso_circuit3_hp += $result["conso_circuit3"];
-					$conso_circuit4_hp += $result["conso_circuit4"];
-					$conso_circuit5_hp += $result["conso_circuit5"];
-					$conso_circuit_autre_hp += $result["conso_autre"];
-				}
-				$conso_circuit1_total += $result["conso_circuit1"];
-				$conso_circuit2_total += $result["conso_circuit2"];
-				$conso_circuit3_total += $result["conso_circuit3"];
-				$conso_circuit4_total += $result["conso_circuit4"];
-				$conso_circuit5_total += $result["conso_circuit5"];
-				$conso_circuit_autre_total += $result["conso_autre"];
+				$conso_circuit1 = $result['conso_circuit1'];
+				$conso_circuit2 = $result['conso_circuit2'];
+				$conso_circuit3 = $result['conso_circuit3'];
+				$conso_circuit4 = $result['conso_circuit4'];
+				$conso_circuit5 = $result['conso_circuit5'];
+				$conso_autre = $result['conso_autre'];
+				$conso_totale = $result['conso_totale'];
 			}
-		}
-		$conso_circuit_total=round($conso_circuit1_total,2) + 
-		round($conso_circuit2_total,2) + 
-		round($conso_circuit3_total,2)+
-		round($conso_circuit4_total,2)+
-		round($conso_circuit5_total,2)+
-		round($conso_circuit_autre_total,2);
-		//$day_conso=[];
-		/*$day_conso["conso_circuit1_hc"] = round($conso_circuit1_hc,2);
-		$day_conso["conso_circuit2_hc"] = round($conso_circuit2_hc,2);
-		$day_conso["conso_circuit3_hc"] = round($conso_circuit3_hc,2);
-		$day_conso["conso_circuit4_hc"] = round($conso_circuit4_hc,2);
-		$day_conso["conso_circuit5_hc"] = round($conso_circuit5_hc,2);
-		$day_conso["conso_autre_hc"] = round($conso_circuit_autre_hc,2);
-		$day_conso["conso_circuit1_hp"] = round($conso_circuit1_hp,2);
-		$day_conso["conso_circuit2_hp"] = round($conso_circuit2_hp,2);
-		$day_conso["conso_circuit3_hp"] = round($conso_circuit3_hp,2);
-		$day_conso["conso_circuit4_hp"] = round($conso_circuit4_hp,2);
-		$day_conso["conso_circuit5_hp"] = round($conso_circuit5_hp,2);
-		$day_conso["conso_autre_hp"] = round($conso_circuit_autre_hp,2);
-		$day_conso["conso_circuit1_total"] = round($conso_circuit1_total,2);
-		$day_conso["conso_circuit2_total"] = round($conso_circuit2_total,2);
-		$day_conso["conso_circuit3_total"] = round($conso_circuit3_total,2);
-		$day_conso["conso_circuit4_total"] = round($conso_circuit4_total,2);
-		$day_conso["conso_circuit5_total"] = round($conso_circuit5_total,2);
-		$day_conso["conso_autre_total"] = round($conso_circuit_autre_total,2);*/
-		//$day_conso = self::get_calcul_prix(date("Y-m-d 00:00:00"), date("Y-m-d 02:31:00"), "jours", 1066,false,true); /*Conso du jour */
+		
+		
+		
 		$data = [];
 		$categorie = [];
 		$color =["#D7FF82", "#FCC646", "#E62EF7", "#007DFF", "#E8FBFF", "#FFE400", "#5DFFF5", "#77a1e5", "#c42525", "#a6c96a","#f26d7d","#8781bd","#c7b299", "#fff799"];
@@ -824,32 +782,29 @@ class Eco_legrand_teleinfo
         $color_byHC = "#4572A7";
 		
 		
-		array_push($data, $conso_circuit1_total/$conso_circuit_total*100);
-		array_push($data, $conso_circuit2_total/$conso_circuit_total*100);
-		array_push($data, $conso_circuit3_total/$conso_circuit_total*100);
-		array_push($data, $conso_circuit4_total/$conso_circuit_total*100);
-		array_push($data, $conso_circuit5_total/$conso_circuit_total*100);
-		array_push($data, $conso_circuit_autre_total/$conso_circuit_total*100);
-
-		array_push($categorie, "conso_circuit1");
-		array_push($categorie, "conso_circuit2");
-		array_push($categorie, "conso_circuit3");
-		array_push($categorie, "conso_circuit4");
-		array_push($categorie, "conso_circuit5");
-		array_push($categorie, "conso_autre");
-		array_push($tooltip_data, "consommation totale circuit 1: ". round($conso_circuit1_total,2) . "kWh<br> HP: ". round($conso_circuit1_hp,2) . "kWh<br> HC: ". round($conso_circuit1_hc,2). "kWh" );
-		array_push($tooltip_data, "consommation totale circuit 2: ". round($conso_circuit2_total,2) . "kWh<br> HP: ". round($conso_circuit2_hp,2) . "kWh<br> HC: ". round($conso_circuit2_hc,2). "kWh" );
-		array_push($tooltip_data, "consommation totale circuit 3: ". round($conso_circuit3_total,2) . "kWh<br> HP: ". round($conso_circuit3_hp,2) . "kWh<br> HC: ". round($conso_circuit3_hc,2). "kWh" );
-		array_push($tooltip_data, "consommation totale circuit 4: ". round($conso_circuit4_total,2) . "kWh<br> HP: ". round($conso_circuit4_hp,2) . "kWh<br> HC: ". round($conso_circuit4_hc,2). "kWh" );
-		array_push($tooltip_data, "consommation totale circuit 5: ". round($conso_circuit5_total,2) . "kWh<br> HP: ". round($conso_circuit5_hp,2) . "kWh<br> HC: ". round($conso_circuit5_hc,2). "kWh" );
-		array_push($tooltip_data, "consommation totale circuit autre: ". round($conso_circuit_autre_total,2) . "<br> HP: ". round($conso_circuit_autre_hp,2) . "kWh<br> HC: ". round($conso_circuit_autre_hc,2). "kWh" );
+		array_push($data, $conso_circuit1/$conso_totale*100);
+		array_push($data, $conso_circuit2/$conso_totale*100);
+		array_push($data, $conso_circuit3/$conso_totale*100);
+		array_push($data, $conso_circuit4/$conso_totale*100);
+		array_push($data, $conso_circuit5/$conso_totale*100);
+		array_push($data, $conso_autre/$conso_totale*100);
+		array_push($categorie, Cmd::byEqLogicIdAndLogicalId($eqLogicID,"inst_circuit1")->getName());
+		array_push($categorie, Cmd::byEqLogicIdAndLogicalId($eqLogicID,"inst_circuit2")->getName());
+		array_push($categorie, Cmd::byEqLogicIdAndLogicalId($eqLogicID,"inst_circuit3")->getName());
+		array_push($categorie, Cmd::byEqLogicIdAndLogicalId($eqLogicID,"inst_circuit4")->getName());
+		array_push($categorie, Cmd::byEqLogicIdAndLogicalId($eqLogicID,"inst_circuit5")->getName());
+		array_push($categorie, "Autre");
+		array_push($tooltip_data, "Conso: " . round($conso_circuit1,2) . "kWh");
+		array_push($tooltip_data, "Conso: " . round($conso_circuit2,2) . "kWh");
+		array_push($tooltip_data, "Conso: " . round($conso_circuit3,2) . "kWh");
+		Array_push($tooltip_data, "Conso: " . round($conso_circuit4,2) . "kWh");
+		array_push($tooltip_data, "Conso: " . round($conso_circuit5,2) . "kWh");
+		array_push($tooltip_data, "Conso: " . round($conso_autre,2) . "kWh");
 		$tab= array(
 			'categorie' => $categorie,
 			'data' => $data,
 			'color' => $color,
 			'tooltip_data' => $tooltip_data);
-		
-
 		return $tab;
 	}
 
@@ -926,8 +881,9 @@ class Eco_legrand_teleinfo
 			$tabresult = self::GetTabPie("jour", $id_ecq);
 		}else{
 			$tabresult['jour'] = self::GetTabPie("jour", $id_ecq);
-			$tabresult['jour_tores'] = self::get_conso_tores_hp_hc($id_ecq);
+			$tabresult['jour_tores'] = self::get_conso_tores_hp_hc("jour",$id_ecq);
 			$tabresult['hier'] = self::GetTabPie("hier", $id_ecq);
+			$tabresult['hier_tores'] = self::get_conso_tores_hp_hc("hier",$id_ecq);
 			$tabresult['mois'] = self::GetTabPie("mois", $id_ecq);
 			$tabresult['semaine'] = self::GetTabPie("semaine", $id_ecq);
 			$tabresult['annee'] = self::GetTabPie("année", $id_ecq);

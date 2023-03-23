@@ -1392,7 +1392,7 @@ function showCurrentTrame(data_init, yesterday_trame, max, min) {
         },
         series: [{
                 type: 'areaspline',
-                name: 'Aujourd\'hui',
+                name: 'Total',
                 data: dataCurrent,
                 //visible: ((tarif_type == "HCHP") ? true : false ),
                 visible: true,
@@ -1408,6 +1408,7 @@ function showCurrentTrame(data_init, yesterday_trame, max, min) {
                 zones: dataZone,
                 yAxis: 1
             },
+
             {
                 type: 'spline',
                 name: 'Hier',
@@ -1710,8 +1711,7 @@ function loadingPie(id_equipement) {
 
                     chart.renderTo = StatYESTERDAY
                     ser[0].data = get_categories(data.result.hier)
-                    ser[1].data = get_categories(data.result.hier)
-                    ser[1].visible = false
+                    ser[1].data = get_categories(data.result.hier_tores)
                     pieStatYESTERDAY = new Highcharts.Chart({
                         chart: chart,
                         title: {

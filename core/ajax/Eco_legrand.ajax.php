@@ -113,13 +113,11 @@ try {
 		$date_debut = init('date_debut',false);
 		$date_fin = init('date_fin',false);
 
-		$current_trame = Eco_legrand_teleinfo::get_trame_actuelle(false,false,false,false,$date_debut,$date_fin,init('id_ecq')); /*Retourne les valeur d aujourd hui*/
-		$max_current_trame = Eco_legrand_teleinfo::get_trame_actuelle(1,false,true,false,$date_debut,$date_fin,init('id_ecq')); /*retourne le max d aujourd hui*/
-		$min_current_trame = Eco_legrand_teleinfo::get_trame_actuelle(1,false,false,true,$date_debut,$date_fin,init('id_ecq')); /*retourne le min d aujourd hui*/
+		$current_trame = Eco_legrand_teleinfo::get_trame_actuelle(false,false,$date_debut,$date_fin,init('id_ecq')); /*Retourne les valeur d aujourd hui*/
 
 		$yesterday_trame = array();
 		if(!$date_debut & !$date_fin){
-			$yesterday_trame = Eco_legrand_teleinfo::get_trame_actuelle(false,true,false,false,$date_debut,$date_fin,init('id_ecq')); /*Retourne les valeurs d hier*/
+			$yesterday_trame = Eco_legrand_teleinfo::get_trame_actuelle(false,true,$date_debut,$date_fin,init('id_ecq')); /*Retourne les valeurs d hier*/
 		}
 
 		$eqLogics = eqLogic::byId(init('id_ecq'));
@@ -128,8 +126,7 @@ try {
 		$tab_data['nb_trame'] = count($current_trame);
 		$tab_data['trame_du_jour'] = $current_trame;
 		$tab_data['trame_hier'] = $yesterday_trame;
-		$tab_data['max_current_trame'] = $max_current_trame;
-		$tab_data['min_current_trame'] = $min_current_trame;
+		
 		$tab_data['isous'] = Eco_legrand::get_intensite_max(init('id_ecq'));
 		//$tab_data['abo_power_perso'] = $powerperso;
 		//$tab_data['abo_power_perso_status'] = $powerpersostatus;
@@ -217,24 +214,16 @@ try {
 	}
   
 	if (init('action') == 'Trame_actuelle' && init('id_ecq')) {
-		//ajax::success();
-		//log::add('conso_debug', 'debug', 'Action CurrentTrame '.init('yesterday',false));
-			
-
-		$data = Eco_legrand_teleinfo::get_trame_actuelle(init('limit'),false,false,false,false,false,init('id_ecq'));
+		$data = Eco_legrand_teleinfo::get_trame_actuelle(init('limit'),false,false,false,init('id_ecq'));
 		if (init('yesterday',false) && init('yesterday') != 'false') {
-		//     log::add('conso_debug', 'debug', 'Action CurrentTrame Yesterday');
-				$yesterday= Eco_legrand_teleinfo::get_trame_actuelle(init('limit'),true,false,false,false,false,init('id_ecq'));
+		//     log::add('conso_debug', 'debug', 'Action CurrentTrame Yesterday')
+				$yesterday= Eco_legrand_teleinfo::get_trame_actuelle(init('limit'),true,false,false,init('id_ecq'));
 				$data['yesterday_papp'] =  $yesterday['papp'];
 		}else{
 			$data['yesterday_papp'] = '';
 		}
 			
 
-		
-		
-		//$data['type'] = $type;
-		
 		ajax::success($data);
 	}
   
@@ -253,7 +242,7 @@ try {
 		$type_graphHP_OLD =  'spline';
 		$type_graphHC_OLD = 'spline';
 		
-		$result = Eco_legrand_teleinfo::get_calcul_prix($pdate_debut,$pdate_fin,$type_graph,init('id_ecq'),false,true);
+		$result = Eco_legrand_teleinfo::get_calcul_prix($pdate_debut,$pdate_fin,$type_graph,init('id_ecq'));
 		
 		$num_rows = is_array($result) && count($result) ;
 
