@@ -480,9 +480,9 @@ class Eco_legrand extends eqLogic {
 
 	}
 
-  public static function get_type_abo($id){
+  public static function get_type_abo($eqLogicId){
  
-    $cmd_type_abo=Eco_legrandCmd::byEqLogicIdAndLogicalId($id,"OPTARIF");
+    $cmd_type_abo=Eco_legrandCmd::byEqLogicIdAndLogicalId($eqLogicId,"OPTARIF");
     if (is_object($cmd_type_abo)){
       $type_abo=$cmd_type_abo->execCmd();
     }
@@ -491,10 +491,10 @@ class Eco_legrand extends eqLogic {
 		return $type_abo;
 	}
   
-  public static function get_intensite_max($id){
+  public static function get_intensite_max($eqLogicId){
     
-    $cmd_ISOUC_=Eco_legrandCmd::byEqLogicIdAndLogicalId($id,"ISOUC");
-    if (is_object($cmd_type_abo)){
+    $cmd_ISOUC_=Eco_legrandCmd::byEqLogicIdAndLogicalId($eqLogicId,"ISOUC");
+    if (is_object($cmd_ISOUC_)){
       $ISOUC=$cmd_ISOUC_->execCmd();
     }
 		
@@ -591,7 +591,7 @@ class Eco_legrand extends eqLogic {
       `hp` float DEFAULT NULL,
       `date_debut` date ,
       `date_fin` date ,
-      `type` varchar(255) DEFAULT 'electricité',
+      `type` varchar(255) DEFAULT 'électricité',
       `eqlogicID` int(11) NOT NULL DEFAULT '0',
       PRIMARY KEY (`id`));";
     DB::Prepare($sql, array(), DB::FETCH_TYPE_ROW, PDO::FETCH_CLASS, __CLASS__);

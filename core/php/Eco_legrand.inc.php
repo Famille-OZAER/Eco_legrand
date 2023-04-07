@@ -20,6 +20,7 @@ require_once dirname(__FILE__) . '/../../../../core/php/core.inc.php';
 include_file('core', 'Eco_legrand_prix', 'class', 'Eco_legrand');
 include_file('core', 'Eco_legrand', 'class', 'Eco_legrand');
 include_file('core', 'Eco_legrand_teleinfo', 'class', 'Eco_legrand');
+//include_file('core', 'Eco_legrand_synthese', 'class', 'Eco_legrand');
 //include_file('core', 'Eco_legrand_tools', 'class', 'Eco_legrand');
 //include_file('core', 'conso_price', 'class', 'conso');
 //include_file('core', 'conso_periode', 'class', 'conso');

@@ -1,21 +1,21 @@
 hideall();
-$('#Eco_legrand_elec').show();
 verifParam();
+//$(".mainnav li.bt_elec").addClass('active');
+//$('.bt_elec').removeClass('cursor');
+//$('#Eco_legrand_elec').show();
+//loadingDash($('#Eco_legrand_ecq').val(), true);
+
+refreshPrix();
+$('#Eco_legrand_tarifs').show();
+$(".mainnav li.bt_tarifs").addClass('active');
+$('.bt_tarifs').removeClass('cursor');
 
 
-$(".mainnav li.bt_elec").addClass('active');
-
-
-var datesynchro = $('#datesynchro').val();
-
-loadingDash($('#Eco_legrand_ecq').val(), datesynchro);
-
-$('#conso_dashboard').show();
 
 $('#Eco_legrand_ecq').on('change', function() {
 
     $(".mainnav li.active").click();
-    loadingDash($('#Eco_legrand_ecq').val()); // chargement du dashboard
+    loadingDash($('#Eco_legrand_ecq').val(), true); // chargement du dashboard
 });
 //$('.datetimepicker').datepicker({ 'format': 'yyyy-m-d', 'autoclose': true }).datepicker("setDate", "0");
 
@@ -118,8 +118,7 @@ $('#validedatecurrent').click(function() {
 
                 } else {
                     if (data.result.nb_trame > 0) {
-                        showCurrentTrame(data.result.trame_du_jour, data.result.trame_hier, data.result.max_current_trame, data.result.min_current_trame,
-                            data.result.type_abo, data.result.isous);
+                        showCurrentTrame(data.result);
                     } else {
                         console.debug('Aucune valeur du jour trouvée');
                     }
@@ -129,90 +128,93 @@ $('#validedatecurrent').click(function() {
     }
 });
 
-function hideall() {
 
-    //$('#Eco_legrand_tab').hide();
-    $('#Eco_legrand_elec').hide();
-    $('#Eco_legrand_outil').hide();
-    //$('#Eco_legrand_graph').hide();
-    //$('#Eco_legrand_graph_cat').hide();
-    $('#Eco_legrand').hide();
-    //$('#Eco_legrand_table').hide();
+function hideall() {
+    for (i = 0; i < $('.row-overflow').length; i++) {
+        document.getElementById($('.row-overflow')[i]['id']).style.display = "none";
+    }
+    for (i = 0; i < $('.mainnav li').length; i++) {
+        var element = document.getElementsByClassName($('.mainnav li')[i]['className'])[0]
+        if (element.className.includes('bt_') && !element.className.includes('cursor')) {
+            element.className += " cursor";
+        }
+
+    }
     $('.mainnav li').removeClass('active');
-    //$('.btn-group').hide();
+
 }
 
-$('.bt_graph_cat').on('click', function() {
-    hideall();
 
-    refreshGraphCat($('#Eco_legrand_ecq').val());
-    //showGraph();
-    $('.bt_graph_cat').addClass('active');
-    $('#Eco_legrand_graph_cat').show();
-
-});
-
-
-
-$('.bt_graph').on('click', function() {
-    hideall();
-    refreshGraph();
-    $('.bt_graph').addClass('active');
-    $('#Eco_legrand_graph').show();
-});
-
-$('.bt_tab').on('click', function() {
-    hideall();
-    showTab();
-    $('.bt_tab').addClass('active');
-    $('#Eco_legrand_tab').show();
-});
 
 $('.bt_elec').on('click', function() {
-    hideall();
+    if (!$('.bt_elec').hasClass('active')) {
+        hideall();
+        $('.bt_elec').addClass('active');
+        $('.bt_elec').removeClass('cursor');
 
-    //loadingPie($('#Eco_legrand_ecq').val()); // chargement des statistiques
-    loadingDash($('#Eco_legrand_ecq').val()); // chargement du dashboard
-
-    $('.bt_elec').addClass('active');
-    $('#Eco_legrand_elec').show();
-    //$(window).resize();
-
+        loadingDash($('#Eco_legrand_ecq').val(), true); // chargement du dashboard
+        $('#Eco_legrand_elec').show();
+    };
 });
 
-
-
-$('.bt_backup').on('click', function() {
-    hideall();
-    $('.bt_backup').addClass('active');
-    $('#Eco_legrand_backup').show();
+$('.bt_eau').on('click', function() {
+    if (!$('.bt_eau').hasClass('active')) {
+        hideall();
+        $('.bt_eau').removeClass('cursor');
+        $('.bt_eau').addClass('active');
+        $('#Eco_legrand_eau').show();
+    };
 });
-
-$('.bt_outil').on('click', function() {
-    hideall();
-    //getDateMysql();
-    $('.bt_outil').addClass('active');
-    $('#Eco_legrand_outil').show();
+$('.bt_gaz').on('click', function() {
+    if (!$('.bt_gaz').hasClass('active')) {
+        hideall();
+        $('.bt_gaz').removeClass('cursor');
+        $('.bt_gaz').addClass('active');
+        $('#Eco_legrand_gaz').show();
+    };
 });
-
-
 $('.bt_synthese').on('click', function() {
-
-    hideall();
-    refreshSynthese();
-    $('.bt_synthese').addClass('active');
-    $('#Eco_legrand_synthese').show();
-});
-
-$('.bt_table').on('click', function() {
-    hideall();
-    $('.bt_table').addClass('active');
-    $('#Eco_legrand_table').show();
-    showTeleinfo();
+    if (!$('.bt_synthese').hasClass('active')) {
+        hideall();
+        $('.bt_synthese').removeClass('cursor');
+        $('.bt_synthese').addClass('active');
+        $('#Eco_legrand_synthese').show();
+    };
 
 });
+$('.bt_tarifs').on('click', function() {
+    if (!$('.bt_tarifs').hasClass('active')) {
+        hideall();
+        $('.bt_tarifs').removeClass('cursor');
+        $('.bt_tarifs').addClass('active');
+        refreshPrix();
+        $('#Eco_legrand_tarifs').show();
+    };
+});
+$('.bt_database').on('click', function() {
+    if (!$('.bt_database').hasClass('active')) {
+        hideall();
+        showTeleinfo();
+        $('.bt_database').removeClass('cursor');
+        $('.bt_database').addClass('active');
+        $('#Eco_legrand_database').show();
+
+    };
 
 
+});
+$('#bt_refresh_synthese_mois').click(function() {
+    refreshSynthese('mois');
+});
+$('#bt_refresh_synthese_jour').click(function() {
+    refreshSynthese('jours');
+});
+$('#bt_refresh_synthese_semaine').click(function() {
+    refreshSynthese('semaine');
+});
+$('#bt_refresh_synthese_annee').click(function() {
+    refreshSynthese('annee');
+});
 
 $('.dtimepicker').datetimepicker({
     lang: 'fr',
@@ -232,10 +234,17 @@ $('.datetimepicker').datepicker({
 }).datepicker("setDate", "0");
 
 
+HTMLElement.prototype.hasClass = function(cls) {
+    var i;
+    var classes = this.className.split(" ");
+    for (i = 0; i < classes.length; i++) {
+        if (classes[i] == cls) {
+            return true;
+        }
+    }
+    return false;
+};
 
-/*
- * Génération d un graphique  pour la temeprature min, max et moyenne
- * */
 function show_graph_temp(data, conteneur) {
 
     if (timezonebis == null) {
@@ -618,7 +627,7 @@ function verifParam() {
     });
 }
 
-function loadingDash(id_equipement, datesynchro) {
+function loadingDash(id_equipement, all) {
 
 
     $.ajax({
@@ -640,7 +649,8 @@ function loadingDash(id_equipement, datesynchro) {
 
             } else {
                 if (data.result.nb_trame > 0) {
-                    initDashBoard(data.result.trame_du_jour, data.result.trame_hier, data.result.isous, data.result.max_current_trame, data.result.min_current_trame, datesynchro);
+                    initDashBoard(data.result, all);
+
                 } else {
                     console.info('Aucune valeur du jour trouvée verifier les équipements');
                 }
@@ -650,18 +660,24 @@ function loadingDash(id_equipement, datesynchro) {
     return true;
 }
 
-function initDashBoard(trame_du_jour, trame_hier, isous, max, min, datesynchro) {
+function initDashBoard(datas, all) {
 
     deferred = $.Deferred();
     /*Affichage tablo conso PUIS Affichage Graphique Jours Semaine Mois*/
+
+    MAJ_menu(datas.trame_du_jour, true);
+    if (!all) {
+        return
+    }
+
     Tableau_Conso()
     showDashGraph()
         /*affichage données detail dans le menu*/
-    MAJ_menu(trame_du_jour, true);
+
 
     /*la puissance_totale n est pas renseigné */
 
-    if (parseInt(trame_du_jour[trame_du_jour.length - 1].puissance_totale) < 0) {
+    if (parseInt(datas.trame_du_jour[datas.trame_du_jour.length - 1].puissance_totale) < 0) {
         $('#tab_info').hide();
         $('#gauge').hide();
         $('#Currentbar').hide();
@@ -672,22 +688,10 @@ function initDashBoard(trame_du_jour, trame_hier, isous, max, min, datesynchro) 
         $('#contentebar').append('Pour visualiser le graphique merci de renseigner la Puissance instantanée dans la configuration de votre équipement');
     }
 
-    /*Affichage tableau variations*/
-    //TabVariation(trame_du_jour, true);
-
-    /*Affichage de la gauge*/
-
-    Gauge(trame_du_jour, true, isous);
-
-    //$('.datesynchro').html(datesynchro);
-
-
-    $('.navinfo').show();
-
-    $('.bt_tab').show();
+    Gauge(datas.trame_du_jour, true, datas.isous);
 
     /*Affichage du graph du jour*/
-    showCurrentTrame(trame_du_jour, trame_hier, max, min);
+    showCurrentTrame(datas);
     loadingPie($('#Eco_legrand_ecq').val())
 
     /*Affichage Graphique Jours Semaine Mois */
@@ -925,13 +929,10 @@ function getDateRefresh() {
     return pad(jour) + "/" + pad(mois) + "/" + annee + " " + pad(heure) + ":" + pad(minute) + ":" + pad(seconde);
 }
 
-
 function Gauge(data, init, isous) {
 
 
     power = isous * 230;
-
-
     if (init)
         data = data[0];
 
@@ -1047,7 +1048,7 @@ function Gauge(data, init, isous) {
                 name: 'Consommation totale',
                 data: [parseInt(data.puissance_totale)],
                 tooltip: {
-                    valueSuffix: 'Watt'
+                    valueSuffix: ' Watt'
                 }
             }]
         },
@@ -1086,8 +1087,8 @@ function Gauge(data, init, isous) {
                                         $('#div_DashboardAlert').showAlert({ message: data_init.result, level: 'danger' });
                                         return;
                                     } else {
-                                        var data = data_init.result;
-                                        watt = data.puissance_totale;
+                                        //var data = data_init.result;
+                                        watt = data_init.result.puissance_totale;
 
                                         /*msie a jour du  detail a coté de la gauge*/
                                         MAJ_menu(data_init.result, false);
@@ -1095,21 +1096,20 @@ function Gauge(data, init, isous) {
 
 
                                         /*Mise a jour du graphique du jour*/
-                                        var serie_selected = 'CurrentSerie';
-                                        series = ChartCurrentTrame.get(serie_selected);
+                                        series = ChartCurrentTrame.get('Total');
 
                                         //loadingDash(data.eqLogicID, "")
                                         var color_byHP = "#AA4643";
                                         var color_byHC = "#4572A7";
 
-                                        var date = new Date(data.timestamp * 1000);
+                                        var date = new Date(data_init.result.timestamp * 1000);
 
                                         if (date.getHours() == 0 & date.getMinutes() == 0 & series.points.length > 50) {
-                                            loadingDash(data.eqLogicID, "")
+                                            loadingDash(data_init.result.eqLogicID, true)
                                             return
                                         }
 
-                                        series.addPoint([data.timestamp * 1000, parseInt(data.puissance_totale)]);
+                                        series.addPoint([data_init.result.timestamp * 1000, parseInt(data_init.result.puissance_totale)]);
                                         //création de nouvelles zones pour le maintient des bonnes couleurs lors de la mise à jour de données
                                         zones = series.zones
                                         dataZone = []
@@ -1119,37 +1119,51 @@ function Gauge(data, init, isous) {
                                                 dataZone.push({ value: item.value, color: item.color });
                                             }
                                         })
-                                        if (data.ptec == "HP") {
+                                        if (data_init.result.ptec == "HP") {
                                             if (dataZone[dataZone.length - 1].color == color_byHP) {
-                                                dataZone[dataZone.length - 1].value = data.timestamp * 1000
+                                                dataZone[dataZone.length - 1].value = data_init.result.timestamp * 1000
                                             } else {
-                                                dataZone.push({ value: data.timestamp * 1000, color: color_byHP });
+                                                dataZone.push({ value: data_init.result.timestamp * 1000, color: color_byHP });
                                             }
                                         }
-                                        if (data.ptec == "HC") {
+                                        if (data_init.result.ptec == "HC") {
                                             if (dataZone[dataZone.length - 1].color == color_byHC) {
-                                                dataZone[dataZone.length - 1].value = data.timestamp * 1000
+                                                dataZone[dataZone.length - 1].value = data_init.result.timestamp * 1000
                                             } else {
-                                                dataZone.push({ value: data.timestamp * 1000, color: color_byHC });
+                                                dataZone.push({ value: data_init.result.timestamp * 1000, color: color_byHC });
                                             }
                                         }
                                         series.update({
                                             zones: dataZone
                                         });
+                                        series = ChartCurrentTrame.get('circuit1');
+                                        series.addPoint([data_init.result.timestamp * 1000, parseInt(data_init.result.puissance_circuit1)]);
+                                        series = ChartCurrentTrame.get('circuit2');
+                                        series.addPoint([data_init.result.timestamp * 1000, parseInt(data_init.result.puissance_circuit2)]);
+                                        series = ChartCurrentTrame.get('circuit3');
+                                        series.addPoint([data_init.result.timestamp * 1000, parseInt(data_init.result.puissance_circuit3)]);
+                                        series = ChartCurrentTrame.get('circuit4');
+                                        series.addPoint([data_init.result.timestamp * 1000, parseInt(data_init.result.puissance_circuit4)]);
+                                        series = ChartCurrentTrame.get('circuit5');
+                                        series.addPoint([data_init.result.timestamp * 1000, parseInt(data_init.result.puissance_circuit5)]);
+
+
 
                                         /*Mise a jour du graphique du jour Température*/
-                                        var serie_selected_temp = 'Temp';
-                                        series_temp = ChartCurrentTrame.get(serie_selected_temp);
-                                        series_temp.addPoint([data.timestamp * 1000, parseFloat(data.temperature)]);
+
+                                        series_temp = ChartCurrentTrame.get('Température');
+                                        //console.log(data_init.result.temperature)
+                                        series_temp.addPoint([data_init.result.timestamp * 1000, parseFloat(data_init.result.temperature)]);
+
                                         /*Mise a jour de la date de la derniere trame teleinfo dans panel_outil*/
-                                        $('#trame_date').html(data.date);
-                                        $('.date_isrefresh').html(data.date);
+                                        $('#trame_date').html(data_init.result.date);
+                                        $('.date_isrefresh').html(data_init.result.date);
                                         $.ajax({
                                             type: 'POST',
                                             url: 'plugins/Eco_legrand/core/ajax/Eco_legrand.ajax.php',
                                             data: {
                                                 action: 'loadingPie',
-                                                id_ecq: data.eqLogicID,
+                                                id_ecq: data_init.result.eqLogicID,
                                                 type: "jour",
                                             },
                                             global: false,
@@ -1199,16 +1213,22 @@ function Gauge(data, init, isous) {
 
 }
 
-function showCurrentTrame(data_init, yesterday_trame, max, min) {
-
-
-
+function showCurrentTrame(datas) {
     var dataHier = [];
-    var lastvalue = null;
 
     var old_ptec = false;
-    var dataCurrent = [];
+    var puissance_totale = [];
+    var puissance_circuit1 = [];
+    var puissance_circuit2 = [];
+    var puissance_circuit3 = [];
+    var puissance_circuit4 = [];
+    var puissance_circuit5 = [];
     var dataZone = [];
+    var dataZone_circuit1 = [];
+    var dataZone_circuit2 = [];
+    var dataZone_circuit3 = [];
+    var dataZone_circuit4 = [];
+    var dataZone_circuit5 = [];
     var dataTemp = [];
     var point_start = 0;
     var color_byHP = "#AA4643";
@@ -1217,9 +1237,14 @@ function showCurrentTrame(data_init, yesterday_trame, max, min) {
     var last_timestamp = false;
     var max_temp = 0;
 
-    $.each(data_init.reverse(), function(key, value) {
+    $.each(datas.trame_du_jour.reverse(), function(key, value) {
 
-        dataCurrent.push([value.timestamp * 1000, parseInt(value.puissance_totale)]);
+        puissance_totale.push([value.timestamp * 1000, parseInt(value.puissance_totale)]);
+        puissance_circuit1.push([value.timestamp * 1000, parseInt(value.puissance_circuit1)]);
+        puissance_circuit2.push([value.timestamp * 1000, parseInt(value.puissance_circuit2)]);
+        puissance_circuit3.push([value.timestamp * 1000, parseInt(value.puissance_circuit3)]);
+        puissance_circuit4.push([value.timestamp * 1000, parseInt(value.puissance_circuit4)]);
+        puissance_circuit5.push([value.timestamp * 1000, parseInt(value.puissance_circuit5)]);
 
         dataTemp.push([value.timestamp * 1000, (parseFloat(value.temperature) > 0 ? parseFloat(value.temperature) : null)]);
 
@@ -1231,7 +1256,7 @@ function showCurrentTrame(data_init, yesterday_trame, max, min) {
             point_start = value.timestamp * 1000;
         }
         /*Couleur Heure pleine*/
-        /*ATTENTION INVERSE SI HC ALORS LES ROUGE SE TERMINE ICI */
+
         if (value.ptec == "HC") {
             if (old_ptec != value.ptec) {
                 dataZone.push({ value: value.timestamp * 1000, color: color_byHP });
@@ -1260,8 +1285,8 @@ function showCurrentTrame(data_init, yesterday_trame, max, min) {
 
     dataZone.push({ value: last_timestamp, color: last_color });
 
-    if (yesterday_trame.length > 0)
-        $.each(yesterday_trame.reverse(), function(key, value) {
+    if (datas.trame_hier.length > 0)
+        $.each(datas.trame_hier.reverse(), function(key, value) {
             var d = new Date(value.timestamp * 1000);
             var d2 = d.setDate(d.getDate() + 1); // -1 Jour
             dataHier.push([d2, parseInt(value.puissance_totale)]);
@@ -1393,11 +1418,10 @@ function showCurrentTrame(data_init, yesterday_trame, max, min) {
         series: [{
                 type: 'areaspline',
                 name: 'Total',
-                data: dataCurrent,
+                data: puissance_totale,
                 //visible: ((tarif_type == "HCHP") ? true : false ),
                 visible: true,
-                id: 'CurrentSerie',
-                //color: "#4572A7"
+                id: 'Total',
                 pointStart: point_start,
                 pointIntervalUnit: 'month',
                 tooltip: {
@@ -1406,6 +1430,92 @@ function showCurrentTrame(data_init, yesterday_trame, max, min) {
                 },
                 zoneAxis: 'x',
                 zones: dataZone,
+                yAxis: 1
+            },
+            {
+                type: 'areaspline',
+                name: datas.nom_circuit1,
+                data: puissance_circuit1,
+                //visible: ((tarif_type == "HCHP") ? true : false ),
+                visible: false,
+                id: 'circuit1',
+                color: "#D7FF82",
+                pointStart: point_start,
+                pointIntervalUnit: 'month',
+                tooltip: {
+                    valueSuffix: ' W',
+                    valueDecimals: 0,
+                },
+                zoneAxis: 'x',
+                zones: dataZone_circuit1,
+                yAxis: 1
+            }, {
+                type: 'areaspline',
+                name: datas.nom_circuit2,
+                data: puissance_circuit2,
+                //visible: ((tarif_type == "HCHP") ? true : false ),
+                visible: false,
+                id: 'circuit2',
+                color: "#FCC646",
+                pointStart: point_start,
+                pointIntervalUnit: 'month',
+                tooltip: {
+                    valueSuffix: ' W',
+                    valueDecimals: 0
+                },
+                zoneAxis: 'x',
+                zones: dataZone_circuit2,
+                yAxis: 1
+            }, {
+                type: 'areaspline',
+                name: datas.nom_circuit3,
+                data: puissance_circuit3,
+                //visible: ((tarif_type == "HCHP") ? true : false ),
+                visible: false,
+                id: 'circuit3',
+                color: "#E62EF7",
+                pointStart: point_start,
+                pointIntervalUnit: 'month',
+                tooltip: {
+                    valueSuffix: ' W',
+                    valueDecimals: 0
+                },
+                zoneAxis: 'x',
+                zones: dataZone_circuit3,
+                yAxis: 1
+            }, {
+                type: 'areaspline',
+                name: datas.nom_circuit4,
+                data: puissance_circuit4,
+                //visible: ((tarif_type == "HCHP") ? true : false ),
+                visible: false,
+                id: 'circuit4',
+                color: "#007DFF",
+                pointStart: point_start,
+                pointIntervalUnit: 'month',
+                tooltip: {
+                    valueSuffix: ' W',
+                    valueDecimals: 0
+                },
+                zoneAxis: 'x',
+                zones: dataZone_circuit4,
+                yAxis: 1
+            }, {
+                type: 'areaspline',
+                name: datas.nom_circuit5,
+                data: puissance_circuit5,
+                //visible: ((tarif_type == "HCHP") ? true : false ),
+                visible: false,
+                id: 'circuit5',
+                color: "#E8FBFF",
+                pointStart: point_start,
+                pointIntervalUnit: 'month',
+                tooltip: {
+                    valueSuffix: ' W',
+                    valueDecimals: 0
+                },
+                zoneAxis: 'x',
+                zones: dataZone_circuit5,
                 yAxis: 1
             },
 
@@ -1425,7 +1535,7 @@ function showCurrentTrame(data_init, yesterday_trame, max, min) {
             {
                 type: 'spline',
                 name: 'Température',
-                id: 'Temp',
+                id: 'Température',
                 data: dataTemp,
                 dashStyle: 'dash',
                 color: '#04db28',
@@ -1623,7 +1733,6 @@ function loadingPie(id_equipement) {
                     var timezonebis = "Europe/Brussels";
                 }
 
-
                 var tooltip = {
                     useHTML: true,
                     share: true,
@@ -1660,7 +1769,7 @@ function loadingPie(id_equipement) {
                     }
                 }
                 chart.renderTo = StatDAY
-                console.log(data.result)
+
                 var ser = [{
                         name: 'Consommation',
                         id: chart.renderTo.id,
@@ -1802,14 +1911,6 @@ function get_categories(data) {
     categorieData = [];
     $(data.data).each(function(index, value) {
         brightness = 0.2 - (index / data.length) / 5;
-        /*color: {
-            linearGradient: { x1: 0, x2: 0, y1: 0, y2: 1 },
-            stops: [
-                [0, '#003399'],
-                [1, '#3366AA']
-            ]
-        }*/
-        //color: Highcharts.Color(data.color[index]).brighten(brightness).get()
         categorieData.push({
             name: data.categorie[index],
             y: Math.round(value * 100) / 100,
@@ -1825,4 +1926,410 @@ function get_categories(data) {
     });
 
     return (categorieData)
+}
+
+function traduction_mois(item) {
+
+    Object.keys(item).forEach(function(col) {
+        item[col] = item[col].replace(/january/i, 'Janvier');
+        item[col] = item[col].replace(/february/i, 'Février');
+        item[col] = item[col].replace(/march/i, 'Mars');
+        item[col] = item[col].replace(/april/i, 'Avril');
+        item[col] = item[col].replace(/may/i, 'Mai');
+        item[col] = item[col].replace(/june/i, 'Juin');
+        item[col] = item[col].replace(/july/i, 'Juillet');
+        item[col] = item[col].replace(/august/i, 'Août');
+        item[col] = item[col].replace(/september/i, 'Septembre');
+        item[col] = item[col].replace(/october/i, 'Octobre');
+        item[col] = item[col].replace(/november/i, 'Novembre');
+        item[col] = item[col].replace(/december/i, 'Décembre');
+        item[col] = item[col].replace(/janvier/i, 'Janvier');
+        item[col] = item[col].replace(/février/i, 'Février');
+        item[col] = item[col].replace(/mars/i, 'Mars');
+        item[col] = item[col].replace(/avril/i, 'Avril');
+        item[col] = item[col].replace(/mai/i, 'Mai');
+        item[col] = item[col].replace(/juin/i, 'Juin');
+        item[col] = item[col].replace(/juillet/i, 'Juillet');
+        item[col] = item[col].replace(/août/i, 'Août');
+        item[col] = item[col].replace(/septembre/i, 'Septembre');
+        item[col] = item[col].replace(/octobre/i, 'Octobre');
+        item[col] = item[col].replace(/novembre/i, 'Novembre');
+        item[col] = item[col].replace(/décembre/i, 'Décembre');
+    })
+
+
+    return item
+}
+
+
+function refreshSynthese(type) {
+    loadingDash($('#Eco_legrand_ecq').val(), false);
+
+    $.ajax({
+        type: 'POST',
+        url: 'plugins/Eco_legrand/core/ajax/Eco_legrand.ajax.php',
+        dataType: 'json',
+        data: {
+            action: 'synthese',
+            id_ecq: $('#Eco_legrand_ecq').val(),
+            type: type
+        },
+        error: function(request, status, error) {
+            handleAjaxError(request, status, error, $('#div_TableAlert'));
+        },
+        success: function(data) {
+            if (data.state != 'ok') {
+                $('#div_TableAlert').showAlert({ message: data.result, level: 'danger' });
+                return;
+            }
+            $("#tableau_synthese tr").remove();
+            var tableau = '';
+            var widget = '';
+            var num_colonne = 0;
+            var all = false
+            if (type == 'all') {
+                all = true;
+                type = 'jours';
+            }
+            var tb
+            while (all) {
+                var tb = ''
+                tb = '<table id="tableau_synthese_' + type + '" class = "table-striped table table-bordered table-hover" > ';
+                tb += '<thead>';
+                tb += '<tr class="widget-header">';
+                tb += '<th style="display:none">Nom</th>';
+                tb += '<th>Année</th>';
+                if (type == 'jours') {
+                    tableau = "#tableau_synthese_jours"
+                    widget = ".synthese_jours"
+                    tb += '<th>Jour</th>';
+                    num_colonne = 2
+                } else if (type == 'semaine') {
+                    tableau = "#tableau_synthese_semaine"
+                    widget = ".synthese_semaine"
+                    tb += '<th>Semaine</th>';
+                    num_colonne = 1
+                } else if (type == 'mois') {
+                    tableau = "#tableau_synthese_mois"
+                    widget = ".synthese_mois"
+                    tb += '<th>Mois</th>';
+                    num_colonne = 1
+                } else if (type == 'annee') {
+                    tableau = "#tableau_synthese_annee"
+                    widget = ".synthese_annee"
+                    tb += '<th style="display:none">Année</th>';
+                    num_colonne = 2
+                }
+                tb += '<th>Conso HP</th>';
+                tb += '<th>Conso HC</th>';
+                tb += '<th>Prix HP</th>';
+                tb += '<th>Prix HC</th>';
+                tb += '<th>Total HC (TTC/HT)</th>';
+                tb += '<th>Total HC (TTC/HT)</th>';
+                tb += '<th>Total (TTC/HT)</th>';
+                tb += '<th>Temp min</th>';
+                tb += '<th>Temp max</th>';
+                tb += '<th>Temp moy</th>';
+                tb += '</tr>';
+                tb += '</thead>';
+                tb += '<tbody class="tableau_synthese">';
+                tb += '</tbody>';
+                tb += '</table>';
+                $(tableau).remove();
+                $(tableau + '_wrapper').remove();
+                $(widget).append(tb);
+
+
+                //$(tableau + " tbody").children().remove()
+
+                data.result.data[type].forEach(function(item) {
+
+                    item = traduction_mois(item)
+
+
+                    var tr = '<tr>'
+                    tr += '<td style="display:' + $(tableau + " thead th")[0].style["display"] + '" > '
+
+                    tr += item['EqlogicID'];
+                    tr += '</td >'
+                    tr += '<td style="display:' + $(tableau + " thead th")[1].style["display"] + '" > '
+                    tr += item['annee'];
+                    tr += '</td>'
+                    tr += '<td style="display:' + $(tableau + " thead th")[2].style["display"] + '" > '
+                    tr += item['categorie'];
+                    tr += '</td>'
+
+                    tr += '<td style="display:' + $(tableau + " thead th")[3].style["display"] + '" > '
+                    tr += item['hp'] + ' Kwh'
+                    tr += '</td>'
+                    tr += '<td style="display:' + $(tableau + " thead th")[4].style["display"] + '" > '
+                    tr += item['hc'] + ' Kwh'
+                    tr += '</td>'
+                    tr += '<td style="display:' + $(tableau + " thead th")[5].style["display"] + '" > '
+                    tr += item['prix_hp'] + ' €'
+                    tr += '</td>'
+                    tr += '<td style="display:' + $(tableau + " thead th")[6].style["display"] + '" > '
+                    tr += item['prix_hc'] + '€'
+                    tr += '</td>'
+                    tr += '<td style="display:' + $(tableau + " thead th")[7].style["display"] + '" > '
+                    tr += item['total_prix_hp'] + '€' + ' / ' + item['total_prix_hp_ttc'] + '€'
+                    tr += '</td>'
+                    tr += '<td style="display:' + $(tableau + " thead th")[8].style["display"] + '" > '
+                    tr += item['total_prix_hc'] + '€' + ' / ' + item['total_prix_hc_ttc'] + '€'
+
+                    tr += '</td>'
+                    tr += '<td style="display:' + $(tableau + " thead th")[9].style["display"] + '" > '
+
+                    tr += item['total_prix'] + '€' + ' / ' + item['total_prix_ttc'] + '€'
+                    tr += '</td>'
+                    tr += '<td style="display:' + $(tableau + " thead th")[10].style["display"] + '" > '
+                    tr += item['temp_min'] + '°C'
+                    tr += '</td>'
+                    tr += '<td style="display:' + $(tableau + " thead th")[11].style["display"] + '" > '
+                    tr += item['temp_moy'] + '°C'
+                    tr += '</td>'
+
+                    tr += '<td style="display:' + $(tableau + " thead th")[12].style["display"] + '" > '
+                    tr += item['temp_max'] + '°C'
+                    tr += '</td>'
+                    tr += '</tr>'
+
+                    $(tableau + " tbody").append(tr);
+
+                });
+
+                set_datatable(tableau, num_colonne);
+                if (type == 'jours') {
+                    type = 'mois'
+                } else if (type == 'mois') {
+                    type = 'semaine'
+                } else if (type == 'semaine') {
+                    type = 'annee'
+                } else if (type == 'annee') {
+                    all = false;
+                    return;
+                }
+
+
+
+
+            }
+        }
+    });
+
+
+}
+
+function set_datatable(element, numero_colonne_sort) {
+    if (!$.fn.dataTable.isDataTable(element)) {
+        var nb2 = $(element).DataTable({
+
+            language: { url: 'plugins/Eco_legrand/3rdparty/datatable/fr_FR.json' },
+            dom: 'T<"clear">lfrtip',
+            //"columnDefs": [ { "visible": false, "targets": 0 }
+            //],
+            "pageLength": 10,
+
+            fnDrawCallback: function(settings) {
+                $(".tr_hidden").css("display", "table-row")
+            },
+            "order": [numero_colonne_sort, 'desc']
+
+        });
+    }
+}
+
+
+/*
+Tarifs
+ */
+function PopupPrix(id_prix, type) {
+    var prix = '';
+    if (typeof id_prix !== 'undefined') {
+        prix = '&id_prix=' + id_prix;
+    } else {
+        $('#bsIsPrwater_type').removeClass("btn-success");
+        $('#bsIsPrgaz_type').removeClass("btn-success");
+        $('#bsIsPrelec_type').addClass("btn-success");
+        $('input[data-l1key="type"]').val('électricité');
+        $('input[data-l1key="type"]').val('électricité');
+    }
+    if (type.includes('électricité')) {
+        type = "électricité"
+    } else if (type.includes('gaz')) {
+        type = "gaz"
+    } else if (type.includes('eau')) {
+        type = "eau"
+    }
+
+
+    $('#md_GestionPrix').dialog({
+        autoOpen: false,
+        modal: true,
+        resizable: false,
+        width: 610,
+        title: "{{Administration du tarif " +
+            type.toUpperCase() + "}}"
+    });
+    $('#md_GestionPrix').load('index.php?v=d&plugin=Eco_legrand&modal=ajoutprix' + prix + '&eqlogic_id=' + $('#Eco_legrand_ecq').val() + '&type=' + type);
+    $('#md_GestionPrix').dialog('open');
+}
+$('.ajout_prix').on('click', function() {
+    PopupPrix('', $(this)[0].className);
+})
+$('body').on('click', '.supp_prix', function() {
+    //$('body').delegate('.btn.btn-danger.supp_prix', 'click', function() {
+    var Prix = $(this).closest('.li_prix').getValues('.prixAttr');
+    Prix = Prix[0];
+
+    $.ajax({
+        type: 'POST',
+        url: 'plugins/Eco_legrand/core/ajax/Eco_legrand.ajax.php',
+        data: {
+            action: 'Supp_Prix',
+            id: Prix.id
+        },
+        dataType: 'json',
+        error: function(request, status, error) {
+            handleAjaxError(request, status, error, $('#div_PrixAlert'));
+        },
+        success: function(data) {
+            if (data.state != 'ok') {
+                $('#div_alert').showAlert({ message: data.result, level: 'danger' });
+                return;
+            }
+
+        }
+    });
+    $(this).closest('.li_prix').remove();
+    $('#div_alert').showAlert({ message: "Suppression réussie.", level: 'success' });
+});
+$('body').on('click', '.updprix', function() {
+    var Prix = $(this).closest('.li_prix').getValues('.prixAttr');
+    Prix = Prix[0];
+    $(this).removeClass("ajout_prix");
+    PopupPrix(Prix.id, $(this)[0].className);
+    $(this).addClass("ajout_prix")
+});
+
+
+
+function refreshPrix() {
+    $.ajax({
+        type: 'POST',
+        url: 'plugins/Eco_legrand/core/ajax/Eco_legrand.ajax.php',
+        data: {
+            action: 'Récup_Prix',
+            id: $('#Eco_legrand_ecq').val(),
+
+        },
+        error: function(request, status, error) {
+            handleAjaxError(request, status, error, $('#div_PrixAlert'));
+        },
+        success: function(data) {
+            if (data.state != 'ok') {
+                $('#div_alert').showAlert({ message: data.result, level: 'danger' });
+                return;
+            }
+
+            $('#ul_Gestprix_elec  tbody').empty();
+            $('#ul_Gestprix_gaz  tbody').empty();
+            $('#ul_Gestprix_eau  tbody').empty();
+
+            for (var i = 0; i < data.result.length; i++) {
+                if (data.result[i]['type'] == "électricité") {
+                    var tr_elec = '<tr  class="li_prix bt_sortable" data-prix_id="' + data.result[i]['id'] + '">'
+                    tr_elec += '<td>'
+                    tr_elec += '<div class="btn btn-success btn-sm updprix électricité">'
+                    tr_elec += '<i class="fas fa-pencil-alt "></i>'
+                    tr_elec += '</div>'
+                    tr_elec += '</td>'
+                    tr_elec += '<td style="display: none;">'
+                    tr_elec += '<input type="text" class="prixAttr form-control " data-l1key="id" style="display: none;" value="' + data.result[i]['id'] + '">'
+                    tr_elec += '</td>'
+                    tr_elec += '<td>'
+                    tr_elec += '<div style="float:left">' + data.result[i]['date_debut'] + '</div>'
+                    tr_elec += '</td>'
+                    tr_elec += ' <td>'
+                    tr_elec += '<div style="float:left">' + data.result[i]['date_fin'] + '</div>'
+                    tr_elec += '</td>'
+                    tr_elec += '<td>'
+                    tr_elec += ' <div style="float:left">' + data.result[i]['hp'] + '</div>'
+                    tr_elec += '</td>'
+                    tr_elec += '<td>'
+                    tr_elec += '<div style="float:left">' + data.result[i]['hc'] + '</div>'
+                    tr_elec += '</td>'
+                    tr_elec += '<td>'
+                    tr_elec += '<center>'
+                    tr_elec += '<a class="btn btn-danger supp_prix"><i class="fas fa-trash"></i></a>'
+                    tr_elec += '</center>'
+                    tr_elec += '</td>'
+                    tr_elec += '</tr>'
+                    $('#ul_Gestprix_elec tbody').append(tr_elec);
+                } else if (data.result[i]['type'] == "gaz") {
+                    var tr_gaz = '<tr class="li_prix bt_sortable" data-prix_id="' + data.result[i]['id'] + '">'
+                    tr_gaz += '<td>'
+                    tr_gaz += '<div class="btn btn-success btn-sm updprix gaz">'
+                    tr_gaz += '<i class="fas fa-pencil-alt "></i>'
+                    tr_gaz += '</div>'
+                    tr_gaz += '</td>'
+                    tr_gaz += '<td style="display: none;">'
+                    tr_gaz += '<input type="text" class="prixAttr form-control " data-l1key="id" style="display: none;" value="' + data.result[i]['id'] + '">'
+                    tr_gaz += '</td>'
+                    tr_gaz += '<td>'
+                    tr_gaz += '<div style="float:left">' + data.result[i]['date_debut'] + '</div>'
+                    tr_gaz += '</td>'
+                    tr_gaz += ' <td>'
+                    tr_gaz += '<div style="float:left">' + data.result[i]['date_fin'] + '</div>'
+                    tr_gaz += '</td>'
+                    tr_gaz += '<td>'
+                    tr_gaz += ' <div style="float:left">' + data.result[i]['hp'] + '</div>'
+                    tr_gaz += '</td>'
+                    tr_gaz += '<td>'
+                    tr_gaz += '<div style="float:left">' + data.result[i]['hc'] + '</div>'
+                    tr_gaz += '</td>'
+                    tr_gaz += '<td>'
+                    tr_gaz += '<center>'
+                    tr_gaz += '<a class="btn btn-danger supp_prix"><i class="fas fa-trash"></i></a>'
+                    tr_gaz += '</center>'
+                    tr_gaz += '</td>'
+                    tr_gaz += '</tr>'
+                    $('#ul_Gestprix_gaz tbody').append(tr_gaz);
+                } else if (data.result[i]['type'] == "eau") {
+                    var tr_eau = '<tr class="li_prix bt_sortable" data-prix_id="' + data.result[i]['id'] + '">'
+                    tr_eau += '<td>'
+                    tr_eau += '<div class="btn btn-success btn-sm updprix eau">'
+                    tr_eau += '<i class="fas fa-pencil-alt "></i>'
+                    tr_eau += '</div>'
+                    tr_eau += '</td>'
+                    tr_eau += '<td style="display: none;">'
+                    tr_eau += '<input type="text" class="prixAttr form-control " data-l1key="id" style="display: none;" value="' + data.result[i]['id'] + '">'
+                    tr_eau += '</td>'
+                    tr_eau += '<td>'
+                    tr_eau += '<div style="float:left">' + data.result[i]['date_debut'] + '</div>'
+                    tr_eau += '</td>'
+                    tr_eau += ' <td>'
+                    tr_eau += '<div style="float:left">' + data.result[i]['date_fin'] + '</div>'
+                    tr_eau += '</td>'
+                    tr_eau += '<td>'
+                    tr_eau += ' <div style="float:left">' + data.result[i]['hp'] + '</div>'
+                    tr_eau += '</td>'
+                    tr_eau += '<td>'
+                    tr_eau += '<center>'
+                    tr_eau += '<a class="btn btn-danger supp_prix"><i class="fas fa-trash"></i></a>'
+                    tr_eau += '</center>'
+                    tr_eau += '</td>'
+                    tr_eau += '</tr>'
+                    $('#ul_Gestprix_eau tbody').append(tr_eau);
+                }
+
+
+            }
+
+
+
+
+        }
+    })
+
 }

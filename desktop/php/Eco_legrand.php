@@ -49,7 +49,6 @@ $eqLogics = eqLogic::byType('Eco_legrand');
       <ul class="nav nav-tabs" role="tablist">
         <li role="presentation"><a href="#" class="eqLogicAction" aria-controls="home" role="tab" data-toggle="tab" data-action="returnToThumbnailDisplay"><i class="fas fa-arrow-circle-left"></i></a></li>
         <li role="presentation" class="active"><a href="#eqlogictab" aria-controls="home" role="tab" data-toggle="tab"><i class="fas fa-tachometer-alt"></i> {{Equipement}}</a></li>
-        <li role="presentation" ><a href="#tariftab" aria-controls="home" role="tab" data-toggle="tab"><i class="fas fa-euro-sign"></i> {{Tarifs}}</a></li>
         <li role="presentation"><a href="#insttab" aria-controls="profile" role="tab" data-toggle="tab"><i class="fas fa-list-alt"></i> {{Données Instantanées}}</a></li>
         <li role="presentation"><a href="#teleinfotab" aria-controls="profile" role="tab" data-toggle="tab"><i class="fas fa-list-alt"></i> {{Données Téléinfo}}</a></li>
         <li role="presentation"><a href="#csvtab" aria-controls="profile" role="tab" data-toggle="tab"><i class="fas fa-list-alt"></i> {{Données Consommation}}</a></li>
@@ -145,90 +144,9 @@ $eqLogics = eqLogic::byType('Eco_legrand');
                     <i class="fa fa-list-alt"></i>
                   </a> (en °C)
                 </div>
-                <div class="form-group ">
-                <a style="width: 300px;" class="btn btn-default btn-sm tester_ajout_teleinfo btn-danger" >
-                    <i class="fa fa-list-alt"></i>Synchroniser teleinfo
-                  </a> 
-                </div>
             </fieldset>
           </form>
         </div>
-
-        <div role="tabpanel" class="tab-pane"  id="tariftab">
-          <br>
-          <div id="md_GestionPrix"></div>
-          <form class="form-horizontal">
-            <fieldset>
-              <div  class="col-lg-12"  >
-	              <div class="row" >
-		              <div class="col-lg-12">
-			              <div class="widget">
-				              <div  class="widget-header ajout_prix">
-						            <i class="fas fa-plus"></i>
-						            <h3> Ajouter un Prix</h3>
-				              </div>
-				              <div class="widget-content">
-                        <table id="ul_Gestprix_elec" class="table table-bordered table-condensed">
-                          <thead>
-                            <center><h4 style="font-weight: bolder;font-family: cursive;">TARIF ELECTICITE</h4></center>
-                            <tr class="widget-header">
-                              <th style="width: 50px;"><center>EDITER</center></th>
-                              <th style="width: 20px;display:none;">id</th>
-                              <th style="width: 100px;">Date de Début</th>
-                              <th style="width: 100px;">Date de Fin</th>
-                              <th style="width: 250px;">Prix UNITAIRE HT Heure pleine</th>
-                              <th style="width: 250px;">Prix UNITAIRE HT Heure Creuse</th>
-                              <th><center>Action</center></th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                          </tbody>
-                        </table>
-				              </div>
-                      <div class="widget-content">
-                        <table id="ul_Gestprix_gaz" class="table table-bordered table-condensed">
-                          <thead>
-                          <center><h4 style="font-weight: bolder;font-family: cursive;">TARIF GAZ</h4></center>
-                            <tr class="widget-header">
-                              <th style="width: 50px;"><center>EDITER</center></th>
-                              <th style="width: 20px;display:none;">id</th>
-                              <th style="width: 100px;">Date de Début</th>
-                              <th style="width: 100px;">Date de Fin</th>
-                              <th style="width: 250px;">Prix UNITAIRE HT m3</th>
-                              <th style="width: 250px;">Coefficient m3/kWh</th>
-                              <th><center>Action</center></th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                          </tbody>
-                        </table>
-				              </div>
-                      <div class="widget-content">
-                        <table id="ul_Gestprix_eau" class="table table-bordered table-condensed">
-                          <thead>
-                            <center><h4 style="font-weight: bolder;font-family: cursive;">TARIF EAU</h4></center>
-                            <tr class="widget-header">
-                              <th style="width: 50px;"><center>EDITER</center></th>
-                              <th style="width: 20px;display:none;">id</th>
-                              <th style="width: 100px;">Date de Début</th>
-                              <th style="width: 100px;">Date de Fin</th>
-                              <th style="width: 500px;">Prix UNITAIRE HT m3</th>
-                              <th><center>Action</center></th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                          </tbody>
-                        </table>
-				              </div>
-			              </div>
-		              </div>
-	              </div>
-             </div>
-
-            </fieldset>
-          </form>
-        </div>
-
         <div role="tabpanel" class="tab-pane" id="insttab">
           <br>
           <table id="inst_cmd" class="table table-bordered table-condensed">
@@ -256,7 +174,7 @@ $eqLogics = eqLogic::byType('Eco_legrand');
                 <th style="">{{Nom}}</th>
                 <th style="">{{Paramètres}}</th>
                 <th style="">{{Valeur}}</th>
-                <th </th>
+                <th> </th>
               </tr>
             </thead>
             <tbody>

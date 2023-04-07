@@ -8,7 +8,7 @@ class Eco_legrand_prix{
     public $hp;
     public $date_debut;
     public $date_fin;
-    public $type='electricité';
+    public $type='électricité';
     public $eqLogicId;
     
 
@@ -53,7 +53,7 @@ class Eco_legrand_prix{
  
     public function save() {//ok
         if ($this->hc == 0) {$this->hc = $this->hp; }
-        $this->id =0;
+        //$this->id =0;
         $this->hp =  number_format((float)$this->hp,5,'.','');
         $this->hc = number_format((float)$this->hc,5,'.','');
         $this->date_debut = self::convert_date_to_sql_date($this->date_debut);
@@ -82,7 +82,7 @@ class Eco_legrand_prix{
         //	return $row;
     }*/
 
-   /* static public function getPriceByperiode($date_debut, $date_fin,$type="electricité"){
+   /* static public function getPriceByperiode($date_debut, $date_fin,$type="électricité"){
         conso_teleinfo::checkdateMysql();
         $sql = 'SELECT
                 hp AS prix_hp,
@@ -134,7 +134,7 @@ class Eco_legrand_prix{
             return false;
 
     }*/
-   /* static function getPriceTotal($date_debut, $date_fin,$id_ecq=0,$type="electricité"){
+   /* static function getPriceTotal($date_debut, $date_fin,$id_ecq=0,$type="électricité"){
         conso_teleinfo::checkdateMysql();
         $eqLogics = eqLogic::byId($id_ecq);
         $pulse = (!$eqLogics->getConfiguration('pulse') ? 1 : (float)$eqLogics->getConfiguration('pulse'));

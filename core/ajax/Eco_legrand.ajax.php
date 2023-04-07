@@ -71,15 +71,18 @@ try {
  	if (init('action') == 'Ajout_MAJPrix') {
         $prixSave = json_decode(init('event'), true);
         $prix = null;
+		
         if ($prixSave['id']!="") {
             $prix = Eco_legrand_prix::byId($prixSave['id']);
-			$prix->setEqLogicId(init('id'));
+			$prix->setId($prixSave['id']);
+			$prix->setEqLogicId(init('eqlogic_id'));
         }
         if (!is_object($prix)) {
             $prix = new Eco_legrand_prix();
-            $prix->setEqLogicId(init('id'));
+            $prix->setEqLogicId(init('eqlogic_id'));
         }
         utils::a2o($prix, jeedom::fromHumanReadable($prixSave));
+		
         $prix->save();
 
         ajax::success($prix);
@@ -114,7 +117,11 @@ try {
 		$date_fin = init('date_fin',false);
 
 		$current_trame = Eco_legrand_teleinfo::get_trame_actuelle(false,false,$date_debut,$date_fin,init('id_ecq')); /*Retourne les valeur d aujourd hui*/
-
+		$nom_circuit1 = Cmd::byEqLogicIdAndLogicalId(init('id_ecq'),"inst_circuit1")->getName();
+		$nom_circuit2 = Cmd::byEqLogicIdAndLogicalId(init('id_ecq'),"inst_circuit2")->getName();
+		$nom_circuit3 = Cmd::byEqLogicIdAndLogicalId(init('id_ecq'),"inst_circuit3")->getName();
+		$nom_circuit4 = Cmd::byEqLogicIdAndLogicalId(init('id_ecq'),"inst_circuit4")->getName();
+		$nom_circuit5 = Cmd::byEqLogicIdAndLogicalId(init('id_ecq'),"inst_circuit5")->getName();
 		$yesterday_trame = array();
 		if(!$date_debut & !$date_fin){
 			$yesterday_trame = Eco_legrand_teleinfo::get_trame_actuelle(false,true,$date_debut,$date_fin,init('id_ecq')); /*Retourne les valeurs d hier*/
@@ -126,10 +133,13 @@ try {
 		$tab_data['nb_trame'] = count($current_trame);
 		$tab_data['trame_du_jour'] = $current_trame;
 		$tab_data['trame_hier'] = $yesterday_trame;
-		
+		$tab_data['nom_circuit1'] = $nom_circuit1;
+		$tab_data['nom_circuit2'] = $nom_circuit2;
+		$tab_data['nom_circuit3'] = $nom_circuit3;
+		$tab_data['nom_circuit4'] = $nom_circuit4;
+		$tab_data['nom_circuit5'] = $nom_circuit5;
+
 		$tab_data['isous'] = Eco_legrand::get_intensite_max(init('id_ecq'));
-		//$tab_data['abo_power_perso'] = $powerperso;
-		//$tab_data['abo_power_perso_status'] = $powerpersostatus;
 		$tab_data['type_abo'] = Eco_legrand::get_type_Abo(init('id_ecq'));
 		
 
@@ -462,11 +472,28 @@ try {
         //ajax::success($erreurs);
     }
   
-	if (init('action') == 'loadingPie') {
+	if (init('action') == 'loadingPie' && init('id_ecq')) {
 		$res = Eco_legrand_teleinfo::GetPie(init('id_ecq',false),init('type',false));
 		ajax::success($res);
 	}
-
+	if (init('action') == 'synthese' && init('id_ecq')) {
+		$date = new DateTime();
+		$d = Eco_legrand::getDateAbo(init('id_ecq'));
+		$data = Eco_legrand_teleinfo::getSynthese( init('id_ecq'),init('type')); 
+		
+		$eqLogic = eqLogic::byId(init('id_ecq'));
+		$tva=$eqLogic->getConfiguration("tva",1);
+		
+		ajax::success(array(
+			'TVA' => $tva, 
+			'data' => $data,
+		  ));
+		ajax::success($data);
+	}
+	
+	
+	
+	
     throw new Exception(__('Aucune methode correspondante à : ', __FILE__) . init('action'));
     /*     * *********Catch exeption*************** */
 } catch (Exception $e) {
