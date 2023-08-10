@@ -6,45 +6,99 @@ verifParam();
 //loadingDash($('#Eco_legrand_ecq').val(), true);
 
 refreshPrix();
+
 $('#Eco_legrand_tarifs').show();
 $(".mainnav li.bt_tarifs").addClass('active');
 $('.bt_tarifs').removeClass('cursor');
-
-
 
 $('#Eco_legrand_ecq').on('change', function() {
 
     $(".mainnav li.active").click();
     loadingDash($('#Eco_legrand_ecq').val(), true); // chargement du dashboard
 });
+Timer_menu();
+var timer = window.setInterval(Timer_menu, 10000);
+
+function Timer_menu() {
+    if ($('#contentebar').length == 0) {
+        clearInterval(timer);
+        return;
+    }
+    $.ajax({
+        type: 'POST',
+        global: false,
+        url: 'plugins/Eco_legrand/core/ajax/Eco_legrand.ajax.php',
+        data: {
+            id_ecq: $('#Eco_legrand_ecq').val(),
+            action: "Trame_actuelle",
+            yesterday: false,
+            limit: '1'
+        },
+        dataType: 'json',
+        error: function(request, status, error) {
+            handleAjaxError(request, status, error, $('#div_DashboardAlert'));
+        },
+        success: function(data_init) {
+            if (data_init.state != 'ok') {
+                $('#div_DashboardAlert').showAlert({ message: data_init.result, level: 'danger' });
+                return;
+            } else {
+
+                /*AFFICHAGE DE L ICONE PERIODE DU MENU*/
+                if (data_init.result.ptec == 'HC') {
+                    $('.iconeptec').removeClass('redcolor').addClass('bluecolor');
+                } else {
+                    $('.iconeptec').removeClass('bluecolor').addClass('redcolor');
+                }
+                /*AFFICHAGE DE L ICONE intensité DU MENU*/
+                if (data_init.result.int_instant > 9) {
+                    $('#Eco_legrand_ints1').removeClass('ints1simple').addClass('ints1double');
+                } else {
+                    $('#Eco_legrand_ints1').removeClass('ints1double').addClass('ints1simple');
+                }
+
+                $('#Eco_legrand_ptec').text(data_init.result.ptec);
+                /*Affichage de la période*/
+
+                /*La puissance_totale n est pas renseigné */
+                if (parseInt(data_init.result.int_instant) <= 0) {
+                    $('#tab_detail .middle').hide();
+                } else {
+                    $('#tab_detail .middle').show();
+                    $('#Eco_legrand_ints1').text(data_init.result.int_instant + 'A');
+                    /*Affichage de intensité*/
+                }
+
+                /*La puissance_totale n est pas renseigné */
+                if (parseInt(data_init.result.imax) <= 0) {
+                    $('#tab_detail .last').hide();
+                } else {
+                    $('#tab_detail .last').show();
+                    /*Affichage de intensité*/
+                }
+
+            }
+        }
+    })
+}
 //$('.datetimepicker').datepicker({ 'format': 'yyyy-m-d', 'autoclose': true }).datepicker("setDate", "0");
-
+HTMLElement.prototype.hasClass = function(cls) {
+    var i;
+    var classes = this.className.split(" ");
+    for (i = 0; i < classes.length; i++) {
+        if (classes[i] == cls) {
+            return true;
+        }
+    }
+    return false;
+};
 jQuery(function($) {
-
-    //circle = Circles.create({
-    //	id: 'circles-1',
-    //	value: refreshTime,
-    //	text: function (value) {
-    //		return parseInt(value);
-    //	},
-    //	radius: 20,
-    //	width: 7,
-    //	maxValue: refreshTime,
-    //	colors: ['#303030', '#b2afaa']
-    //});
-
     $('[data-toggle="tooltip"]').tooltip();
-
-
 });
 
 
-/*clique pour basculer sur le graph temperature*/
 $('.icon_flip, .icon_return').click(function() {
-    /*
-    $(this).parents('.card').find('.front').fadeToggle("fast");
-   
-    $(this).parents('.card').find('.back').fadeToggle("fast");*/
+
     if ($(this).parents('.card').find('.front').is(":visible")) {
         if ($(this).parents('.card').find('.back').length) {
             $(this).parents('.card').find('.back').fadeToggle();
@@ -179,6 +233,7 @@ $('.bt_synthese').on('click', function() {
         $('.bt_synthese').removeClass('cursor');
         $('.bt_synthese').addClass('active');
         $('#Eco_legrand_synthese').show();
+        refreshSynthese('all')
     };
 
 });
@@ -234,16 +289,7 @@ $('.datetimepicker').datepicker({
 }).datepicker("setDate", "0");
 
 
-HTMLElement.prototype.hasClass = function(cls) {
-    var i;
-    var classes = this.className.split(" ");
-    for (i = 0; i < classes.length; i++) {
-        if (classes[i] == cls) {
-            return true;
-        }
-    }
-    return false;
-};
+
 
 function show_graph_temp(data, conteneur) {
 
@@ -665,7 +711,6 @@ function initDashBoard(datas, all) {
     deferred = $.Deferred();
     /*Affichage tablo conso PUIS Affichage Graphique Jours Semaine Mois*/
 
-    MAJ_menu(datas.trame_du_jour, true);
     if (!all) {
         return
     }
@@ -872,46 +917,6 @@ function Tableau_Conso() {
     return deferred.promise();
 }
 
-function MAJ_menu(data, init) {
-
-    if (init)
-        data = data[0];
-
-    /*AFFICHAGE DE L ICONE PERIODE DU MENU*/
-    if (data.ptec == 'HC') {
-        $('.iconeptec').removeClass('redcolor').addClass('bluecolor');
-    } else {
-        $('.iconeptec').removeClass('bluecolor').addClass('redcolor');
-    }
-    /*AFFICHAGE DE L ICONE intensité DU MENU*/
-    if (data.int_instant > 9) {
-        $('#Eco_legrand_ints1').removeClass('ints1simple').addClass('ints1double');
-    } else {
-        $('#Eco_legrand_ints1').removeClass('ints1double').addClass('ints1simple');
-    }
-
-    $('#Eco_legrand_ptec').text(data.ptec);
-    /*Affichage de la période*/
-
-    /*La puissance_totale n est pas renseigné */
-    if (parseInt(data.int_instant) <= 0) {
-        $('#tab_detail .middle').hide();
-    } else {
-        $('#tab_detail .middle').show();
-        $('#Eco_legrand_ints1').text(data.int_instant + 'A');
-        /*Affichage de intensité*/
-    }
-
-    /*La puissance_totale n est pas renseigné */
-    if (parseInt(data.imax) <= 0) {
-        $('#tab_detail .last').hide();
-    } else {
-        $('#tab_detail .last').show();
-        /*Affichage de intensité*/
-    }
-
-}
-
 function pad(n) {
     return n < 10 ? '0' + n : n
 }
@@ -1091,7 +1096,7 @@ function Gauge(data, init, isous) {
                                         watt = data_init.result.puissance_totale;
 
                                         /*msie a jour du  detail a coté de la gauge*/
-                                        MAJ_menu(data_init.result, false);
+
                                         point.update(parseInt(watt)); /*Mise a jour de la gauge*/
 
 
@@ -1992,8 +1997,102 @@ function refreshSynthese(type) {
                 type = 'jours';
             }
             var tb
-            while (all) {
-                var tb = ''
+            if (all) {
+
+                while (all) {
+
+                    tb = '<table id="tableau_synthese_' + type + '" class = "table-striped table table-bordered table-hover" > ';
+                    tb += '<thead>';
+                    tb += '<tr class="widget-header">';
+                    tb += '<th style="display:none">Nom</th>';
+                    tb += '<th>Année</th>';
+                    if (type == 'jours') {
+                        tableau = "#tableau_synthese_jours"
+                        widget = ".synthese_jours"
+                        tb += '<th>Jour</th>';
+                        num_colonne = 2
+                    } else if (type == 'semaine') {
+                        tableau = "#tableau_synthese_semaine"
+                        widget = ".synthese_semaine"
+                        tb += '<th>Semaine</th>';
+                        num_colonne = 1
+                    } else if (type == 'mois') {
+                        tableau = "#tableau_synthese_mois"
+                        widget = ".synthese_mois"
+                        tb += '<th>Mois</th>';
+                        num_colonne = 1
+                    } else if (type == 'annee') {
+                        tableau = "#tableau_synthese_annee"
+                        widget = ".synthese_annee"
+                        tb += '<th style="display:none">Année</th>';
+                        num_colonne = 1
+                    }
+                    tb += '<th>Conso HP</th>';
+                    tb += '<th>Conso HC</th>';
+                    tb += '<th>Prix HP</th>';
+                    tb += '<th>Prix HC</th>';
+                    tb += '<th>Total HC (HT/TTC)</th>';
+                    tb += '<th>Total HC (HT/TTC)</th>';
+                    tb += '<th>Total (HT/TTC)</th>';
+                    tb += '<th>Temp min</th>';
+                    tb += '<th>Temp moy</th>';
+                    tb += '<th>Temp max</th>';
+                    tb += '</tr>';
+                    tb += '</thead>';
+                    tb += '<tbody class="tableau_synthese">';
+                    tb += '</tbody>';
+                    tb += '</table>';
+                    $(tableau).remove();
+                    $(tableau + '_wrapper').remove();
+                    $(widget).append(tb);
+
+
+                    //$(tableau + " tbody").children().remove()
+
+                    data.result.data[type].forEach(function(item) {
+
+                        item = traduction_mois(item)
+                        var tr = '<tr>'
+                        tr += '<td style="display:' + $(tableau + " thead th")[0].style["display"] + '" > ' + item['EqlogicID'] + '</td >'
+                        tr += '<td style="display:' + $(tableau + " thead th")[1].style["display"] + '" > ' + item['annee']; + '</td>'
+                        tr += '<td style="display:' + $(tableau + " thead th")[2].style["display"] + '" > ' + item['categorie'] + '</td>'
+                        tr += '<td style="display:' + $(tableau + " thead th")[3].style["display"] + '" > ' + item['hp'] + ' Kwh' + '</td>'
+                        tr += '<td style="display:' + $(tableau + " thead th")[4].style["display"] + '" > ' + item['hc'] + ' Kwh' + '</td>'
+                        tr += '<td style="display:' + $(tableau + " thead th")[5].style["display"] + '" > ' + item['prix_hp'] + ' €' + '</td>'
+                        tr += '<td style="display:' + $(tableau + " thead th")[6].style["display"] + '" > ' + item['prix_hc'] + '€' + '</td>'
+                        tr += '<td style="display:' + $(tableau + " thead th")[7].style["display"] + '" > ' + item['total_prix_hp'] + '€' + ' / ' + item['total_prix_hp_ttc'] + '€' + '</td>'
+                        tr += '<td style="display:' + $(tableau + " thead th")[8].style["display"] + '" > ' + item['total_prix_hc'] + '€' + ' / ' + item['total_prix_hc_ttc'] + '€' + '</td>'
+                        tr += '<td style="display:' + $(tableau + " thead th")[9].style["display"] + '" > ' + item['total_prix'] + '€' + ' / ' + item['total_prix_ttc'] + '€' + '</td>'
+                        tr += '<td style="display:' + $(tableau + " thead th")[10].style["display"] + '" > ' + item['temp_min'] + '°C' + '</td>'
+                        tr += '<td style="display:' + $(tableau + " thead th")[11].style["display"] + '" > ' + item['temp_moy'] + '°C' + '</td>'
+                        tr += '<td style="display:' + $(tableau + " thead th")[12].style["display"] + '" > ' + item['temp_max'] + '°C' + '</td>'
+                        tr += '</tr>'
+
+
+
+
+                        $(tableau + " tbody").append(tr);
+
+                    });
+
+                    set_datatable(tableau, num_colonne);
+                    if (type == 'jours') {
+                        type = 'mois'
+                    } else if (type == 'mois') {
+                        type = 'semaine'
+                    } else if (type == 'semaine') {
+                        type = 'annee'
+                    } else if (type == 'annee') {
+                        all = false;
+                        return;
+                    }
+
+
+
+
+                }
+            } else {
+
                 tb = '<table id="tableau_synthese_' + type + '" class = "table-striped table table-bordered table-hover" > ';
                 tb += '<thead>';
                 tb += '<tr class="widget-header">';
@@ -2018,18 +2117,18 @@ function refreshSynthese(type) {
                     tableau = "#tableau_synthese_annee"
                     widget = ".synthese_annee"
                     tb += '<th style="display:none">Année</th>';
-                    num_colonne = 2
+                    num_colonne = 1
                 }
                 tb += '<th>Conso HP</th>';
                 tb += '<th>Conso HC</th>';
                 tb += '<th>Prix HP</th>';
                 tb += '<th>Prix HC</th>';
-                tb += '<th>Total HC (TTC/HT)</th>';
-                tb += '<th>Total HC (TTC/HT)</th>';
-                tb += '<th>Total (TTC/HT)</th>';
+                tb += '<th>Total HC (HT/TTC)</th>';
+                tb += '<th>Total HC (HT/TTC)</th>';
+                tb += '<th>Total (HT/TTC)</th>';
                 tb += '<th>Temp min</th>';
-                tb += '<th>Temp max</th>';
                 tb += '<th>Temp moy</th>';
+                tb += '<th>Temp max</th>';
                 tb += '</tr>';
                 tb += '</thead>';
                 tb += '<tbody class="tableau_synthese">';
@@ -2038,60 +2137,22 @@ function refreshSynthese(type) {
                 $(tableau).remove();
                 $(tableau + '_wrapper').remove();
                 $(widget).append(tb);
-
-
-                //$(tableau + " tbody").children().remove()
-
                 data.result.data[type].forEach(function(item) {
-
                     item = traduction_mois(item)
-
-
                     var tr = '<tr>'
-                    tr += '<td style="display:' + $(tableau + " thead th")[0].style["display"] + '" > '
-
-                    tr += item['EqlogicID'];
-                    tr += '</td >'
-                    tr += '<td style="display:' + $(tableau + " thead th")[1].style["display"] + '" > '
-                    tr += item['annee'];
-                    tr += '</td>'
-                    tr += '<td style="display:' + $(tableau + " thead th")[2].style["display"] + '" > '
-                    tr += item['categorie'];
-                    tr += '</td>'
-
-                    tr += '<td style="display:' + $(tableau + " thead th")[3].style["display"] + '" > '
-                    tr += item['hp'] + ' Kwh'
-                    tr += '</td>'
-                    tr += '<td style="display:' + $(tableau + " thead th")[4].style["display"] + '" > '
-                    tr += item['hc'] + ' Kwh'
-                    tr += '</td>'
-                    tr += '<td style="display:' + $(tableau + " thead th")[5].style["display"] + '" > '
-                    tr += item['prix_hp'] + ' €'
-                    tr += '</td>'
-                    tr += '<td style="display:' + $(tableau + " thead th")[6].style["display"] + '" > '
-                    tr += item['prix_hc'] + '€'
-                    tr += '</td>'
-                    tr += '<td style="display:' + $(tableau + " thead th")[7].style["display"] + '" > '
-                    tr += item['total_prix_hp'] + '€' + ' / ' + item['total_prix_hp_ttc'] + '€'
-                    tr += '</td>'
-                    tr += '<td style="display:' + $(tableau + " thead th")[8].style["display"] + '" > '
-                    tr += item['total_prix_hc'] + '€' + ' / ' + item['total_prix_hc_ttc'] + '€'
-
-                    tr += '</td>'
-                    tr += '<td style="display:' + $(tableau + " thead th")[9].style["display"] + '" > '
-
-                    tr += item['total_prix'] + '€' + ' / ' + item['total_prix_ttc'] + '€'
-                    tr += '</td>'
-                    tr += '<td style="display:' + $(tableau + " thead th")[10].style["display"] + '" > '
-                    tr += item['temp_min'] + '°C'
-                    tr += '</td>'
-                    tr += '<td style="display:' + $(tableau + " thead th")[11].style["display"] + '" > '
-                    tr += item['temp_moy'] + '°C'
-                    tr += '</td>'
-
-                    tr += '<td style="display:' + $(tableau + " thead th")[12].style["display"] + '" > '
-                    tr += item['temp_max'] + '°C'
-                    tr += '</td>'
+                    tr += '<td style="display:' + $(tableau + " thead th")[0].style["display"] + '" > ' + item['EqlogicID'] + '</td >'
+                    tr += '<td style="display:' + $(tableau + " thead th")[1].style["display"] + '" > ' + item['annee']; + '</td>'
+                    tr += '<td style="display:' + $(tableau + " thead th")[2].style["display"] + '" > ' + item['categorie'] + '</td>'
+                    tr += '<td style="display:' + $(tableau + " thead th")[3].style["display"] + '" > ' + item['hp'] + ' Kwh' + '</td>'
+                    tr += '<td style="display:' + $(tableau + " thead th")[4].style["display"] + '" > ' + item['hc'] + ' Kwh' + '</td>'
+                    tr += '<td style="display:' + $(tableau + " thead th")[5].style["display"] + '" > ' + item['prix_hp'] + ' €' + '</td>'
+                    tr += '<td style="display:' + $(tableau + " thead th")[6].style["display"] + '" > ' + item['prix_hc'] + '€' + '</td>'
+                    tr += '<td style="display:' + $(tableau + " thead th")[7].style["display"] + '" > ' + item['total_prix_hp'] + '€' + ' / ' + item['total_prix_hp_ttc'] + '€' + '</td>'
+                    tr += '<td style="display:' + $(tableau + " thead th")[8].style["display"] + '" > ' + item['total_prix_hc'] + '€' + ' / ' + item['total_prix_hc_ttc'] + '€' + '</td>'
+                    tr += '<td style="display:' + $(tableau + " thead th")[9].style["display"] + '" > ' + item['total_prix'] + '€' + ' / ' + item['total_prix_ttc'] + '€' + '</td>'
+                    tr += '<td style="display:' + $(tableau + " thead th")[10].style["display"] + '" > ' + item['temp_min'] + '°C' + '</td>'
+                    tr += '<td style="display:' + $(tableau + " thead th")[11].style["display"] + '" > ' + item['temp_moy'] + '°C' + '</td>'
+                    tr += '<td style="display:' + $(tableau + " thead th")[12].style["display"] + '" > ' + item['temp_max'] + '°C' + '</td>'
                     tr += '</tr>'
 
                     $(tableau + " tbody").append(tr);
@@ -2099,21 +2160,9 @@ function refreshSynthese(type) {
                 });
 
                 set_datatable(tableau, num_colonne);
-                if (type == 'jours') {
-                    type = 'mois'
-                } else if (type == 'mois') {
-                    type = 'semaine'
-                } else if (type == 'semaine') {
-                    type = 'annee'
-                } else if (type == 'annee') {
-                    all = false;
-                    return;
-                }
-
-
-
 
             }
+
         }
     });
 
@@ -2151,8 +2200,6 @@ function PopupPrix(id_prix, type) {
         $('#bsIsPrwater_type').removeClass("btn-success");
         $('#bsIsPrgaz_type').removeClass("btn-success");
         $('#bsIsPrelec_type').addClass("btn-success");
-        $('input[data-l1key="type"]').val('électricité');
-        $('input[data-l1key="type"]').val('électricité');
     }
     if (type.includes('électricité')) {
         type = "électricité"
@@ -2176,7 +2223,7 @@ function PopupPrix(id_prix, type) {
 }
 $('.ajout_prix').on('click', function() {
     PopupPrix('', $(this)[0].className);
-})
+});
 $('body').on('click', '.supp_prix', function() {
     //$('body').delegate('.btn.btn-danger.supp_prix', 'click', function() {
     var Prix = $(this).closest('.li_prix').getValues('.prixAttr');
@@ -2239,11 +2286,6 @@ function refreshPrix() {
             for (var i = 0; i < data.result.length; i++) {
                 if (data.result[i]['type'] == "électricité") {
                     var tr_elec = '<tr  class="li_prix bt_sortable" data-prix_id="' + data.result[i]['id'] + '">'
-                    tr_elec += '<td>'
-                    tr_elec += '<div class="btn btn-success btn-sm updprix électricité">'
-                    tr_elec += '<i class="fas fa-pencil-alt "></i>'
-                    tr_elec += '</div>'
-                    tr_elec += '</td>'
                     tr_elec += '<td style="display: none;">'
                     tr_elec += '<input type="text" class="prixAttr form-control " data-l1key="id" style="display: none;" value="' + data.result[i]['id'] + '">'
                     tr_elec += '</td>'
@@ -2261,18 +2303,14 @@ function refreshPrix() {
                     tr_elec += '</td>'
                     tr_elec += '<td>'
                     tr_elec += '<center>'
-                    tr_elec += '<a class="btn btn-danger supp_prix"><i class="fas fa-trash"></i></a>'
+                    tr_elec += '<a class="btn btn-success updprix électricité" title="Modifier"> <i class = "fas fa-pencil-alt "> </i></a > '
+                    tr_elec += '<a class="btn btn-danger supp_prix" title="Supprimer" ><i class="fas fa-trash"></i></a>'
                     tr_elec += '</center>'
                     tr_elec += '</td>'
                     tr_elec += '</tr>'
                     $('#ul_Gestprix_elec tbody').append(tr_elec);
                 } else if (data.result[i]['type'] == "gaz") {
                     var tr_gaz = '<tr class="li_prix bt_sortable" data-prix_id="' + data.result[i]['id'] + '">'
-                    tr_gaz += '<td>'
-                    tr_gaz += '<div class="btn btn-success btn-sm updprix gaz">'
-                    tr_gaz += '<i class="fas fa-pencil-alt "></i>'
-                    tr_gaz += '</div>'
-                    tr_gaz += '</td>'
                     tr_gaz += '<td style="display: none;">'
                     tr_gaz += '<input type="text" class="prixAttr form-control " data-l1key="id" style="display: none;" value="' + data.result[i]['id'] + '">'
                     tr_gaz += '</td>'
@@ -2290,17 +2328,14 @@ function refreshPrix() {
                     tr_gaz += '</td>'
                     tr_gaz += '<td>'
                     tr_gaz += '<center>'
-                    tr_gaz += '<a class="btn btn-danger supp_prix"><i class="fas fa-trash"></i></a>'
+                    tr_gaz += '<a class="btn btn-success updprix gaz" title="Modifier" ><i class="fas fa-pencil-alt "></i></a>'
+                    tr_gaz += '<a class="btn btn-danger supp_prix" title="Supprimer"><i class="fas fa-trash"></i></a>'
                     tr_gaz += '</center>'
                     tr_gaz += '</td>'
                     tr_gaz += '</tr>'
                     $('#ul_Gestprix_gaz tbody').append(tr_gaz);
                 } else if (data.result[i]['type'] == "eau") {
                     var tr_eau = '<tr class="li_prix bt_sortable" data-prix_id="' + data.result[i]['id'] + '">'
-                    tr_eau += '<td>'
-                    tr_eau += '<div class="btn btn-success btn-sm updprix eau">'
-                    tr_eau += '<i class="fas fa-pencil-alt "></i>'
-                    tr_eau += '</div>'
                     tr_eau += '</td>'
                     tr_eau += '<td style="display: none;">'
                     tr_eau += '<input type="text" class="prixAttr form-control " data-l1key="id" style="display: none;" value="' + data.result[i]['id'] + '">'
@@ -2316,7 +2351,8 @@ function refreshPrix() {
                     tr_eau += '</td>'
                     tr_eau += '<td>'
                     tr_eau += '<center>'
-                    tr_eau += '<a class="btn btn-danger supp_prix"><i class="fas fa-trash"></i></a>'
+                    tr_eau += '<a class="btn btn-success updprix eau" title="Modifier" ><i class="fas fa-pencil-alt "></i></a>'
+                    tr_eau += '<a class="btn btn-danger supp_prix" title="Supprimer"><i class="fas fa-trash"></i></a>'
                     tr_eau += '</center>'
                     tr_eau += '</td>'
                     tr_eau += '</tr>'

@@ -148,7 +148,7 @@ sendVarToJS('type', $type);*/
                     <li class="cursor bt_gaz" style="display: none;"><i class="fas fa-fire"></i><span>Gaz</span></li>
                     <li class="cursor bt_synthese"><i class="fas fa-table"></i><span>Synthèse</span></li>
 					<li class="cursor bt_tarifs"><i class="fas fa-euro-sign"></i><span>Tarifs</span></li>
-					<li class="cursor bt_database"><i class="fas fa-database"></i><span>Données</span></li>
+					<li class="cursor bt_database"style="display:none"><i class="fas fa-database"></i><span>Données</span></li>
 					<li class="navinfo">
 						<div id="tab_detail" class="inner">
 							<div class="infoblock first">
@@ -577,10 +577,10 @@ sendVarToJS('type', $type);*/
                         <i class="fas fa-plus "></i>
                         <h3> Ajouter un Prix</h3>
                     </div>-->
-                    <table  class=" widget-header titre">
+                    <table  class=" widget-header titre_tarif">
                             <thead>
                                 <tr>
-                                    <th class= "titre">TARIF ÉLECTICITÉ</th>
+                                    <th class= "titre_tarif">TARIF ÉLECTICITÉ</th>
                                     <th class= "titre_ajout"> 
                                         <span class="ajout_prix électricité">
                                             <i class="fas fa-plus "></i>
@@ -604,12 +604,11 @@ sendVarToJS('type', $type);*/
                             </span>-->
                             <thead>
                                 <tr class="widget-header">
-                                <th style="width: 50px;"><center>EDITER</center></th>
                                 <th style="width: 20px;display:none;">id</th>
                                 <th style="width: 100px;">Date de Début</th>
                                 <th style="width: 100px;">Date de Fin</th>
-                                <th style="width: 250px;">Prix UNITAIRE HT Heure pleine</th>
-                                <th style="width: 250px;">Prix UNITAIRE HT Heure Creuse</th>
+                                <th style="width: 250px;">Tarif HT Heure pleine par Kwh</th>
+                                <th style="width: 250px;">Tarif HT Heure Creuse pas Kwh</th>
                                 <th><center>Action</center></th>
                                 </tr>
                             </thead>
@@ -617,10 +616,10 @@ sendVarToJS('type', $type);*/
                             </tbody>
                         </table>
                     </div>
-                    <table  class=" widget-header titre">
+                    <table  class=" widget-header titre_tarif">
                         <thead>
                             <tr>
-                                <th class= "titre">TARIF GAZ</th>
+                                <th class= "titre_tarif">TARIF GAZ</th>
                                 <th class= "titre_ajout"> 
                                     <span class="ajout_prix gaz">
                                         <i class="fas fa-plus "></i>
@@ -635,13 +634,12 @@ sendVarToJS('type', $type);*/
                     
                         <table id="ul_Gestprix_gaz" class="table table-bordered table-condensed">
                             <thead>
-                                <tr class="widget-header">
-                                    <th style="width: 50px;"><center>EDITER</center></th>
+                                <tr class="widget-header">                                    
                                     <th style="width: 20px;display:none;">id</th>
                                     <th style="width: 100px;">Date de Début</th>
                                     <th style="width: 100px;">Date de Fin</th>
-                                    <th style="width: 250px;">Prix UNITAIRE HT m3</th>
-                                    <th style="width: 250px;">Coefficient m3/kWh</th>
+                                    <th style="width: 250px;">Tarif HT m³</th>
+                                    <th style="width: 250px;">Coefficient m³/kWh</th>
                                     <th><center>Action</center></th>
                                 </tr>
                             </thead>
@@ -649,10 +647,10 @@ sendVarToJS('type', $type);*/
                             </tbody>
                         </table>
                     </div>
-                    <table  class=" widget-header titre">
+                    <table  class=" widget-header titre_tarif">
                         <thead>
                             <tr>
-                                <th class= "titre">TARIF EAU</th>
+                                <th class= "titre_tarif">TARIF EAU</th>
                                 <th class= "titre_ajout"> 
                                     <span class="ajout_prix eau">
                                         <i class="fas fa-plus "></i>
@@ -668,11 +666,10 @@ sendVarToJS('type', $type);*/
                         <table id="ul_Gestprix_eau" class="table table-bordered table-condensed">
                         <thead>
                             <tr class="widget-header">
-                                <th style="width: 50px;"><center>EDITER</center></th>
                                 <th style="width: 20px;display:none;">id</th>
                                 <th style="width: 100px;">Date de Début</th>
                                 <th style="width: 100px;">Date de Fin</th>
-                                <th style="width: 500px;">Prix UNITAIRE HT m3</th>
+                                <th style="width: 500px;">Tarif HT m³</th>
                                 <th><center>Action</center></th>
                             </tr>
                         </thead>

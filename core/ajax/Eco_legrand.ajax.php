@@ -229,8 +229,6 @@ try {
 		//     log::add('conso_debug', 'debug', 'Action CurrentTrame Yesterday')
 				$yesterday= Eco_legrand_teleinfo::get_trame_actuelle(init('limit'),true,false,false,init('id_ecq'));
 				$data['yesterday_papp'] =  $yesterday['papp'];
-		}else{
-			$data['yesterday_papp'] = '';
 		}
 			
 

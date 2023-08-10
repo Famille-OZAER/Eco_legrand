@@ -69,23 +69,21 @@
                     </div>
                 </div>
             </div>
-            <div class="form-group hide">
+            <div class="form-group ">
                 <label class="col-sm-5 control-label">{{Type:}}</label>
                 <div class="col-lg-6">
                     <div class="btn-group" data-toggle="buttons" >
-                        <?php
-                            echo '<button type="button" class="btn btn-sm '.($prix->gettype()  == 'électricité' ? "btn-success" : "btn-danger").' "   '.($prix->gettype() == 'électricité' ? 'aria-pressed="true" ' : "").' id="type_elec" autocomplete="off">{{Elect}}</button>';
-                            echo '<button type="button" class="btn btn-sm '.($prix->gettype()  == 'gaz' ? "btn-success" : "btn-danger").' "  '.($prix->gettype() == 'gaz' ? 'aria-pressed="true" ' : "").' id="type_gaz" autocomplete="off">{{Gaz}}</button>';
-                            echo '<button type="button" class="btn btn-sm '.($prix->gettype()  == 'eau' ? "btn-success" : "btn-danger").' "  '.($prix->gettype() == 'eau' ? 'aria-pressed="true" ' : "").' id="type_eau" autocomplete="off">{{Eau}}</button>';
-                        ?>
+                        <button type="button" class="btn btn-sm btn-success" id="type_elec" autocomplete="off" style="cursor: default!important;">{{Électricité}}</button>
+                        <button type="button" class="btn btn-sm btn-success"  id="type_gaz" autocomplete="off" style="cursor: default!important;">{{Gaz}}</button>
+                        <button type="button" class="btn btn-sm btn-success"  id="type_eau" autocomplete="off" style="cursor: default!important;">{{Eau}}</button>
                     </div>
-                    <input id="bt_type_ecq"  class="prixAttr"   data-l1key="type" value="<?php echo init('type') ?>"/>
+                    <input id="bt_type_ecq"  class="prixAttr hide"   data-l1key="type" value="<?php echo init('type') ?>"/>
                         
 
                 </div>
             </div>
             <div class="form-group">
-                <label id="labelhp" class="col-sm-5 control-label"><?php echo ($prix->gettype()  == 'électricité'  ? '{{Prix unitaire HT }}'.$title : 'Prix au M3'); ?></label>
+                <label id="labelhp" class="col-sm-5 control-label"></label>
                 <div class="col-lg-6">
                     <div class="input-group">
                         <input type="text" id="hp"  value="<?php echo $prix->hp ?>" data-l1key="hp" class="prixAttr form-control pull-right" autocomplete="off"/> 
@@ -93,20 +91,8 @@
                 </div>
             </div>
             <div class="form-group">
-                <?php $display =  $prix->gettype()  == 'eau' ? 'displaynone' : '';?>
-
-                <div id="saisiehc" class="<?php echo $display ?> form-group">
-                <label id="labelhc" class="col-sm-5 control-label">
-                    <?php
-                        if($prix->gettype() =='électricité'){
-                            echo ('{{Prix unitaire HT HC:}}');
-                        }else if($prix->gettype() =='gaz'){
-                            echo ( 'Coefficient m3/kWh');
-                        }else{
-                            echo('Confirmer le prix au M3');
-                        }
-                    ?> 
-                </label>
+                <div id="saisiehc" class="form-group">
+                <label id="labelhc" class="col-sm-5 control-label"></label>
                 <div class="col-lg-6">
                     <div class="input-group">
                         <input type="text" id="hc"  value="<?php echo $prix->hc ?>" data-l1key="hc" class="prixAttr form-control pull-right" autocomplete="off"/> 
@@ -114,10 +100,10 @@
                 </div>
             </div>
 
-            <div class="form-actions">
-                <div class="col-lg-9 control-label">
-                    <a style="display:block;"  class="btn btn-success PrixAction" data-action="ajoutprix"><i class="fa fa-plus-circle"></i> {{Enregistrer}}</a>
-                </div>
+            <div class="form-group prix_action">
+                
+                    <a class="btn btn-success PrixAction prix_action" data-action="ajoutprix"><i class="fa fa-plus-circle"></i> {{Enregistrer}}</a>
+                
             </div>
             
         </form>
@@ -125,28 +111,30 @@
 
 <script>
     if ($('#bt_type_ecq')[0].value == 'électricité') {
-        $('#type_eau').removeClass("btn-success").addClass("btn-danger");
-        $('#type_gaz').removeClass("btn-success").addClass("btn-danger");
-        $('#type_elec').addClass("btn-success").removeClass("btn-danger");
+        $('#type_eau').addClass("hide");
+        $('#type_gaz').addClass("hide");
         $('#labelhc').text('Prix unitaire HT HC:');
         $('#labelhp').text('Prix unitaire HT HP:');
         $('#saisiehc').show();
     } else if ($('#bt_type_ecq')[0].value == 'gaz') {
-        $('#type_elec').removeClass("btn-success").addClass("btn-danger");
-        $('#type_eau').removeClass("btn-success").addClass("btn-danger");
-        $('#type_gaz').addClass("btn-success").removeClass("btn-danger");
-        $('#labelhc').text('Coefficent m3/kWh:');
-        $('#labelhp').text('Prix au M3:');
+        $('#type_eau').addClass("hide");
+        $('#type_elec').addClass("hide");
+        $('#labelhc').text('Coefficent m³/kWh:');
+        $('#labelhp').text('Prix au m³:');
         $('#saisiehc').show();
     } else if ($('#bt_type_ecq')[0].value == 'eau') {
-        $('#type_elec').removeClass("btn-success").addClass("btn-danger");
-        $('#type_gaz').removeClass("btn-success").addClass("btn-danger");
-        $('#type_eau').addClass("btn-success").removeClass("btn-danger");
-        $('#labelhc').text('Prix au M3:');
-        $('#labelhp').text('Prix au M3:');
+        $('#type_gaz').addClass("hide");
+        $('#type_elec').addClass("hide");
+        $('#labelhc').text('Prix au m³:');
+        $('#labelhp').text('Prix au m³:');
         $('#saisiehc').hide();
     }
-
+   console.log($('#md_GestionPrix'))
+   console.log($('#md_GestionPrix').parent().find('.ui-button'))
+   console.log($('#md_GestionPrix').parent().find('.ui-button').html())
+   $('#md_GestionPrix').parent().find('.ui-button').prop('title', 'Fermer');
+   $('#md_GestionPrix').parent().prop('title', 'Déplacer');
+   $('#md_GestionPrix').parent().find('.ui-button').html('<i class="far fa-window-close">Fermer')
 $('.PrixAction[data-action=ajoutprix]').on('click', function() {
     var erreur=false
     if($("#date_debut")[0].value==''){
@@ -157,17 +145,33 @@ $('.PrixAction[data-action=ajoutprix]').on('click', function() {
         $('#div_alert').showAlert({ message: 'La date de fin ne peut pas être vide.', level: 'danger' ,ttl:5000});
         erreur=true
     }
+   
     if ($('#bt_type_ecq')[0].value == 'électricité') {
-        console.log($("#date_debut")[0].value)
         
-        if( $('#saisiehc')[0].value==''){
-        $('#div_alert').showAlert({ message: 'Le montant HC ne peut pas être vide.', level: 'danger' ,ttl:5000});
-        erreur=true
-    }
+        if( $('#hc')[0].value==''){
+            $('#div_alert').showAlert({ message: 'Le montant HP ne peut pas être vide.', level: 'danger' ,ttl:5000});
+            erreur=true
+        }
+        if( $('#hp')[0].value==''){
+            $('#div_alert').showAlert({ message: 'Le montant HC ne peut pas être vide.', level: 'danger' ,ttl:5000});
+            erreur=true
+        }
     } else if ($('#bt_type_ecq')[0].value == 'gaz') { 
+        if( $('#hc')[0].value==''){
+            $('#div_alert').showAlert({ message: 'Le coefficent m3/kWh ne peut pas être vide.', level: 'danger' ,ttl:5000});
+            erreur=true
+        }
+        if( $('#hp')[0].value==''){
+            $('#div_alert').showAlert({ message: 'Le prix au M3 ne peut pas être vide.', level: 'danger' ,ttl:5000});
+            erreur=true
+        }
 
     } else if ($('#bt_type_ecq')[0].value == 'eau') {
-
+        if( $('#hc')[0].value==''){
+            $('#div_alert').showAlert({ message: 'Le tarif au m³ ne peut pas être vide.', level: 'danger' ,ttl:5000});
+            erreur=true
+        }
+        
     }
     if(erreur){
         return

@@ -329,7 +329,7 @@ class Eco_legrand extends eqLogic {
               self::add_log( 'debug', 'ajout valeur ' . $Eco_legrandCmd_conso_circuit5->getName().":" . $date . "=>". round($valeur - $valeur_precedente_conso_circuit5,2));
               $eqLogic->checkAndUpdateCmd('conso_circuit5_'.$jour_heure,round($valeur - $valeur_precedente_conso_circuit5,2),$date);
               $Eco_legrand_teleinfo->set_value('index_circuit5' ,$valeur*1000);
-              self::add_log( 'debug', '1ajout valeur index_circuit5: ' . $date . "=>". $valeur*1000);
+              self::add_log( 'debug', 'ajout valeur index_circuit5: ' . $date . "=>". $valeur*1000);
             
               $valeur_precedente_conso_circuit5 = $valeur;
             }else{
@@ -341,6 +341,12 @@ class Eco_legrand extends eqLogic {
             
 
             $valeur=round($data[5]-$data[7]- $data[9]-$data[11]-$data[13]-$data[15],2);
+            if($jour_heure == "heure"){
+              //self::add_log( 'debug', 'valeur ' . $Eco_legrandCmd_conso_autre->getName().":" . $date . "=>". round($valeur - $valeur_precedente_conso_autre,2));
+             // self::add_log( 'debug', 'valeur ' . $Eco_legrandCmd_conso_autre->getName().":" . $date . "=>".$valeur );
+             // self::add_log( 'debug', 'valeur ' . $Eco_legrandCmd_conso_autre->getName().":" . $date . "=>".  $valeur_precedente_conso_autre);
+   
+            }
             if($valeur > $valeur_precedente_conso_autre){
               if ($valeur_precedente_conso_autre == 0 ){
                 $valeur_precedente_conso_autre = $valeur;
@@ -597,28 +603,28 @@ class Eco_legrand extends eqLogic {
     DB::Prepare($sql, array(), DB::FETCH_TYPE_ROW, PDO::FETCH_CLASS, __CLASS__);
       
       $sql="CREATE TABLE IF NOT EXISTS `Eco_legrand_teleinfo` (
-        `timestamp` bigint(10) NOT NULL DEFAULT '0',
-        `date` date NOT NULL ,
+        `timestamp` int(10) NOT NULL DEFAULT 0,
+        `date` date NOT NULL,
         `heure` time NOT NULL DEFAULT '00:00:00',
-        `index_hp` bigint(9) NOT NULL DEFAULT '0',
-        `index_hc` bigint(9) NOT NULL DEFAULT '0',
-        `ptec` varchar(2)  NOT NULL,
-        `int_instant` tinyint(3) NOT NULL DEFAULT '0',
-        `puissance_totale` int(5) NOT NULL DEFAULT '0',
-        `puissance_circuit1` int(5) NOT NULL DEFAULT '0',
-        `puissance_circuit2` int(5) NOT NULL DEFAULT '0',
-        `puissance_circuit3` int(5) NOT NULL DEFAULT '0',
-        `puissance_circuit4` int(5) NOT NULL DEFAULT '0',
-        `puissance_circuit5` int(5) NOT NULL DEFAULT '0',
-        `index_total_circuits` bigint(9) NOT NULL DEFAULT '0',
-        `index_circuit1` bigint(9) NOT NULL DEFAULT '0',
-        `index_circuit2` bigint(9) NOT NULL DEFAULT '0',
-        `index_circuit3` bigint(9) NOT NULL DEFAULT '0',
-        `index_circuit4` bigint(9) NOT NULL DEFAULT '0',
-        `index_circuit5` bigint(9) NOT NULL DEFAULT '0',
-        `index_pulse1` bigint(9) NOT NULL DEFAULT '0',
-        `index_pulse2` bigint(9) NOT NULL DEFAULT '0',
-        `eqlogicID` int(11) NOT NULL DEFAULT '0',
+        `index_hp` int(8) NOT NULL DEFAULT 0,
+        `index_hc` int(8) NOT NULL DEFAULT 0,
+        `ptec` set('HC','HP') NOT NULL,
+        `int_instant` tinyint(3) NOT NULL DEFAULT 0,
+        `puissance_circuit1` mediumint(5) NOT NULL,
+        `puissance_circuit2` mediumint(5) NOT NULL,
+        `puissance_circuit3` mediumint(5) NOT NULL,
+        `puissance_circuit4` mediumint(5) NOT NULL,
+        `puissance_circuit5` mediumint(5) NOT NULL,
+        `puissance_totale` mediumint(5) NOT NULL DEFAULT 0,
+        `index_total_circuits` int(8) NOT NULL DEFAULT 0,
+        `index_circuit1` int(8) NOT NULL DEFAULT 0,
+        `index_circuit2` int(8) NOT NULL DEFAULT 0,
+        `index_circuit3` int(8) NOT NULL DEFAULT 0,
+        `index_circuit4` int(8) NOT NULL DEFAULT 0,
+        `index_circuit5` int(8) NOT NULL DEFAULT 0,
+        `index_pulse1` int(8) NOT NULL DEFAULT 0,
+        `index_pulse2` int(8) NOT NULL DEFAULT 0,
+        `eqLogicID` int(11) NOT NULL DEFAULT 0,
         `temperature` float DEFAULT NULL,
         PRIMARY KEY (`timestamp`,`eqlogicID`),
         KEY `date` (`date`),
