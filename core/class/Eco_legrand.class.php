@@ -3,7 +3,7 @@ require_once dirname(__FILE__) . '/../../core/php/Eco_legrand.inc.php';
 class Eco_legrand extends eqLogic {
 
  
-  public function add_log($level = 'debug',$Log){
+  public static function add_log($level = 'debug',$Log){
     if (is_array($Log)) $Log = json_encode($Log);
       $ligne = debug_backtrace(false, 2)[0]['line'];
     if (isset(debug_backtrace(false, 2)[1]['function'])) {
@@ -65,15 +65,15 @@ class Eco_legrand extends eqLogic {
       $Eco_legrandCmd->save();
   }
   }
-  function Synchro_datas($eqLogic){
+  /*function Synchro_datas($eqLogic){
     if(strpos($eqLogic->getConfiguration('addr', ''), "https://")===0 || strpos($eqLogic->getConfiguration('addr', ''), "http://")===0){
       $URL = $eqLogic->getConfiguration('addr', '');
     }else {
       $URL = "http://" .$eqLogic->getConfiguration('addr', '');
     }
     
-  }
-  function get_all_datas($eqLogic){
+  }*/
+  public static function get_all_datas($eqLogic){
     if(strpos($eqLogic->getConfiguration('addr', ''), "https://")===0 || strpos($eqLogic->getConfiguration('addr', ''), "http://")===0){
       $URL = $eqLogic->getConfiguration('addr', '');
     }else {
@@ -112,21 +112,23 @@ class Eco_legrand extends eqLogic {
           $corrected = preg_replace('/\:[0]+/', ":", $corrected);
           $devList = json_decode($devResbis, true);
           $i=1;
+          $index_hc_lu=false;
+          $index_hp_lu=false;
+          $conso_hp=0;
+          $conso_hc=0;
           foreach($devList as $name => $value) {
             if ($name === 'classe') {
             }else if ($name === 'OPTARIF'){
               $eqLogic->checkCmdOk('teleinfo','string', 'Option tarifaire',trim($name), '<i class="fas fa-info-circle"></i>',"");
-              
               $eqLogic->checkAndUpdateCmd($name, str_replace('..','',$value),$date);
             }else if ($name === 'PTEC'){
               $eqLogic->checkCmdOk('teleinfo','string', 'Période Tarifaire en cours',trim($name), '<i class="fas fa-random"></i>',"");
-              $ptec=Eco_legrandCmd::byEqLogicIdAndLogicalId($eqLogic->getId(),'ptec');
-              if($ptec->execCmd() != str_replace('..','',$value)){
-                self::add_log("debug",$date . ":" .str_replace('..','',$value));
-              }
               $Eco_legrand_teleinfo->set_value("ptec",str_replace('..','',$value));
               $eqLogic->checkAndUpdateCmd($name, str_replace('..','',$value),$date);
-            } else {
+            }else if ($name === 'ISOUC'){
+              $eqLogic->checkCmdOk('teleinfo','numeric', 'ISOUC',trim($name), '<i class="fas fa-info-circle"></i>',"");
+              $eqLogic->checkAndUpdateCmd($name,$value,$date);
+            }else {
               if ($nom_fichier  == "ti.json"){
                 if ($value != 0){
                   
@@ -134,10 +136,10 @@ class Eco_legrand extends eqLogic {
                   $eqLogic->checkCmdOk('teleinfo','numeric', ucfirst( $name),$name, '<i class="fas fa-bolt"></i>',"W");
                   
                   if (str_replace('conso','index',$name) == "index_hc"){
+                    $index_hp_lu=true;
                     $cmd_index_hc=Eco_legrandCmd::byEqLogicIdAndLogicalId($eqLogic->getId(),"index_hc");
                     if (is_object($cmd_index_hc)){
                       $conso_hc = ($value - $cmd_index_hc->execCmd());
-                    
                       if ($cmd_index_hc->execCmd() <= $value){
                         $eqLogic->checkAndUpdateCmd('conso_hc', $conso_hc*60,$date);
                         $eqLogic->checkAndUpdateCmd(trim(str_replace('conso','index',$name)), $value,$date);
@@ -151,6 +153,7 @@ class Eco_legrand extends eqLogic {
                     }
                   }
                   if (str_replace('conso','index',$name) == "index_hp"){
+                    $index_hc_lu=true;
                     $cmd_index_hp=Eco_legrandCmd::byEqLogicIdAndLogicalId($eqLogic->getId(),"index_hp");
                     if (is_object($cmd_index_hp)){
                       $conso_hp = ($value - $cmd_index_hp->execCmd());
@@ -166,11 +169,14 @@ class Eco_legrand extends eqLogic {
                     }
                   }
                   $Eco_legrand_teleinfo->set_value("puissance_totale",$ppap);
-                  if ($ppap>0){
+                  if ($ppap>0 && $ppap< 999){
                     $Eco_legrand_teleinfo->set_value("int_instant",round($ppap/230),0);
                   }else{
                     $Eco_legrand_teleinfo->set_value("int_instant",0);
                   }
+                }
+                if($index_hc_lu && $index_hp_lu && $conso_hp==0 && $conso_hc==0){
+                  self::add_log("error",'Il y a un probmème de communication entre l\'écocompteur et le TIC du compteur.');
                 }
               }else{
                 $eqLogic->checkCmdOk('inst','numeric', trim($name), 'inst_circuit' . $i , '<i class="fas fa-bolt"></i>',"W");
@@ -431,7 +437,7 @@ class Eco_legrand extends eqLogic {
       $eqLogic->refreshWidget();
     } catch (Exception $e) { 
       self::add_log("debug","erreur get_all_datas");
-      self::add_log("debug",$e->getMessage());
+      self::add_log("error",$e->getMessage());
     }
   }
 	public static function cron_minute(){
@@ -441,7 +447,7 @@ class Eco_legrand extends eqLogic {
 	public static function cron_jour(){
 		Eco_legrand_teleinfo::crontabAllJour(true);
 	}
-  static function getDateAbo($eqLogicId){
+  public static function getDateAbo($eqLogicId){
 
     /*ABONNEMENT FACTURE*/
     $date = new DateTime();
@@ -508,7 +514,7 @@ class Eco_legrand extends eqLogic {
 		return $ISOUC;
 	}
   
-  static function CheckOptionIsValid(){
+  public static function CheckOptionIsValid(){
 
 		$txt = '';
 		$sql = "SELECT COUNT(*) AS nb FROM  Eco_legrand_prix WHERE IFNULL(`type`,'') = ''";

@@ -33,6 +33,7 @@ if (!is_object($cron)) {
     $cron->save();
     //$cron->start();
 }
+
 include_file('3rdparty', 'css/bootstrap-select', 'css', 'Eco_legrand');
 include_file('3rdparty', 'css/jquery.datetimepicker', 'css', 'Eco_legrand');
 include_file('3rdparty', 'css/datatable', 'css', 'Eco_legrand');
@@ -50,14 +51,8 @@ include_file('desktop', 'style', 'css', 'Eco_legrand');
 //sendVarToJS('stylecss', 'cssdefault');
 //sendVarToJS('bgmodalcolorvar', "var(--bg-modal-color)");
 //sendVarToJS('txtcolor', "var(--txt-color)");
-//	echo '<style type="text/css">
-//	.highcharts-axis-labels text tspan {fill: var(--txt-color) !important;}
-//	.highcharts-yaxis-labels > text {fill: var(--txt-color) !important;}
-//	#gauge .highcharts-yaxis-labels > text {fill: #484343 !important;}
-//	#widget_statBox .highcharts-label > text {fill: var(--txt-color) !important;}
-//	#widget_statBox .carousel-caption {fill: var(--txt-color) !important;}
-//	.container {width: 1300px;}
-//	</style>';
+	
+
 
 $eqLogics = eqLogic::byType('Eco_legrand');
 
@@ -71,17 +66,11 @@ $eqlogic_actif=false;
 }
 if (!$eqlogic_actif) {
    
-	/*echo '
-    <div style="width: 100%; padding: 7px 35px 7px 15px; margin-bottom: 5px; overflow: auto; max-height: 675px; z-index: 9999;" class=" alert-danger">
-       <span class="displayError">Aucun équipement trouvé merci de parametrer au moins 1 équipement actif et afficher dans le panel.</span>
-    </div>';*/
-   
-  // echo '</div></div>';
+	
    exit(0);
-	//die();
+	
 }
 
-$btnreturn = config::byKey('btn_retour', 'Eco_legrand', false);
 $datesynchro =  date("d-m-Y H:i:s");
 //sendVarToJS('ismobile', false);
 sendVarToJS('eqType', 'Eco_legrand');
@@ -98,13 +87,7 @@ sendVarToJS('type', $type);*/
 		<div class="subnavbar-inner">
 			<div class="container" style="padding:0px;">
 				<ul class="mainnav">
-					<?php
-					if ($btnreturn) {
-						echo '<li class="cursor bt_dashboard"><a href="' . $btnreturn . '"><i class="icon-arrow-left"></i><span>Retour</span></a></li>';
-					}
-					?>
-
-					<li class="menu_equipement cursor"><span>Equipement :
+                	<li class="menu_equipement cursor"><span>Equipement :
                         <select id="Eco_legrand_ecq">
                             <?php
                                 foreach ($eqLogics as $eqLogic) {
@@ -148,6 +131,7 @@ sendVarToJS('type', $type);*/
                     <li class="cursor bt_gaz" style="display: none;"><i class="fas fa-fire"></i><span>Gaz</span></li>
                     <li class="cursor bt_synthese"><i class="fas fa-table"></i><span>Synthèse</span></li>
 					<li class="cursor bt_tarifs"><i class="fas fa-euro-sign"></i><span>Tarifs</span></li>
+                    <li class="cursor bt_configuration"><i class="fas fa-tasks"></i><span>Configuration</span></li>
 					<li class="cursor bt_database"style="display:none"><i class="fas fa-database"></i><span>Données</span></li>
 					<li class="navinfo">
 						<div id="tab_detail" class="inner">
@@ -171,7 +155,7 @@ sendVarToJS('type', $type);*/
 		</div>
 	</div>
 	<div class="row row-overflow" id="Eco_legrand_elec">
-	    <input type="hidden" value="<?php echo $datesynchro ?>" id="datesynchro">
+	    
         <div class="span6">
             <!-- ligne 1 -->
             <div class="row ligne_1">
@@ -184,8 +168,10 @@ sendVarToJS('type', $type);*/
                                 <i class="fas fa-euro-sign"></i>
                                 <h3 class ="titre front">Consommation en KWh</h3>
                                 <h3 class ="titre back" style="display:none">Montant en €uros TTC</h3>
+                                <input type="hidden" value="<?php echo $datesynchro ?>" id="datesynchro">
+                                <label  id="datesynchro"style="top: 2px;position: relative;left: 20px;text-align: "><?php echo $datesynchro ?></label>
                             </div>
-                            <div class="widget-content" style="height:240px;">
+                            <div class="widget-content" style="height:260px;">
                                 <div class="face front">
                                     <table data-role="table" id="table-column-toggle2 "  class="tableauwatt movie-list table table-striped table-bordered ui-responsive">
                                         <thead>
@@ -222,6 +208,12 @@ sendVarToJS('type', $type);*/
                                                 <td id="month_hpw" ></td>
                                                 <td  id="month_hcw" class=" dds"></td>
                                                 <td id="month_totalw" class="dds"></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Mois précédent</td>
+                                                <td id="month_prec_hpw" ></td>
+                                                <td  id="month_prec_hcw" class=" dds"></td>
+                                                <td id="month_prec_totalw" class="dds"></td>
                                             </tr>
                                             <tr>
                                                 <td>Année 
@@ -270,6 +262,12 @@ sendVarToJS('type', $type);*/
                                                 <td id="month_total" ></td>
                                             </tr>
                                             <tr>
+                                                <td>Mois précédent </td>
+                                                <td id="month_prec_hp" ></td>
+                                                <td  id="month_prec_hc" class=" dds"></td>
+                                                <td id="month_prec_total" class="dds"></td>
+                                            </tr>
+                                            <tr>
                                                 <td>Année <i data-toggle="tooltip"  data-placement="right" title="" class="fas fa-info-circle datefact"></i></td>
                                                 <td id="year_hp"></td><td id="year_hc" class="dds "></td>
                                                 <td id="year_total"></td>
@@ -289,7 +287,7 @@ sendVarToJS('type', $type);*/
                                 <h3>Puissance</h3>
                                 <!--<span class="date_isrefresh"></span>-->
                             </div>
-                            <div style="height:240px;" class="widget-content">
+                            <div style="height:260px;" class="widget-content">
                                 <div class="shortcuts" >
                                     <div id="contentegauge" class="box-body no-padding">
                                     <!--<div class="circle" id="circles-1"></div>	-->
@@ -304,45 +302,50 @@ sendVarToJS('type', $type);*/
                     <div id="statBox" class="col-lg-4">
                         <div class="widget">
                             <div class="widget-header">
-                                
-                                    <i class="fas fa-chart-pie"></i>
+                            <div class="col-lg-9" style="display:block">
+                                    <i class="far fa-chart-bar"></i>
                                     <h3>Statistique</h3>
-                                    <!--<span class="datesynchro" style="position: absolute; right: 35px;"></span>-->
-                                
+                                    <!--<span class="date_isrefresh"></span>-->
+                                </div>
+                                <div class="">
+                                    <div class="input-group input-daterange">
+                                        <input id="stat_debut" type="text" class="datestat datetimepicker form-control" value="">
+                                       
+                                    </div>
+                                </div>
                             </div>
-                            <div  class="widget-content" style="height:240px;">
+                            <div  class="widget-content" style="height:260px;">
                                 <div class="shortcuts" >
                                     <div id="carousel-example-generic" data-interval="false" class="carousel slide"  >
                                         <div class="carousel-inner" role="listbox">
                                             <div class="item active">
                                                 <div class="chart" id="StatDAY" style="height:235px;"></div>
-                                                <div class="carousel-caption defautcss">Aujourd'hui</div>
+                                                <!--<div class="carousel-caption defautcss">Aujourd'hui</div>-->
                                             </div>
                                             <div class="item">
                                                 <div class="chart" id="StatYESTERDAY" style="height:235px;"></div>
-                                                <div class="carousel-caption defautcss">Hier</div>
+                                                <!--<div class="carousel-caption defautcss">Hier</div>-->
                                             </div>
                                             <div class="item">
                                                 <div class="chart" id="StatWEEK" style="height:235px;"></div>
-                                                <div class="carousel-caption defautcss">Semaine</div>
+                                                <!--<div class="carousel-caption defautcss">Semaine</div>-->
                                             </div>
                                             <div class="item">
                                                 <div class="chart" id="Stat" style="height:235px;"></div>
-                                                <div class="carousel-caption defautcss"> Mois</div>
+                                                <!--<div class="carousel-caption defautcss"> Mois</div>-->
                                             </div>
                                             <div class="item">
                                                 <div class="chart" id="StatYEAR" style="height:235px;"></div>
-                                                <div class="carousel-caption defautcss">Année</div>
+                                                <!--<div class="carousel-caption defautcss">Année</div>-->
                                                 </div>
                                         </div>
                                         
-                                        <!-- <i class="icon-wrench"></i>
-                                        Controls -->
-                                        <a class="left carousel-control" href="#carousel-example-generic" role="button" data-slide="prev">
+                                        
+                                        <a class="left carousel-control" style=" height: 150px; top: 40px;" href="#carousel-example-generic" role="button" data-slide="prev">
                                             <span class="fas fa-chevron-left defautcss" aria-hidden="true"></span>
                                             <span class="sr-only">Previous</span>
                                         </a>
-                                        <a class="right carousel-control" href="#carousel-example-generic" role="button" data-slide="next">
+                                        <a class="right carousel-control" style=" height: 150px; top: 40px;" href="#carousel-example-generic" role="button" data-slide="next">
                                             <span class="fas fa-chevron-right defautcss" aria-hidden="true"></span>
                                             <span class="sr-only">Next</span>
                                         </a>
@@ -360,19 +363,14 @@ sendVarToJS('type', $type);*/
                     <div id="currentBox" class="col-lg-12">
                         <div class="widget">
                             <div class="widget-header">
-                                <div class="col-lg-7" style="display:block">
+                                <div class="col-lg-11" style="display:block">
                                     <i class="far fa-chart-bar"></i>
                                     <h3>Consommation du jour</h3>
                                     <!--<span class="date_isrefresh"></span>-->
                                 </div>
-                                <div class="col-xs-1 changeType" style="display:none;"><button type="button" class="icon-eye-open btn btn-default"></button></div>
-                                <div class="col-lg-4">
+                                <div class="">
                                     <div class="input-group input-daterange">
-                                        <span class="input-group-addon">Du</span>
                                         <input id="current_debut" type="text" class="datecurrent datetimepicker form-control" value="">
-                                        <span class="input-group-addon">au</span>
-                                        <input id="current_fin" type="text" class=" datecurrent datetimepicker form-control" value="">
-                                        <span id="validedatecurrent" class="input-group-addon">OK</span>
                                     </div>
                                 </div>
                             </div>
@@ -566,17 +564,12 @@ sendVarToJS('type', $type);*/
 		
 	</div>
     <div class="row row-overflow" id="Eco_legrand_tarifs" style="display:none;">
-    <div id="md_GestionPrix"></div>
+    <div id="md_GestionPrix"></div>/*Ne pas supprimer */
         <div class="span6">
            
             <div class="row" >
                 
                 <div class="widget">
-                    <!--<div  class="widget-header ajout_prix">
-
-                        <i class="fas fa-plus "></i>
-                        <h3> Ajouter un Prix</h3>
-                    </div>-->
                     <table  class=" widget-header titre_tarif">
                             <thead>
                                 <tr>
@@ -592,16 +585,7 @@ sendVarToJS('type', $type);*/
                             </thead>
                         </table>
                     <div class="widget-content">
-                    
                         <table id="ul_Gestprix_elec" class="table table-bordered table-condensed">
-                            
-                            
-                                <!--<div  class="widget-header">
-                                    <label style="font-weight: bolder;font-family: cursive;font-size: 18px;margin-left: 50%;">TARIF ELECTICITE</label>
-                                    <span class="ajout_prix">
-                                        <i class="fas fa-plus"></i>
-                                        <h3> Ajouter un Prix</h3>
-                            </span>-->
                             <thead>
                                 <tr class="widget-header">
                                 <th style="width: 20px;display:none;">id</th>
@@ -769,77 +753,128 @@ sendVarToJS('type', $type);*/
     </div>
     <div class="row row-overflow" id="Eco_legrand_synthese" style="display:none;">
         
-            <div class="span12">
-                <div class="row">
-                    <div class="col-lg-12">
-                        <div class="widget">
-                            <div class="widget-header">
-                                <i class="fas fa-table"></i>
-                                <h3>Synthèse de consommation des équipements par jour</h3>
-                                <span class="cursor bt_refresh" id="bt_refresh_synthese_jour"><i class="fas fa-history"></i>Actualiser</span>
-                            </div>
-                            <div class="widget-content synthese_jours">
-                               
-                            </div>
+        <div class="span12">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="widget">
+                        <div class="widget-header">
+                            <i class="fas fa-table"></i>
+                            <h3>Synthèse de consommation des équipements par jour</h3>
+                            <span class="cursor bt_refresh" id="bt_refresh_synthese_jour"><i class="fas fa-history"></i>Actualiser</span>
                         </div>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-lg-12">
-                        <div class="widget">
-                            <div class="widget-header">
-                                <i class="fas fa-table"></i>
-                                <h3>Synthèse de consommation des équipements par semaine</h3>
-                                <span class="cursor bt_refresh" id="bt_refresh_synthese_semaine"><i class="fas fa-history"></i>Actualiser</span>
-                            </div>
-                            <div class="widget-content synthese_semaine">
-                               
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-lg-12">
-                        <div class="widget">
-                            <div class="widget-header">
-                                <i class="fas fa-table"></i>
-                                <h3>Synthèse de consommation des équipements par mois</h3>
-                                <span class="cursor bt_refresh" id="bt_refresh_synthese_mois"><i class="fas fa-history"></i>Actualiser</span>
-                            </div>
-                            <div class="widget-content synthese_mois">
-                                
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-lg-12">
-                        <div class="widget">
-                            <div class="widget-header">
-                                <i class="fas fa-table"></i>
-                                <h3>Synthèse de consommation des équipements par année</h3>
-                                <span class="cursor bt_refresh" id="bt_refresh_synthese_annee"><i class="fas fa-history"></i>Actualiser</span>
-                            </div>
-                            <div class="widget-content synthese_annee">
-                                
-                            </div>
+                        <div class="widget-content synthese_jours">
+                            
                         </div>
                     </div>
                 </div>
             </div>
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="widget">
+                        <div class="widget-header">
+                            <i class="fas fa-table"></i>
+                            <h3>Synthèse de consommation des équipements par semaine</h3>
+                            <span class="cursor bt_refresh" id="bt_refresh_synthese_semaine"><i class="fas fa-history"></i>Actualiser</span>
+                        </div>
+                        <div class="widget-content synthese_semaine">
+                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="widget">
+                        <div class="widget-header">
+                            <i class="fas fa-table"></i>
+                            <h3>Synthèse de consommation des équipements par mois</h3>
+                            <span class="cursor bt_refresh" id="bt_refresh_synthese_mois"><i class="fas fa-history"></i>Actualiser</span>
+                        </div>
+                        <div class="widget-content synthese_mois">
+                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="widget">
+                        <div class="widget-header">
+                            <i class="fas fa-table"></i>
+                            <h3>Synthèse de consommation des équipements par année</h3>
+                            <span class="cursor bt_refresh" id="bt_refresh_synthese_annee"><i class="fas fa-history"></i>Actualiser</span>
+                        </div>
+                        <div class="widget-content synthese_annee">
+                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
         
     </div>
-
+    <div class="row row-overflow" id="Eco_legrand_configuration" style="display:none;">
+        <div class="span6">
+           
+            <div class="row" >
+                
+                <div class="widget">
+                    <table  class=" widget-header titre_périodes_hp_hc">
+                        <thead>
+                            <tr>
+                                <th class= "titre_périodes_hp_hc">PÉRIODES HEURES PLEINE / HEURES CREUSE</th>
+                                <th class= "titre_ajout"> 
+                                    <span class="ajout_période">
+                                        <i class="fas fa-plus"></i>
+                                        <h3 class="">Ajouter une Période</h3>
+                                    </span>
+                                    
+                                </th>
+                                
+                            </tr>
+                            <tr>
+                            <th class= "titre_périodes_hp_hc"></th>
+                            <th class= "titre_ajout"> 
+                                    
+                                    <span class="détecter_périodes">
+                                        <i class="fas fa-binoculars"></i>
+                                        <h3 class="">Détecter les Périodes</h3>
+                                    </span>
+                                </th>
+                            </tr>  
+                        </thead>
+                    </table>
+                    <div class="widget-content">
+                        <table id="ul_Config_périodes" class="table table-bordered table-condensed">
+                            <thead>
+                                <tr class="widget-header">
+                                    <th style="width: 120px;">Heure de Début</th>
+                                    <th style="width: 120px;">Heure de Fin</th>
+                                    <th style="width: 250px;">Période</th>
+                                    <th><center>Action</center></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+	            
+            </div>
+        </div>
+    </div>
       
 	
-
+  
 <?php
+
 include_file('3rdparty', 'js/bootstrap-select', 'js', 'Eco_legrand');
 //include_file('3rdparty', 'js/bootstrap-select.min', 'js', 'Eco_legrand');
 //include_file('3rdparty', 'datetimepicker/jquery.datetimepicker', 'js', 'Eco_legrand');
 //include_file('3rdparty', 'jquery.fileTree/jquery.easing.1.3', 'js');
 //include_file('3rdparty', 'jquery.fileTree/jqueryFileTree', 'js');
 include_file('3rdparty', 'js/datatable', 'js', 'Eco_legrand');
+include_file('3rdparty', 'js/rounded-corners', 'js', 'Eco_legrand');
 //include_file('3rdparty', 'circles/circles.min', 'js', 'Eco_legrand');
 //include_file('desktop', 'gauge', 'js', 'Eco_legrand');
 //include_file('desktop', 'bib_graph', 'js', 'Eco_legrand');

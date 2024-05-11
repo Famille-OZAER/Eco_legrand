@@ -41,7 +41,7 @@ class Eco_legrand_prix{
         return DB::Prepare($sql, array(), DB::FETCH_TYPE_ALL, PDO::FETCH_CLASS, __CLASS__);
     } 
 
-    public function convert_date_to_sql_date($date){//ok
+    public static function convert_date_to_sql_date($date){//ok
         $dt = DateTime::createFromFormat('d/m/yy', $date);
         return $dt->format('Y-m-d');
     }

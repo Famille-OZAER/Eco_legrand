@@ -1,3 +1,32 @@
+.bubble {
+    color: #000;
+    border-radius: 6px;
+    padding: 5px 2px;
+    animation: fadeBackground 1s;
+    animation-fill-mode: forwards;
+    border: 1px solid black;
+}
+
+.bubble>hr {
+    border: none;
+    border-top: 1px solid #333;
+    color: #333;
+    overflow: visible;
+    height: 1px;
+    margin: 0px 0px 0px 0px;
+    padding: 0px 0px 0px 0px;
+}
+
+@keyframes fadeBackground {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 0.9;
+    }
+}
+
+
 /*datatable*/
 
 table.dataTable {
@@ -664,10 +693,45 @@ table.dataTable.no-footer {
     line-height: 34px!important;
     color: var(--link-color) !important;
     display: inline-flex;
+    right: 20px;
+    top: 10px;
+    position: absolute;
 }
 
 .ajout_prix:hover>i,
 .ajout_prix:hover>h3 {
+    color: green!important
+}
+
+.ajout_période {
+    cursor: pointer!important;
+    text-align: right!important;
+    line-height: 34px!important;
+    color: var(--link-color) !important;
+    display: inline-flex;
+    right: 10px;
+    position: relative;
+    width: max-content;
+}
+
+.ajout_période:hover>i,
+.ajout_période:hover>h3 {
+    color: green!important
+}
+
+.détecter_périodes {
+    cursor: pointer!important;
+    text-align: right!important;
+    line-height: 34px!important;
+    color: var(--link-color) !important;
+    display: inline-flex;
+    right: 10px;
+    position: relative;
+    width: max-content;
+}
+
+.détecter_périodes:hover>i,
+.détecter_périodes:hover>h3 {
     color: green!important
 }
 
@@ -729,6 +793,14 @@ button.ui-dialog-titlebar-close::before {
     width: 90%;
 }
 
+.titre_périodes_hp_hc {
+    font-weight: bolder;
+    font-family: cursive;
+    font-size: 18px!important;
+    text-align: center;
+    width: 90%;
+}
+
 .titre_ajout {
     text-align: right;
 }
@@ -761,11 +833,13 @@ button.ui-dialog-titlebar-close::before {
 }
 
 .bluecolor {
-    color: #4572A7;
+    /*color: #4572A7;*/
+    color : var(--highcharts-hc-color)
 }
 
 .redcolor {
-    color: #AA4643
+    /*color: #AA4643;*/
+    color : var(--highcharts-hp-color)
 }
 
 #Eco_legrand_ecq {
@@ -812,8 +886,8 @@ button.ui-dialog-titlebar-close::before {
 
 
 /*------------------------------------------------------------------
-Bootstrap Admin Template by EGrappler.com
-------------------------------------------------------------------*/
+  Bootstrap Admin Template by EGrappler.com
+  ------------------------------------------------------------------*/
 
 .statcharge {
     font-size: 12px;
@@ -829,6 +903,79 @@ Bootstrap Admin Template by EGrappler.com
     right: 100%;
     left: 20%;
     padding-bottom: 30px;
+}
+
+.highcharts-series-0>.highcharts-color-0 {
+    fill: var(--highcharts-hp-color)!important;
+}
+
+.highcharts-series-0>.highcharts-color-1 {
+    fill: var(--highcharts-hc-color)!important;
+}
+
+.highcharts-series-1>.highcharts-color-0 {
+    fill: var(--highcharts-color-0)!important;
+}
+
+.highcharts-series-1>.highcharts-color-1 {
+    fill: var(--highcharts-color-1)!important;
+}
+
+.highcharts-series-1>.highcharts-color-2 {
+    fill: var(--highcharts-color-2)!important;
+}
+
+.highcharts-series-1>.highcharts-color-3 {
+    fill: var(--highcharts-color-3)!important;
+}
+
+.highcharts-series-1>.highcharts-color-4 {
+    fill: var(--highcharts-color-4)!important;
+}
+
+.highcharts-series-1>.highcharts-color-5 {
+    fill: var(--highcharts-color-5)!important;
+}
+
+.highcharts-series-1>.highcharts-color-6 {
+    fill: var(--highcharts-color-6)!important;
+}
+
+.highcharts-series-1>.highcharts-color-7 {
+    fill: var(--highcharts-color-7)!important;
+}
+
+.highcharts-series-1>.highcharts-color-8 {
+    fill: var(--highcharts-color-8)!important;
+}
+
+.highcharts-series-1>.highcharts-color-9 {
+    fill: var(--highcharts-color-9)!important;
+}
+
+ :root {
+    /* Colors for data series and points */
+    --highcharts-hp-color: #AA4643;
+    --highcharts-hc-color: #4572A7;
+    --highcharts-hp-color-1:rgb(40, 90, 255);
+    --highcharts-hc-color-1:rgb(40, 200, 150);
+
+    --highcharts-color-0: #2caffe;
+    
+    --highcharts-color-1: #544fc5;
+    --highcharts-color-2: #00e272;
+    --highcharts-color-3: #fe6a35;
+    --highcharts-color-4: #6b8abc;
+    --highcharts-color-5: #feb56a;
+    --highcharts-color-6: #2ee0ca;
+    --highcharts-color-7: #fa4b42;
+    --highcharts-color-8: #d568fb;
+    --highcharts-color-9: #9f0707;
+    --temp-min: #4572A7;
+    --temp-moy: #FF9214;
+    --temp-max: #AA4643;
+    --highcharts-color-hier: #9f0707;
+    --highcharts-color-temp: #db8504;
 }
 
 .highcharts-text-outline {
@@ -894,21 +1041,21 @@ Bootstrap Admin Template by EGrappler.com
 
 
 /*
-#budget_contener{
-    font-weight: bold;
-    font-size: 16px;
-    text-align: center;
-    }
-#consomme_contener{
-    font-weight: bold;
-    font-size: 16px;
-    text-align: center;
-    }
-#reste_contener{
-    font-weight: bold;
-    font-size: 16px;
-    text-align: center;}
-*/
+  #budget_contener{
+  font-weight: bold;
+  font-size: 16px;
+  text-align: center;
+  }
+  #consomme_contener{
+  font-weight: bold;
+  font-size: 16px;
+  text-align: center;
+  }
+  #reste_contener{
+  font-weight: bold;
+  font-size: 16px;
+  text-align: center;}
+  */
 
 .tableaueuros>tbody>tr>td,
 .tableaueuros>tbody>tr>th,
@@ -1057,9 +1204,7 @@ tspan {
     /* text-shadow: 1px 1px 2px rgba(255,255,255,.5);*/
 }
 
-#validedatecurrent {
-    cursor: pointer
-}
+
 
 .widget-header .input-daterange {
     padding-top: 2px;
@@ -1312,38 +1457,10 @@ tspan {
     font: 13px/1.7em 'Open Sans'
 }
 
-.backbluecolor {
-    background-color: #4572A7;
-    color: white !important
-}
 
-.backbluecolor:hover {
-    background-color: white;
-    color: #4572A7 !important;
-    font-weight: bold
-}
 
-.backredcolor {
-    background-color: #AA4643;
-    color: white !important
-}
 
-.backredcolor:hover {
-    background-color: white;
-    color: #AA4643 !important;
-    font-weight: bold
-}
 
-.backgreycolor {
-    background-color: #a3a3a3;
-    color: black !important
-}
-
-.backgreycolor:hover {
-    background-color: black;
-    color: #a3a3a3 !important;
-    font-weight: bold
-}
 
 #conso_tab .bluecolor,
 #conso_tab .redcolor {
@@ -1472,8 +1589,8 @@ tspan {
 
 
 /*------------------------------------------------------------------
-[1. Shortcuts / .shortcuts]
-*/
+  [1. Shortcuts / .shortcuts]
+  */
 
 .shortcuts {
     text-align: center;
@@ -1521,8 +1638,8 @@ tspan {
 
 
 /*------------------------------------------------------------------
-[2. Stats / .stats]
-*/
+  [2. Stats / .stats]
+  */
 
 .stats {
     width: 100%;
@@ -1672,8 +1789,8 @@ h6.bigstats {
 
 
 /*------------------------------------------------------------------
-[1. Global]
-*/
+  [1. Global]
+  */
 
 body {
     padding-top: 42px;
@@ -1793,8 +1910,8 @@ body {
 
 
 /*------------------------------------------------------------------
-[2. Navbar / .navbar]
-*/
+  [2. Navbar / .navbar]
+  */
 
 #div_pageContainer .navbar .container {
     position: relative;
@@ -1850,8 +1967,8 @@ body {
 
 
 /*------------------------------------------------------------------
-[3. Subnavbar / .subnavbar]
-*/
+  [3. Subnavbar / .subnavbar]
+  */
 
 #div_pageContainer .subnavbar {
     margin-bottom: 2.5em;
@@ -2074,8 +2191,8 @@ body {
 
 
 /*------------------------------------------------------------------
-[4. Main / .main]
-*/
+  [4. Main / .main]
+  */
 
 .main {
     padding-bottom: 2em;
@@ -2084,8 +2201,8 @@ body {
 
 
 /*------------------------------------------------------------------
-[5. Extra / .extra]
-*/
+  [5. Extra / .extra]
+  */
 
 .extra {
     border-top: 1px solid #585858;
@@ -2120,8 +2237,8 @@ body {
 
 
 /*------------------------------------------------------------------
-[6. Footer/ .footer]
-*/
+  [6. Footer/ .footer]
+  */
 
 .footer {
     margin-top: 0;
@@ -2146,8 +2263,8 @@ body {
 
 
 /*------------------------------------------------------------------
-[6. Widget / .widget]
-*/
+  [6. Widget / .widget]
+  */
 
 .widget {
     position: relative;
@@ -2162,7 +2279,7 @@ body {
     height: 40px;
     line-height: 40px;
     /*background: #f9f6f1;
-	background:-moz-linear-gradient(top, #f9f6f1 0%, #f2efea 100%); /* FF3.6+ */
+    background:-moz-linear-gradient(top, #f9f6f1 0%, #f2efea 100%); /* FF3.6+ */
     /*background:-webkit-gradient(linear, left top, left bottom, color-stop(0%,#f9f6f1), color-stop(100%,#f2efea)); /* Chrome,Safari4+ */
     background: var(--form-bg-color);
     /* Chrome10+,Safari5.1+ */
@@ -2183,12 +2300,16 @@ body {
     width: 100%;
 }
 
+.widget-header.titre_périodes_hp_hc {
+    width: 100%;
+}
+
 .widget-header h3 {
     position: relative;
     top: 2px;
-    left: 10px;
+    left: 5px;
     display: inline-block;
-    margin-right: 2em;
+    /* margin-right: 2em;*/
     font-size: 14px;
     font-weight: 800;
     color: rgb(var(--txt-color));
@@ -2215,7 +2336,6 @@ body {
     -webkit-border-radius: 5px;
     border-radius: 5px;
     border-top: none;
-    -webkit-border-top-left-radius: 0;
     -webkit-border-top-right-radius: 0;
     -moz-border-radius-topleft: 0;
     -moz-border-radius-topright: 0;
@@ -2304,8 +2424,8 @@ body {
 
 
 /*------------------------------------------------------------------
-[7. Error / .error-container]
-*/
+  [7. Error / .error-container]
+  */
 
 .error-container {
     margin-top: 4em;
@@ -2669,8 +2789,8 @@ html .fc,
     position: relative;
     float: left;
     margin-top: -50%;
-    *margin-top: 0;
-    *top: -50%
+    margin-top: 0;
+    top: -50%
 }
 
 .fc-state-default .fc-button-effect {
@@ -2984,7 +3104,7 @@ table.fc-border-separate {
 }
 
 .fc-agenda-slots tr.fc-minor th.ui-widget-header {
-    *border-top-style: solid
+    border-top-style: solid
 }
 
 .fc-event-vert {
@@ -3053,8 +3173,8 @@ table.fc-border-separate {
 
 
 /*------------------------------------------------------------------
-[8. Miscellaneous]
-*/
+  [8. Miscellaneous]
+  */
 
 .chart-holder {
     width: 100%;
@@ -3115,8 +3235,8 @@ table.fc-border-separate {
 
 
 /*------------------------------------------------------------------
-[1. Max Width: 480px]
-*/
+  [1. Max Width: 480px]
+  */
 
 @media (max-width: 480px) {
     .error-container h1 {
@@ -3126,8 +3246,8 @@ table.fc-border-separate {
 
 
 /*------------------------------------------------------------------
-[3. Subnavbar / .subnavbar]
-*/
+  [3. Subnavbar / .subnavbar]
+  */
 
 .subnavbar {
     margin-top: 10px;
@@ -3239,8 +3359,8 @@ table.fc-border-separate {
 
 
 /*------------------------------------------------------------------
-[1. Max Width: 767px]
-*/
+  [1. Max Width: 767px]
+  */
 
 @media (max-width: 767px) {
     #main {
@@ -3312,8 +3432,8 @@ table.fc-border-separate {
 
 
 /*------------------------------------------------------------------
-[3. Max Width: 979px]
-*/
+  [3. Max Width: 979px]
+  */
 
 @media (max-width: 979px) {
     .navbar-fixed-top {
@@ -3328,8 +3448,8 @@ table.fc-border-separate {
 
 
 /*------------------------------------------------------------------
-[2. Max Width: 1200px]
-*/
+  [2. Max Width: 1200px]
+  */
 
 @media (min-width: 1200px) {
     .navbar .search-query {
