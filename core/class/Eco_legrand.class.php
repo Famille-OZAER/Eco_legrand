@@ -438,6 +438,16 @@ class Eco_legrand extends eqLogic {
     } catch (Exception $e) { 
       self::add_log("debug","erreur get_all_datas");
       self::add_log("error",$e->getMessage());
+      self::add_log("error", 
+      $Eco_legrand_teleinfo->get_value('timestamp').
+      $Eco_legrand_teleinfo->get_value('date').
+      $Eco_legrand_teleinfo->get_value('heure').
+      $Eco_legrand_teleinfo->get_value('index_hp').
+      $Eco_legrand_teleinfo->get_value("index_hc").
+      $Eco_legrand_teleinfo->get_value("ptec").
+      $Eco_legrand_teleinfo->get_value("int_instant").
+      $Eco_legrand_teleinfo->get_value("puissance_totale")
+    );
     }
   }
 	public static function cron_minute(){

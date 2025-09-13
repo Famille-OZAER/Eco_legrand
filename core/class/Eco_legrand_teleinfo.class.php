@@ -31,7 +31,7 @@
   public $temperature=0;
   public $eqLogicId=0;
   //
-  public function get_value($nom_param,$data){
+  public function get_value($nom_param){
 
     switch ($nom_param) {
       case "timestamp":
@@ -237,7 +237,26 @@
       DB::Prepare($sql, array(), DB::FETCH_TYPE_ROW);
           
      
-      $conso=[];
+      $conso = [ 
+        "conso_circuit1_hp" => 0,
+        "conso_circuit2_hp" => 0, 
+        "conso_circuit3_hp" => 0, 
+        "conso_circuit4_hp" => 0, 
+        "conso_circuit5_hp" => 0, 
+        "conso_autre_hp" => 0, 
+        "conso_circuit1_hc" => 0, 
+        "conso_circuit2_hc" => 0, 
+        "conso_circuit3_hc" => 0, 
+        "conso_circuit4_hc" => 0, 
+        "conso_circuit5_hc" => 0, 
+        "conso_autre_hc" => 0, 
+        "conso_circuit1" => 0, 
+        "conso_circuit2" => 0, 
+        "conso_circuit3" => 0, 
+        "conso_circuit4" => 0, 
+        "conso_circuit5" => 0, 
+        "conso_autre" => 0 
+        ];
       foreach ($périodes as $période){
        
         $sql="SELECT 
